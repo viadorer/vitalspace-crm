@@ -3,6 +3,6 @@
   "current_page": 1,
   "total_scraped": 0,
   "status": "pending",
-  "last_run": null,
-  "last_error": "2026-03-01T10:20:00Z - IP blocked, timeout 30s"
+  "last_run": "2026-03-01T12:00:00Z",
+  "last_error": "2026-03-01T12:00:00Z - ERR_CONNECTION_RESET, firmy.cz blocked/unreachable (2nd consecutive failure)"
 }

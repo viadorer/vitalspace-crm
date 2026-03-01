@@ -367,3 +367,22 @@ export interface WorkflowRule {
   created_at: string
   updated_at: string
 }
+
+export type DocumentCategory = 'document' | 'presentation' | 'callscript' | 'offer_template' | 'contract'
+
+export interface CrmDocument {
+  id: string
+  title: string
+  description: string | null
+  category: DocumentCategory
+  file_name: string
+  file_path: string
+  file_size: number | null
+  mime_type: string
+  page_count: number | null
+  tags: string[]
+  uploaded_by: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
