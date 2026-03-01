@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-
-export const dynamic = 'force-dynamic'
 import { Topbar } from '@/components/crm/Topbar'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { PipelineBoard } from '@/components/crm/PipelineBoard'
 import { DealForm } from '@/components/crm/DealForm'
+import { DealDetail } from '@/components/crm/DealDetail'
 import { useDeals } from '@/lib/hooks/useDeals'
 import { useClients } from '@/lib/hooks/useClients'
 import type { Deal, DealStage } from '@/lib/supabase/types'
@@ -15,8 +14,10 @@ import type { Deal, DealStage } from '@/lib/supabase/types'
 export default function PipelinePage() {
   const { deals, loading, updateDealStage, createDeal } = useDeals()
   const { clients } = useClients()
-  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
+  const [selectedDealId, setSelectedDealId] = useState<string | null>(null)
   const [showNewDealModal, setShowNewDealModal] = useState(false)
+
+  const selectedDeal = deals.find((d) => d.id === selectedDealId)
 
   async function handleStageChange(dealId: string, newStage: DealStage) {
     await updateDealStage(dealId, newStage)
@@ -52,7 +53,7 @@ export default function PipelinePage() {
       <div className="p-8">
         <PipelineBoard
           deals={deals}
-          onDealClick={setSelectedDeal}
+          onDealClick={(deal) => setSelectedDealId(deal.id)}
           onStageChange={handleStageChange}
         />
       </div>
@@ -70,19 +71,17 @@ export default function PipelinePage() {
         />
       </Modal>
 
-      {selectedDeal && (
+      {selectedDealId && (
         <Modal
-          isOpen={!!selectedDeal}
-          onClose={() => setSelectedDeal(null)}
-          title={selectedDeal.title}
+          isOpen={!!selectedDealId}
+          onClose={() => setSelectedDealId(null)}
+          title={selectedDeal?.title || 'Detail dealu'}
           size="xl"
         >
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Detail dealu</h3>
-              <p className="text-gray-600">{selectedDeal.description}</p>
-            </div>
-          </div>
+          <DealDetail
+            dealId={selectedDealId}
+            onClose={() => setSelectedDealId(null)}
+          />
         </Modal>
       )}
     </div>

@@ -8,9 +8,9 @@ export function useDeals() {
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
 
   async function fetchDeals() {
+    const supabase = createClient()
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -28,6 +28,7 @@ export function useDeals() {
   }
 
   async function createDeal(deal: Partial<Deal>) {
+    const supabase = createClient()
     try {
       const { data, error } = await supabase
         .from('deals')
@@ -44,6 +45,7 @@ export function useDeals() {
   }
 
   async function updateDeal(id: string, updates: Partial<Deal>) {
+    const supabase = createClient()
     try {
       const { data, error } = await supabase
         .from('deals')
@@ -65,6 +67,7 @@ export function useDeals() {
   }
 
   async function deleteDeal(id: string) {
+    const supabase = createClient()
     try {
       const { error } = await supabase
         .from('deals')
@@ -82,6 +85,7 @@ export function useDeals() {
   useEffect(() => {
     fetchDeals()
 
+    const supabase = createClient()
     const channel = supabase
       .channel('deals-changes')
       .on(

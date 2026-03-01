@@ -169,20 +169,25 @@ export interface Product {
 
 export interface Deal {
   id: string
-  client_id: string
-  stage: DealStage
+  client_id: string | null
+  prospect_id: string | null
+  deal_number: string | null
   title: string
-  description: string | null
-  total_value: number
+  stage: DealStage
+  total_hardware_czk: number
+  total_installation_czk: number
+  total_service_czk: number
+  total_value_czk: number
   discount_percent: number
-  final_value: number
-  probability: number
-  expected_close_date: string | null
-  closed_at: string | null
-  lost_reason: string | null
+  final_price_czk: number
+  estimated_close_date: string | null
+  estimated_installation_date: string | null
+  installation_deadline: string | null
   assigned_consultant: string | null
+  lost_reason: string | null
   created_at: string
   updated_at: string
+  closed_at: string | null
 }
 
 export interface DealItem {
@@ -190,10 +195,15 @@ export interface DealItem {
   deal_id: string
   product_id: string
   quantity: number
-  unit_price: number
-  line_total: number
-  notes: string | null
+  unit_price_czk: number
+  discount_percent: number
+  line_total_czk: number
+  target_room: string | null
+  installation_notes: string | null
+  serial_number: string | null
+  sort_order: number
   created_at: string
+  product?: Product
 }
 
 export interface DealStageHistory {
@@ -209,21 +219,80 @@ export interface DealStageHistory {
 export interface DealActivity {
   id: string
   deal_id: string
-  type: string
-  description: string
-  created_by: string | null
+  type: 'note' | 'call' | 'email' | 'meeting' | 'task' | 'document'
+  subject: string | null
+  body: string | null
+  is_completed: boolean
+  due_date: string | null
+  assigned_to: string | null
   created_at: string
 }
 
 export interface TechnicalAudit {
   id: string
   deal_id: string
+  building_name: string | null
+  floor_number: number | null
   room_name: string
-  floor_area_m2: number
+  room_purpose: string | null
+  area_m2: number | null
   ceiling_height_m: number
-  room_volume_m3: number
+  volume_m3: number | null
+  has_suspended_ceiling: boolean
   ceiling_type: string | null
-  has_230v_power: boolean
+  ceiling_load_capacity_kg_m2: number | null
+  has_230v_nearby: boolean
+  ventilation_type: string | null
+  recommended_product_id: string | null
+  recommended_quantity: number
+  auditor_name: string | null
+  audit_date: string | null
   notes: string | null
+  created_at: string
+  recommended_product?: Product
+  air_measurements?: AirMeasurement[]
+}
+
+export interface AirMeasurement {
+  id: string
+  audit_id: string
+  measurement_type: 'voc' | 'pm25' | 'co2' | 'formaldehyde' | 'ozone_residual'
+  value_before: number | null
+  value_after: number | null
+  unit: string
+  threshold_safe: number | null
+  measured_at: string
+  notes: string | null
+}
+
+export interface Installation {
+  id: string
+  deal_id: string
+  deal_item_id: string | null
+  status: 'planned' | 'in_progress' | 'completed' | 'issue'
+  technician_name: string | null
+  scheduled_date: string | null
+  completed_date: string | null
+  device_serial_number: string | null
+  device_model: string | null
+  installation_location: string | null
+  safety_check_passed: boolean
+  organisms_removed_confirmed: boolean
+  ozone_concentration_max: number | null
+  ozone_decay_minutes: number | null
+  notes: string | null
+  created_at: string
+}
+
+export interface DealDocument {
+  id: string
+  deal_id: string | null
+  client_id: string | null
+  doc_type: 'proposal' | 'contract' | 'technical_report' | 'certificate' | 'invoice' | 'photo' | 'other'
+  title: string
+  file_path: string | null
+  file_size_bytes: number | null
+  mime_type: string | null
+  created_by: string | null
   created_at: string
 }

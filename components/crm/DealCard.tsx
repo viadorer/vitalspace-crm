@@ -23,16 +23,13 @@ export function DealCard({ deal, onClick, isDragging }: DealCardProps) {
       
       <div className="flex items-center justify-between">
         <span className="text-lg font-semibold text-blue-600">
-          {formatCurrency(deal.final_value)}
+          {formatCurrency(deal.final_price_czk)}
         </span>
-        {deal.probability > 0 && (
-          <span className="text-xs text-gray-500">{deal.probability}%</span>
-        )}
       </div>
 
-      {deal.expected_close_date && (
+      {deal.estimated_close_date && (
         <p className="text-xs text-gray-500 mt-2">
-          Očekáváno: {new Date(deal.expected_close_date).toLocaleDateString('cs-CZ')}
+          Očekáváno: {new Date(deal.estimated_close_date).toLocaleDateString('cs-CZ')}
         </p>
       )}
     </div>
