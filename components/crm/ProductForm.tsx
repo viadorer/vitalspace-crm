@@ -25,11 +25,15 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     power_consumption_w: product?.power_consumption_w || null,
     description: product?.description || '',
     base_price_czk: product?.base_price_czk || 0,
+    vat_rate: product?.vat_rate || 21,
+    purchase_price_czk: product?.purchase_price_czk || 0,
+    quantity_discounts: product?.quantity_discounts || [],
     installation_required: product?.installation_required || false,
     installation_price_czk: product?.installation_price_czk || 0,
     warranty_months: product?.warranty_months || 24,
     is_active: product?.is_active !== undefined ? product.is_active : true,
   })
+  const [newDiscount, setNewDiscount] = useState({ min_quantity: 5, discount_percent: 5 })
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -122,15 +126,102 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <Input
           type="number"
           step="0.01"
-          label="Základní cena (Kč)"
+          label="Nákupní cena bez DPH (Kč)"
+          value={formData.purchase_price_czk}
+          onChange={(e) => setFormData({ ...formData, purchase_price_czk: Number(e.target.value) })}
+        />
+
+        <Input
+          type="number"
+          step="0.01"
+          label="Prodejní cena bez DPH (Kč)"
           value={formData.base_price_czk}
           onChange={(e) => setFormData({ ...formData, base_price_czk: Number(e.target.value) })}
           required
         />
+
+        <Select
+          label="Sazba DPH (%)"
+          value={formData.vat_rate}
+          onChange={(e) => setFormData({ ...formData, vat_rate: Number(e.target.value) })}
+          options={[
+            { value: 21, label: '21% (standardní)' },
+            { value: 15, label: '15% (snížená 1)' },
+            { value: 12, label: '12% (snížená 2)' },
+            { value: 0, label: '0% (osvobozeno)' },
+          ]}
+        />
+      </div>
+
+      <div className="border rounded-lg p-4">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Množstevní slevy</h3>
+        
+        {formData.quantity_discounts.length > 0 && (
+          <div className="space-y-2 mb-3">
+            {formData.quantity_discounts.map((discount, index) => (
+              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <span className="text-sm">
+                  Od {discount.min_quantity} ks: <strong>{discount.discount_percent}% sleva</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = formData.quantity_discounts.filter((_, i) => i !== index)
+                    setFormData({ ...formData, quantity_discounts: updated })
+                  }}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  Odstranit
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <Input
+            type="number"
+            label="Min. množství"
+            value={newDiscount.min_quantity}
+            onChange={(e) => setNewDiscount({ ...newDiscount, min_quantity: Number(e.target.value) })}
+            min="1"
+          />
+          <Input
+            type="number"
+            step="0.1"
+            label="Sleva (%)"
+            value={newDiscount.discount_percent}
+            onChange={(e) => setNewDiscount({ ...newDiscount, discount_percent: Number(e.target.value) })}
+            min="0"
+            max="100"
+          />
+          <div className="flex items-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                const updated = [...formData.quantity_discounts, newDiscount].sort((a, b) => a.min_quantity - b.min_quantity)
+                setFormData({ ...formData, quantity_discounts: updated })
+                setNewDiscount({ min_quantity: 5, discount_percent: 5 })
+              }}
+            >
+              + Přidat slevu
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Cena s DPH</label>
+          <div className="text-2xl font-bold text-blue-600">
+            {(formData.base_price_czk * (1 + formData.vat_rate / 100)).toFixed(2)} Kč
+          </div>
+        </div>
 
         <Input
           type="number"

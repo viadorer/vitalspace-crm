@@ -85,11 +85,21 @@ export function ProductDetailModal({ product, isOpen, onClose, onEdit }: Product
         </div>
 
         <div className="border-t pt-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Základní cena</h3>
-              <p className="text-2xl font-bold text-blue-600">
-                {formatCurrency(product.base_price_czk)}
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Nákupní cena</h3>
+              <p className="text-lg font-semibold text-gray-600">
+                {formatCurrency(product.purchase_price_czk)} bez DPH
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Prodejní cena</h3>
+              <p className="text-xl font-bold text-blue-600">
+                {formatCurrency(product.base_price_czk)} bez DPH
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {formatCurrency(product.base_price_czk * (1 + product.vat_rate / 100))} s DPH ({product.vat_rate}%)
               </p>
             </div>
 
@@ -102,6 +112,20 @@ export function ProductDetailModal({ product, isOpen, onClose, onEdit }: Product
               </div>
             )}
           </div>
+
+          {product.quantity_discounts && product.quantity_discounts.length > 0 && (
+            <div className="border-t pt-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Množstevní slevy</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {product.quantity_discounts.map((discount, index) => (
+                  <div key={index} className="bg-green-50 p-2 rounded text-sm">
+                    <span className="font-medium">Od {discount.min_quantity} ks:</span>{' '}
+                    <span className="text-green-700 font-bold">{discount.discount_percent}% sleva</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {product.warranty_months && (

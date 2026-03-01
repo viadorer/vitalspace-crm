@@ -124,6 +124,11 @@ export interface Client {
   updated_at: string
 }
 
+export interface QuantityDiscount {
+  min_quantity: number
+  discount_percent: number
+}
+
 export interface Product {
   id: string
   sku: string
@@ -136,6 +141,9 @@ export interface Product {
   power_consumption_w: number | null
   description: string | null
   base_price_czk: number
+  vat_rate: number
+  purchase_price_czk: number
+  quantity_discounts: QuantityDiscount[]
   installation_required: boolean
   installation_price_czk: number
   warranty_months: number
