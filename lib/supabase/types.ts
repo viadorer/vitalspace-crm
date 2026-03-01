@@ -1,3 +1,19 @@
+export type AppRole = 'superadmin' | 'admin' | 'consultant' | 'technician' | 'viewer'
+
+export interface AppUser {
+  id: string
+  email: string
+  full_name: string
+  role: AppRole
+  permissions: string[]
+  is_active: boolean
+  phone: string | null
+  avatar_url: string | null
+  last_login_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type DealStage =
   | 'lead'
   | 'technical_audit'

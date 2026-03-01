@@ -43,6 +43,14 @@ export const TOUCHPOINT_TYPES = [
   { value: 'referral', label: 'Doporučení' },
 ] as const
 
+export const APP_ROLES = [
+  { value: 'superadmin', label: 'Super Admin', color: '#dc2626' },
+  { value: 'admin', label: 'Admin', color: '#ea580c' },
+  { value: 'consultant', label: 'Obchodník', color: '#2563eb' },
+  { value: 'technician', label: 'Technik', color: '#0891b2' },
+  { value: 'viewer', label: 'Čtenář', color: '#6b7280' },
+] as const
+
 export const COMPANY_INFO = {
   name: 'Vitalspace',
   phone: '+420 734 451 278',

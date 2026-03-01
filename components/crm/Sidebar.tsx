@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { LayoutDashboard, Kanban, Users, Building2, Package, Target, Calculator, LogOut } from 'lucide-react'
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
+import { LayoutDashboard, Kanban, Users, Building2, Package, Target, Calculator, Shield, LogOut } from 'lucide-react'
 
 const menuItems = [
   { label: 'Dashboard', href: '/crm/dashboard', icon: LayoutDashboard },
@@ -18,9 +19,10 @@ const menuItems = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+  const { user, isSuperAdmin } = useCurrentUser()
 
   async function handleLogout() {
+    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/auth/login')
     router.refresh()
@@ -52,9 +54,36 @@ export function Sidebar() {
             </Link>
           )
         })}
+
+        {isSuperAdmin() && (
+          <>
+            <div className="pt-4 pb-2">
+              <div className="text-xs font-semibold text-gray-400 uppercase px-4">
+                Administrace
+              </div>
+            </div>
+            <Link
+              href="/crm/users"
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+                pathname === '/crm/users'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Shield className="w-5 h-5" />
+              Uživatelé
+            </Link>
+          </>
+        )}
       </nav>
 
       <div className="p-4 border-t border-border">
+        {user && (
+          <div className="px-4 py-2 mb-2">
+            <div className="text-sm font-medium text-gray-900 truncate">{user.full_name}</div>
+            <div className="text-xs text-gray-500 truncate">{user.email}</div>
+          </div>
+        )}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
