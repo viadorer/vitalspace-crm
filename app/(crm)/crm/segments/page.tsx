@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 
-export const dynamic = 'force-dynamic'
 import { Topbar } from '@/components/crm/Topbar'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { Input } from '@/components/ui/Input'
@@ -13,10 +12,9 @@ export default function SegmentsPage() {
   const [segments, setSegments] = useState<CompanySegment[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const supabase = createClient()
-
   useEffect(() => {
     async function fetchSegments() {
+      const supabase = createClient()
       const { data, error } = await supabase
         .from('company_segments')
         .select('*')

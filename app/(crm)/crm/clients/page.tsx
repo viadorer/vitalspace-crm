@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 
-export const dynamic = 'force-dynamic'
 import { Topbar } from '@/components/crm/Topbar'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -18,10 +17,9 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [showNewClientModal, setShowNewClientModal] = useState(false)
   const [segments, setSegments] = useState<CompanySegment[]>([])
-  const supabase = createClient()
-
   useEffect(() => {
     async function fetchSegments() {
+      const supabase = createClient()
       const { data } = await supabase.from('company_segments').select('*').order('name')
       if (data) setSegments(data)
     }
