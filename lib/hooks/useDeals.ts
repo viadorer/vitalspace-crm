@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { logAuditEvent } from '@/lib/hooks/useAuditLog'
+import { executeWorkflowRules } from '@/lib/hooks/useWorkflowEngine'
 import type { Deal, DealStage } from '@/lib/supabase/types'
 
 export function useDeals() {
@@ -71,12 +72,22 @@ export function useDeals() {
           changes[key] = { old: oldDeal[key], new: updates[key] }
         }
       }
+      const isStageChange = oldDeal?.stage !== updates.stage && updates.stage
       await logAuditEvent({
-        action: oldDeal?.stage !== updates.stage ? 'stage_change' : 'update',
+        action: isStageChange ? 'stage_change' : 'update',
         entityType: 'deal',
         entityId: id,
         changes,
       })
+
+      if (isStageChange) {
+        await executeWorkflowRules({
+          dealId: id,
+          newStage: updates.stage as DealStage,
+          currentAssignedUserId: oldDeal?.assigned_user_id || null,
+        })
+        await fetchDeals()
+      }
 
       return { data, error: null }
     } catch (err) {

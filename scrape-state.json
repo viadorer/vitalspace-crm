@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-03-01T17:00:00Z",
+  "last_updated": "2026-03-01T17:27:22Z",
   "regions": {
     "plzensky-kraj": {
       "base_url": "https://www.firmy.cz/Zdravotnictvi-a-veterina/Zdravotnicka-zarizeni/reg/plzensky-kraj",
@@ -18,7 +18,8 @@
       "prospects_created": 32,
       "notes": "32 prospects exist from previous run WITHOUT contacts - need to enrich or recreate",
       "status": "blocked",
-      "blocked_reason": "Page 1 failed 3x on 2026-03-01T17:00:00Z with ERR_CONNECTION_RESET / ERR_EMPTY_RESPONSE. firmy.cz may be blocking or down. Next run will retry page 1."
+      "blocked_reason": "Page 1 failed 3x on 2026-03-01T17:00:00Z (ERR_EMPTY_RESPONSE) and again 3x on 2026-03-01T17:27:00Z (ERR_EMPTY_RESPONSE + 0 results). firmy.cz is persistently blocking Praha region scraping. Total 6 failed attempts across 2 runs. Consider manual approach or different source.",
+      "total_failed_attempts": 6
     }
   },
   "segment_mapping": {

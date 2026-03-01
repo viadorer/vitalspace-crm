@@ -350,3 +350,20 @@ export interface DealDocument {
   created_by: string | null
   created_at: string
 }
+
+export type AssignStrategy = 'round_robin' | 'keep_current' | 'return_original'
+
+export interface WorkflowRule {
+  id: string
+  trigger_stage: string
+  assign_to_role: 'consultant' | 'technician' | null
+  assign_strategy: AssignStrategy
+  create_activity: boolean
+  activity_type: 'task' | 'note' | 'call' | 'email' | 'meeting' | null
+  activity_subject: string | null
+  activity_due_days: number | null
+  is_active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
