@@ -47,8 +47,8 @@ export function QuoteCalculator({ products, onSaveQuote }: QuoteCalculatorProps)
         product_id: product.id,
         product_name: product.name,
         quantity,
-        unit_price: product.unit_price,
-        line_total: quantity * product.unit_price,
+        unit_price: product.base_price_czk,
+        line_total: quantity * product.base_price_czk,
       }])
     }
 
@@ -79,7 +79,7 @@ export function QuoteCalculator({ products, onSaveQuote }: QuoteCalculatorProps)
               onChange={(e) => setSelectedProductId(e.target.value)}
               options={[
                 { value: '', label: 'Vyberte produkt' },
-                ...products.map(p => ({ value: p.id, label: `${p.name} - ${formatCurrency(p.unit_price)}` }))
+                ...products.map(p => ({ value: p.id, label: `${p.name} - ${formatCurrency(p.base_price_czk)}` }))
               ]}
             />
           </div>
