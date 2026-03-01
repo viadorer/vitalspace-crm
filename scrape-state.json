@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-03-01T21:00:00Z",
+  "last_updated": "2026-03-01T23:30:00Z",
   "regions": {
     "plzensky-kraj": {
       "base_url": "https://www.firmy.cz/Zdravotnictvi-a-veterina/Zdravotnicka-zarizeni/reg/plzensky-kraj",
@@ -18,8 +18,8 @@
       "prospects_created": 32,
       "notes": "32 prospects exist from previous run WITHOUT contacts - need to enrich or recreate. Scheduled task can no longer make progress — requires manual intervention via Chrome browser or alternative data source.",
       "status": "blocked",
-      "blocked_reason": "Total 10 failed attempts across 4+ runs. firmy.cz consistently blocks headless Playwright for Praha region. Recommend: (1) using Claude in Chrome browser, (2) zlatestranky.cz or Google Maps, or (3) manual data entry.",
-      "total_failed_attempts": 10
+      "blocked_reason": "Total 13 failed attempts across 5+ runs. firmy.cz consistently blocks headless Playwright for Praha region. Latest run (2026-03-01T23:30:00Z): 1x zero results, 2x timeout. Recommend: (1) using Claude in Chrome browser, (2) zlatestranky.cz or Google Maps, or (3) manual data entry.",
+      "total_failed_attempts": 13
     }
   },
   "segment_mapping": {

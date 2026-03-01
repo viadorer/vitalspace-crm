@@ -1,0 +1,46 @@
+[
+  {
+    "company_name": "Hotel Caesar Prague",
+    "region": "Praha",
+    "city": "Praha",
+    "address": "Myslíkova 1959/15, 110 00 Praha, Nové Město",
+    "website": "www.hotelcaesarprague.com",
+    "source": "firmy.cz",
+    "segment_name": "Hotely",
+    "priority": 3,
+    "ico": "26116936",
+    "notes": "DS: m6q5s8k | Hodnocení: 4,5 (12) | 9. místo: Čtyřhvězdičkové hotely v Praze 1 | 4* hotel centrum Prahy, konferenční prostory, garáže, fitness, sauna | Rezervace tel: +420 222 500 131 | Rezervace email: info@yourpraguehotels.com",
+    "contacts": [
+      {
+        "first_name": "Recepce",
+        "last_name": "Hotel Caesar Prague",
+        "position": "Recepce",
+        "is_decision_maker": false,
+        "phone": "+420 222 500 126",
+        "email": "info@hotelcaesarprague.com"
+      }
+    ]
+  },
+  {
+    "company_name": "Alfons Boutique Hotel",
+    "region": "Praha",
+    "city": "Praha",
+    "address": "Legerova 1821/41, 120 00 Praha, Nové Město",
+    "website": "www.hotelalfons.cz",
+    "source": "firmy.cz",
+    "segment_name": "Hotely",
+    "priority": 3,
+    "ico": "24215104",
+    "notes": "DS: k6a9prv | Hodnocení: 4,8 (16) | 8. místo: Víkendové pobyty v Česku | Butikový hotel 5 min od Václaváku, interiér inspirovaný Alfonsem Muchou, parkování",
+    "contacts": [
+      {
+        "first_name": "Recepce",
+        "last_name": "Alfons Boutique Hotel",
+        "position": "Recepce",
+        "is_decision_maker": false,
+        "phone": "+420 602 800 889",
+        "email": "info@hotelalfons.cz"
+      }
+    ]
+  }
+]

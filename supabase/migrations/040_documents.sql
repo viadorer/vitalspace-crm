@@ -1,8 +1,8 @@
--- Documents & Presentations table
--- Drop existing table if it exists (clean restart)
-DROP TABLE IF EXISTS documents CASCADE;
+-- CRM Documents & Presentations table
+-- Note: Using 'crm_documents' to avoid conflict with existing 'documents' table for deals
+DROP TABLE IF EXISTS crm_documents CASCADE;
 
-CREATE TABLE documents (
+CREATE TABLE crm_documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   description TEXT,
@@ -19,17 +19,17 @@ CREATE TABLE documents (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_documents_category ON documents(category);
-CREATE INDEX idx_documents_is_active ON documents(is_active);
-CREATE INDEX idx_documents_created_at ON documents(created_at DESC);
+CREATE INDEX idx_crm_documents_category ON crm_documents(category);
+CREATE INDEX idx_crm_documents_is_active ON crm_documents(is_active);
+CREATE INDEX idx_crm_documents_created_at ON crm_documents(created_at DESC);
 
 -- RLS
-ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE crm_documents ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "documents_select" ON documents FOR SELECT USING (true);
-CREATE POLICY "documents_insert" ON documents FOR INSERT WITH CHECK (true);
-CREATE POLICY "documents_update" ON documents FOR UPDATE USING (true);
-CREATE POLICY "documents_delete" ON documents FOR DELETE USING (true);
+CREATE POLICY "crm_documents_select" ON crm_documents FOR SELECT USING (true);
+CREATE POLICY "crm_documents_insert" ON crm_documents FOR INSERT WITH CHECK (true);
+CREATE POLICY "crm_documents_update" ON crm_documents FOR UPDATE USING (true);
+CREATE POLICY "crm_documents_delete" ON crm_documents FOR DELETE USING (true);
 
 -- IMPORTANT: Storage bucket 'documents' must be created manually in Supabase Dashboard
 -- 

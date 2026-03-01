@@ -17,7 +17,7 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
       const supabase = createClient()
 
       let query = supabase
-        .from('documents')
+        .from('crm_documents')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
@@ -73,7 +73,7 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
       console.log('Upload successful:', uploadData)
 
       const { data, error: insertError } = await supabase
-        .from('documents')
+        .from('crm_documents')
         .insert({
           title: meta.title,
           description: meta.description || null,
@@ -111,7 +111,7 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
     try {
       const supabase = createClient()
       const { data, error: updateError } = await supabase
-        .from('documents')
+        .from('crm_documents')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
@@ -135,7 +135,7 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
       }
 
       const { error: deleteError } = await supabase
-        .from('documents')
+        .from('crm_documents')
         .delete()
         .eq('id', id)
 
