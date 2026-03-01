@@ -1,0 +1,53 @@
+VITALSPACE CRM - Setup instrukce
+==================================
+
+1. SUPABASE SETUP
+-----------------
+a) Vytvořte nový projekt na supabase.com
+b) Zkopírujte Project URL a anon key
+c) Vytvořte soubor .env.local:
+   NEXT_PUBLIC_SUPABASE_URL=your_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+
+d) Spusťte SQL migrace v Supabase SQL Editoru (v tomto pořadí):
+   - supabase/migrations/001_schema.sql
+   - supabase/migrations/002_segments.sql
+   - supabase/migrations/003_segments_additional.sql
+
+e) Vytvořte testovacího uživatele v Supabase Authentication:
+   Email: admin@vitalspace.cz
+   Password: (vaše heslo)
+
+2. INSTALACE A SPUŠTĚNÍ
+------------------------
+npm install
+npm run dev
+
+Aplikace poběží na http://localhost:3000
+
+3. STRUKTURA
+------------
+- Marketing web: http://localhost:3000 (veřejný)
+- CRM: http://localhost:3000/crm/dashboard (vyžaduje přihlášení)
+- Login: http://localhost:3000/auth/login
+
+4. TESTOVACÍ DATA
+-----------------
+Po spuštění migrací budete mít:
+- 100+ company_segments
+- Prázdné tabulky pro prospects, clients, deals
+- 6 produktů (Clean Up, PRO I PLUS, Clean Box DRY + služby)
+
+5. DEPLOYMENT
+-------------
+Vercel:
+- Připojte GitHub repo
+- Nastavte environment variables (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)
+- Deploy
+
+6. DALŠÍ KROKY
+--------------
+- Naplnit produkty (INSERT do products tabulky)
+- Přidat RLS policies pro role-based access
+- Nastavit email notifikace
+- Implementovat PDF generování nabídek

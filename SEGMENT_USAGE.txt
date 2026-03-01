@@ -1,0 +1,227 @@
+═══════════════════════════════════════════════════════════════════════════════
+VITALSPACE CRM - VYUŽITÍ SEGMENTŮ V PROJEKTU
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 CELKOVÝ PŘEHLED
+──────────────────
+- Celkem: 100+ B2B segmentů
+- Kategorie: 15 hlavních odvětví
+- Každý segment obsahuje:
+  ✓ Pain point (bolest klienta)
+  ✓ Recommended approach (doporučený prodejní přístup)
+  ✓ Doporučené produkty
+  ✓ Průměrná velikost dealu
+  ✓ Doba uzavření
+  ✓ Klíčový rozhodovatel
+
+═══════════════════════════════════════════════════════════════════════════════
+🎯 JAK VYUŽÍVÁME SEGMENTY V CRM
+═══════════════════════════════════════════════════════════════════════════════
+
+1. PROSPECT MANAGEMENT
+──────────────────────
+✓ Při vytváření prospectu → výběr segmentu
+✓ Automatické zobrazení segment intelligence:
+  - Pain point segmentu
+  - Doporučený prodejní přístup
+  - Které produkty nabídnout
+  - Očekávaná velikost dealu
+  - Koho oslovit (decision maker)
+  - Jak dlouho trvá uzavření
+
+📍 Komponenta: ProspectForm + SegmentInsights
+📍 Soubor: /lib/utils/segment-intelligence.ts
+
+
+2. DEAL CREATION (PŘIPRAVENO)
+──────────────────────────────
+✓ Při kvalifikaci prospectu → automaticky předvyplní:
+  - Doporučené produkty do kalkulačky
+  - Očekávanou hodnotu dealu
+  - Pravděpodobnost (dle segmentu)
+  
+📍 TODO: Implementovat v DealForm
+
+
+3. SALES PLAYBOOK
+─────────────────
+✓ Obchodník vidí konkrétní argumenty pro daný segment
+✓ Příklady:
+  - Školství: "Snížení absence o 20-30%"
+  - Hotely: "Lepší recenze = vyšší occupancy"
+  - Výroba: "BOZP compliance"
+  
+📍 Zobrazeno v SegmentInsights komponentě
+
+
+4. PIPELINE ANALYTICS (PŘIPRAVENO)
+───────────────────────────────────
+✓ Dashboard metriky dle segmentů:
+  - Které segmenty konvertují nejlépe
+  - Průměrná doba uzavření dle segmentu
+  - Win rate dle segmentu
+  
+📍 TODO: Implementovat v Dashboard
+
+
+5. MARKETING TARGETING
+──────────────────────
+✓ Segmenty s nejvyšším potenciálem:
+  - Nemocnice: 500k - 2M Kč
+  - Potravinářství: 400k - 1.5M Kč
+  - Výroba: 300k - 1.2M Kč
+  
+✓ Quick wins (krátká doba uzavření):
+  - Fitness: 1-2 měsíce, 90-180k
+  - Restaurace: 1-2 měsíce, 70-150k
+  - Kadeřnictví: 1 měsíc, 50-100k
+
+
+═══════════════════════════════════════════════════════════════════════════════
+📦 TOP 10 SEGMENTŮ PRO PRIORITIZACI
+═══════════════════════════════════════════════════════════════════════════════
+
+1. NEMOCNICE A KLINIKY
+   💰 500k - 2M Kč | ⏱ 6-12 měsíců
+   🎯 Nozokomiální infekce, certifikace
+   📦 Clean Up + PRO I PLUS + Certifikace
+
+2. POTRAVINÁŘSKÝ PRŮMYSL
+   💰 400k - 1.5M Kč | ⏱ 4-8 měsíců
+   🎯 HACCP, prodloužení shelf life
+   📦 PRO I PLUS + Certifikace
+
+3. VÝROBNÍ PODNIKY
+   💰 300k - 1.2M Kč | ⏱ 3-6 měsíců
+   🎯 BOZP compliance, VOC
+   📦 PRO I PLUS + Clean Up
+
+4. ZÁKLADNÍ ŠKOLY
+   💰 150k - 400k Kč | ⏱ 3-6 měsíců
+   🎯 Absence žáků, šíření virů
+   📦 Clean Up + Clean Box + PRO I PLUS
+
+5. HOTELY
+   💰 200k - 800k Kč | ⏱ 2-4 měsíce
+   🎯 Recenze, zápachy v pokojích
+   📦 Clean Up + PRO I PLUS
+
+6. DOPRAVNÍ PODNIKY (MHD)
+   💰 150k - 400k Kč | ⏱ 6-12 měsíců
+   🎯 Dezinfekce vozidel, epidemie
+   📦 PRO I PLUS (1 přístroj = desítky vozidel)
+
+7. KANCELÁŘE
+   💰 120k - 350k Kč | ⏱ 1-3 měsíce
+   🎯 Sick building, produktivita
+   📦 Clean Up
+
+8. FITNESS CENTRA
+   💰 90k - 180k Kč | ⏱ 1-2 měsíce
+   🎯 Zápachy, bakterie
+   📦 PRO I PLUS + Clean Box
+
+9. RESTAURACE
+   💰 70k - 150k Kč | ⏱ 1-2 měsíce
+   🎯 Hygiena, certifikát
+   📦 PRO I PLUS + Clean Box
+
+10. MATEŘSKÉ ŠKOLY
+    💰 80k - 150k Kč | ⏱ 2-4 měsíce
+    🎯 Bezchemická dezinfekce pro děti
+    📦 Clean Up + Clean Box
+
+
+═══════════════════════════════════════════════════════════════════════════════
+🔥 PRAKTICKÉ VYUŽITÍ - PŘÍKLADY
+═══════════════════════════════════════════════════════════════════════════════
+
+SCÉNÁŘ 1: Nový prospect "Základní škola Plzeň"
+───────────────────────────────────────────────
+1. Obchodník vytvoří prospect, vybere segment "Základní školy"
+2. CRM automaticky zobrazí:
+   ✓ Pain: "Vysoká absence žáků v chřipkové sezóně"
+   ✓ Produkty: Clean Up (do tříd) + PRO I PLUS (tělocvična)
+   ✓ Očekávaný deal: 150-400k Kč
+   ✓ Rozhodovatel: "Ředitel školy, ekonom, zřizovatel"
+   ✓ Argument: "Snížení absence o 20-30% = úspora náhrad"
+3. Obchodník má kompletní playbook pro první schůzku
+
+
+SCÉNÁŘ 2: Kvalifikace prospectu → Deal
+───────────────────────────────────────
+1. Prospect "Hotel Marriott" kvalifikován
+2. CRM vytvoří deal s předvyplněnými položkami:
+   - 20x Clean Up (pokoje) = 900k Kč
+   - 2x PRO I PLUS (lobby, konference) = 116k Kč
+   - Montáž = 5k Kč
+   - TOTAL: ~1 021k Kč
+3. Pravděpodobnost: 60% (dle segmentu Hotely)
+
+
+SCÉNÁŘ 3: Dashboard Analytics
+──────────────────────────────
+Obchodní ředitel vidí:
+- Segment "Fitness" má win rate 75% (nejlepší)
+- Segment "Nemocnice" má průměrný deal 850k (nejvyšší)
+- Segment "Restaurace" uzavírá za 1.5 měsíce (nejrychlejší)
+→ Rozhodnutí: Zaměřit marketing na fitness centra
+
+
+═══════════════════════════════════════════════════════════════════════════════
+💡 DALŠÍ MOŽNOSTI VYUŽITÍ
+═══════════════════════════════════════════════════════════════════════════════
+
+1. EMAIL TEMPLATES
+   - Automatické generování emailů dle segmentu
+   - Personalizované pain pointy v předmětu
+
+2. PROPOSAL GENERATOR
+   - PDF nabídka s argumenty specifickými pro segment
+   - Case studies z podobných segmentů
+
+3. LEAD SCORING
+   - Vyšší skóre pro segmenty s vysokým win rate
+   - Prioritizace prospektů dle segmentu
+
+4. ONBOARDING NOVÝCH OBCHODNÍKŮ
+   - Segment intelligence jako knowledge base
+   - Rychlejší zapracování do prodeje
+
+5. COMPETITIVE INTELLIGENCE
+   - Tracking konkurence dle segmentů
+   - Kde jsme silní vs. slabí
+
+6. PRODUCT DEVELOPMENT
+   - Které segmenty potřebují nové produkty
+   - Analýza gap v portfoliu
+
+
+═══════════════════════════════════════════════════════════════════════════════
+📈 METRIKY K TRACKOVÁNÍ
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ Win rate dle segmentu
+✓ Průměrná velikost dealu dle segmentu
+✓ Průměrná doba uzavření dle segmentu
+✓ Počet prospektů dle segmentu
+✓ Konverzní poměr prospect → deal dle segmentu
+✓ Lifetime value dle segmentu
+✓ Churn rate dle segmentu (pro SaaS model)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+🚀 IMPLEMENTAČNÍ PRIORITY
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ HOTOVO:
+- Segment intelligence v ProspectForm
+- SegmentInsights komponenta
+- 10 top segmentů v segment-intelligence.ts
+
+🔄 TODO:
+- Předvyplnění produktů v DealForm dle segmentu
+- Dashboard analytics dle segmentů
+- Email templates dle segmentu
+- PDF proposal generator se segment-specific argumenty
+- Lead scoring engine
