@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useState } from 'react'
 import { QuoteCalculator } from '@/components/crm/QuoteCalculator'
 import { SaveQuoteModal } from '@/components/crm/SaveQuoteModal'
