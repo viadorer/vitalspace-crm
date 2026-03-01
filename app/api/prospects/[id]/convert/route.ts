@@ -3,11 +3,11 @@ import { NextResponse } from 'next/server'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const prospectId = params.id
+    const { id: prospectId } = await params
 
     // Načíst prospect s kontakty
     const { data: prospect, error: prospectError } = await supabase

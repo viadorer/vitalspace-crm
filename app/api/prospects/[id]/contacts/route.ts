@@ -3,12 +3,12 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
     const body = await request.json();
-    const prospectId = params.id;
+    const { id: prospectId } = await params;
 
     const { contacts } = body;
 
@@ -56,11 +56,11 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const prospectId = params.id;
+    const { id: prospectId } = await params;
 
     const { data, error } = await supabase
       .from('prospect_contacts')

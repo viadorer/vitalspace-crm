@@ -3,11 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const segmentId = params.id;
+    const { id: segmentId } = await params;
 
     const { data, error } = await supabase
       .from('company_segments')
@@ -33,12 +33,12 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
     const body = await request.json();
-    const segmentId = params.id;
+    const { id: segmentId } = await params;
 
     const updates: any = {};
 
@@ -78,11 +78,11 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const segmentId = params.id;
+    const { id: segmentId } = await params;
 
     const { error } = await supabase
       .from('company_segments')
