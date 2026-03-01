@@ -37,6 +37,15 @@ export interface CompanySegment {
   name: string
   target_pain_point: string | null
   recommended_approach: string | null
+  recommended_products: string[] | null
+  average_deal_min_czk: number | null
+  average_deal_max_czk: number | null
+  closing_time_months_min: number | null
+  closing_time_months_max: number | null
+  decision_makers: string[] | null
+  key_arguments: string[] | null
+  objections_handling: Record<string, string> | null
+  success_stories: string[] | null
   created_at: string
 }
 

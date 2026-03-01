@@ -17,7 +17,7 @@ export function useProspects() {
         .from('prospects')
         .select(`
           *,
-          company_segments(name),
+          company_segments(*),
           prospect_contacts(
             id,
             first_name,

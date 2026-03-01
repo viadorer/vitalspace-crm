@@ -65,7 +65,7 @@ export function ProspectForm({ prospect, segments, onSubmit, onCancel }: Prospec
 
       {formData.segment_id && (
         <SegmentInsights 
-          segmentName={segments.find(s => s.id === formData.segment_id)?.name || ''} 
+          segment={segments.find(s => s.id === formData.segment_id) || null} 
         />
       )}
 
