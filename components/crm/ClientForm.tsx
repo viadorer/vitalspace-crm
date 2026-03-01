@@ -197,6 +197,55 @@ export function ClientForm({ client, segments, onSubmit, onCancel }: ClientFormP
         />
       </div>
 
+      {client && (client as any).client_contacts && (client as any).client_contacts.length > 0 && (
+        <div className="space-y-2 pt-4 border-t">
+          <label className="block text-sm font-medium text-gray-700">Kontaktní osoby</label>
+          <div className="space-y-3">
+            {(client as any).client_contacts.map((contact: any) => (
+              <div key={contact.id} className="p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">
+                      {contact.first_name} {contact.last_name}
+                      {contact.is_decision_maker && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                          Decision maker
+                        </span>
+                      )}
+                      {contact.is_primary && (
+                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                          Primární kontakt
+                        </span>
+                      )}
+                    </div>
+                    {contact.position && (
+                      <div className="text-sm text-gray-600 mt-0.5">{contact.position}</div>
+                    )}
+                    <div className="flex flex-wrap gap-3 mt-2 text-sm">
+                      {contact.email && (
+                        <a href={`mailto:${contact.email}`} className="text-blue-600 hover:underline">
+                          {contact.email}
+                        </a>
+                      )}
+                      {contact.phone && (
+                        <a href={`tel:${contact.phone}`} className="text-blue-600 hover:underline">
+                          {contact.phone}
+                        </a>
+                      )}
+                      {contact.mobile && contact.mobile !== contact.phone && (
+                        <a href={`tel:${contact.mobile}`} className="text-blue-600 hover:underline">
+                          {contact.mobile} (mobil)
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-end space-x-3 pt-4">
         <Button type="button" variant="secondary" onClick={onCancel}>
           Zrušit
