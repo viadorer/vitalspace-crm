@@ -64,8 +64,8 @@ export default function CalculatorPage() {
       deal_id: deal.id,
       product_id: item.product_id,
       quantity: item.quantity,
-      unit_price: item.unit_price,
-      line_total: item.line_total,
+      unit_price_czk: item.unit_price,
+      discount_percent: 0,
     }))
 
     const { error: itemsError } = await supabase
