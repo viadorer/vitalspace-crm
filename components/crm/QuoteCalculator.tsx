@@ -169,7 +169,7 @@ export function QuoteCalculator({ products, onSaveQuote }: QuoteCalculatorProps)
       {items.length > 0 && onSaveQuote && (
         <div className="flex justify-end">
           <Button onClick={() => onSaveQuote(items, total)}>
-            Uložit jako nabídku
+            Uložit nabídku
           </Button>
         </div>
       )}
