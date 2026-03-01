@@ -39,16 +39,41 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
 
   async function ensureBucket() {
     const supabase = createClient()
-    const { data: buckets } = await supabase.storage.listBuckets()
-    const exists = buckets?.some(b => b.name === BUCKET_NAME)
-    if (!exists) {
-      const { error } = await supabase.storage.createBucket(BUCKET_NAME, {
-        public: true,
-        fileSizeLimit: 52428800,
-      })
-      if (error && !error.message.includes('already exists')) {
-        throw error
+    
+    try {
+      const { data: buckets, error: listError } = await supabase.storage.listBuckets()
+      
+      if (listError) {
+        console.error('Error listing buckets:', listError)
+        throw listError
       }
+
+      const exists = buckets?.some(b => b.name === BUCKET_NAME)
+      
+      if (!exists) {
+        console.log(`Creating bucket: ${BUCKET_NAME}`)
+        const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
+          public: true,
+          fileSizeLimit: 52428800,
+          allowedMimeTypes: ['application/pdf'],
+        })
+        
+        if (error) {
+          if (error.message.includes('already exists')) {
+            console.log('Bucket already exists')
+            return
+          }
+          console.error('Error creating bucket:', error)
+          throw error
+        }
+        
+        console.log('Bucket created successfully:', data)
+      } else {
+        console.log(`Bucket ${BUCKET_NAME} already exists`)
+      }
+    } catch (err) {
+      console.error('ensureBucket error:', err)
+      throw err
     }
   }
 
@@ -65,20 +90,29 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
     try {
       const supabase = createClient()
 
+      console.log('Starting upload:', { fileName: file.name, size: file.size, type: file.type })
+
       await ensureBucket()
 
       const timestamp = Date.now()
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
       const storagePath = `${meta.category}/${timestamp}_${safeName}`
 
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading to path:', storagePath)
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from(BUCKET_NAME)
         .upload(storagePath, file, {
           cacheControl: '3600',
           upsert: false,
         })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        throw uploadError
+      }
+
+      console.log('Upload successful:', uploadData)
 
       const { data, error: insertError } = await supabase
         .from('documents')
@@ -97,11 +131,17 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
         .select()
         .single()
 
-      if (insertError) throw insertError
+      if (insertError) {
+        console.error('Database insert error:', insertError)
+        throw insertError
+      }
+
+      console.log('Document saved to database:', data)
 
       setDocuments(prev => [data, ...prev])
       return { data, error: null }
     } catch (err) {
+      console.error('uploadDocument error:', err)
       return { data: null, error: err instanceof Error ? err.message : 'Chyba při nahrávání dokumentu' }
     }
   }
