@@ -48,10 +48,9 @@ export default function CalculatorPage() {
       .insert({
         client_id: clientId,
         title,
-        stage: 'qualification',
-        total_value: quoteTotal,
-        final_value: quoteTotal,
-        probability: 50,
+        stage: 'lead',
+        total_value_czk: quoteTotal,
+        final_price_czk: quoteTotal,
         discount_percent: 0,
       })
       .select()
