@@ -18,9 +18,9 @@ export default function CalculatorPage() {
   const [quoteItems, setQuoteItems] = useState<any[]>([])
   const [quoteTotal, setQuoteTotal] = useState(0)
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleSaveAsProspect(prospectData: any) {
+    const supabase = createClient()
     const notesText = `Cenová nabídka:\n${quoteItems.map(item => 
       `- ${item.product_name} x${item.quantity} = ${item.line_total} Kč`
     ).join('\n')}\n\nCelkem: ${quoteTotal} Kč`
@@ -45,6 +45,7 @@ export default function CalculatorPage() {
   }
 
   async function handleSaveAsDeal(clientId: string, title: string) {
+    const supabase = createClient()
     const { data: deal, error: dealError } = await supabase
       .from('deals')
       .insert({
