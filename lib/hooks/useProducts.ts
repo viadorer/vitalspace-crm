@@ -8,9 +8,9 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
 
   async function fetchProducts() {
+    const supabase = createClient()
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -29,6 +29,7 @@ export function useProducts() {
   }
 
   async function createProduct(product: Partial<Product>) {
+    const supabase = createClient()
     try {
       const { data, error } = await supabase
         .from('products')
@@ -48,6 +49,7 @@ export function useProducts() {
   }
 
   async function updateProduct(id: string, updates: Partial<Product>) {
+    const supabase = createClient()
     try {
       const { data, error } = await supabase
         .from('products')
