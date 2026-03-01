@@ -44,29 +44,15 @@ export function useUsers() {
   }
 
   async function createUser(userData: CreateUserData) {
-    const supabase = createClient()
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: userData.email,
-        password: userData.password,
-        options: {
-          data: { full_name: userData.full_name },
-        },
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
       })
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Uživatel nebyl vytvořen')
-
-      const { error: updateError } = await supabase
-        .from('app_users')
-        .update({
-          full_name: userData.full_name,
-          role: userData.role,
-          phone: userData.phone || null,
-        })
-        .eq('id', authData.user.id)
-
-      if (updateError) throw updateError
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Chyba při vytváření uživatele')
 
       await fetchUsers()
       return { error: null }
