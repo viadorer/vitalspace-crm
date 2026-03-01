@@ -8,9 +8,9 @@ export function useClients() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
 
   async function fetchClients() {
+    const supabase = createClient()
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -42,6 +42,7 @@ export function useClients() {
   }
 
   async function createClient(client: Partial<Client>) {
+    const supabase = createClient()
     try {
       const { data, error } = await supabase
         .from('clients')
@@ -61,6 +62,7 @@ export function useClients() {
   }
 
   async function updateClient(id: string, updates: Partial<Client>) {
+    const supabase = createClient()
     try {
       const { data, error } = await supabase
         .from('clients')
