@@ -111,15 +111,22 @@ export interface Client {
   type: 'B2B' | 'B2C'
   ico: string | null
   dic: string | null
+  contact_person: string | null
+  email: string | null
+  phone: string | null
   segment_id: string | null
   region: string
   city: string | null
   address: string | null
   website: string | null
+  employees_count_est: number | null
+  estimated_floor_area_m2: number | null
+  source: string | null
   billing_address: Record<string, any> | null
   delivery_address: Record<string, any> | null
   payment_terms_days: number
   notes: string | null
+  assigned_consultant: string | null
   created_at: string
   updated_at: string
 }

@@ -1,18 +1,49 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export const dynamic = 'force-dynamic'
 import { Topbar } from '@/components/crm/Topbar'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { ClientTable } from '@/components/crm/ClientTable'
+import { ClientForm } from '@/components/crm/ClientForm'
 import { useClients } from '@/lib/hooks/useClients'
-import type { Client } from '@/lib/supabase/types'
+import { createClient } from '@/lib/supabase/client'
+import type { Client, CompanySegment } from '@/lib/supabase/types'
 
 export default function ClientsPage() {
-  const { clients, loading } = useClients()
+  const { clients, loading, createClient: addClient, updateClient } = useClients()
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [showNewClientModal, setShowNewClientModal] = useState(false)
+  const [segments, setSegments] = useState<CompanySegment[]>([])
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function fetchSegments() {
+      const { data } = await supabase.from('company_segments').select('*').order('name')
+      if (data) setSegments(data)
+    }
+    fetchSegments()
+  }, [])
+
+  async function handleCreateClient(data: Partial<Client>) {
+    const result = await addClient(data)
+    if (!result.error) {
+      setShowNewClientModal(false)
+    }
+  }
+
+  async function handleUpdateClient(data: Partial<Client>) {
+    if (editingClient) {
+      const result = await updateClient(editingClient.id, data)
+      if (!result.error) {
+        setEditingClient(null)
+        setSelectedClient(null)
+      }
+    }
+  }
 
   if (loading) {
     return (
@@ -29,7 +60,7 @@ export default function ClientsPage() {
         title="Klienti"
         breadcrumbs={[{ label: 'CRM' }, { label: 'Klienti' }]}
         actions={
-          <Button onClick={() => {}}>
+          <Button onClick={() => setShowNewClientModal(true)}>
             + Nový klient
           </Button>
         }
@@ -38,40 +69,45 @@ export default function ClientsPage() {
       <div className="p-8">
         <ClientTable
           clients={clients}
-          onClientClick={setSelectedClient}
+          onClientClick={(client) => {
+            setSelectedClient(client)
+            setEditingClient(client)
+          }}
         />
       </div>
 
-      {selectedClient && (
+      <Modal
+        isOpen={showNewClientModal}
+        onClose={() => setShowNewClientModal(false)}
+        title="Nový klient"
+        size="xl"
+      >
+        <ClientForm
+          segments={segments}
+          onSubmit={handleCreateClient}
+          onCancel={() => setShowNewClientModal(false)}
+        />
+      </Modal>
+
+      {editingClient && (
         <Modal
-          isOpen={!!selectedClient}
-          onClose={() => setSelectedClient(null)}
-          title={selectedClient.company_name}
+          isOpen={!!editingClient}
+          onClose={() => {
+            setEditingClient(null)
+            setSelectedClient(null)
+          }}
+          title={editingClient.company_name}
           size="xl"
         >
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Kontaktní údaje</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500">Email:</span>
-                  <p className="font-medium">{selectedClient.email || '-'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Telefon:</span>
-                  <p className="font-medium">{selectedClient.phone || '-'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Město:</span>
-                  <p className="font-medium">{selectedClient.city || '-'}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">Region:</span>
-                  <p className="font-medium">{selectedClient.region}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ClientForm
+            client={editingClient}
+            segments={segments}
+            onSubmit={handleUpdateClient}
+            onCancel={() => {
+              setEditingClient(null)
+              setSelectedClient(null)
+            }}
+          />
         </Modal>
       )}
     </div>

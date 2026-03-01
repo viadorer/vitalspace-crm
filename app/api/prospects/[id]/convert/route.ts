@@ -40,7 +40,7 @@ export async function POST(
       )
     }
 
-    // Vytvořit klienta
+    // Vytvořit klienta - převést všechna data z prospectu
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .insert({
@@ -49,12 +49,24 @@ export async function POST(
         type: 'B2B',
         ico: prospect.ico,
         dic: prospect.dic,
-        billing_address: {
+        segment_id: prospect.segment_id,
+        region: prospect.region,
+        city: prospect.city,
+        address: prospect.address,
+        website: prospect.website,
+        employees_count_est: prospect.employees_count_est,
+        estimated_floor_area_m2: prospect.estimated_floor_area_m2,
+        source: prospect.source,
+        notes: prospect.notes,
+        assigned_consultant: prospect.assigned_consultant,
+        billing_address: prospect.address ? {
           street: prospect.address,
-          city: prospect.city,
+          city: prospect.city || '',
           zip: '',
           country: 'CZ'
-        }
+        } : null,
+        delivery_address: null,
+        payment_terms_days: 14
       })
       .select()
       .single()
