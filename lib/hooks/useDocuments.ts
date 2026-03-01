@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { CrmDocument, DocumentCategory } from '@/lib/supabase/types'
 
+const BUCKET_NAME = 'documents'
+
 export function useDocuments(categoryFilter?: DocumentCategory) {
   const [documents, setDocuments] = useState<CrmDocument[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,6 +37,21 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
     }
   }
 
+  async function ensureBucket() {
+    const supabase = createClient()
+    const { data: buckets } = await supabase.storage.listBuckets()
+    const exists = buckets?.some(b => b.name === BUCKET_NAME)
+    if (!exists) {
+      const { error } = await supabase.storage.createBucket(BUCKET_NAME, {
+        public: true,
+        fileSizeLimit: 52428800,
+      })
+      if (error && !error.message.includes('already exists')) {
+        throw error
+      }
+    }
+  }
+
   async function uploadDocument(
     file: File,
     meta: {
@@ -48,22 +65,20 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
     try {
       const supabase = createClient()
 
+      await ensureBucket()
+
       const timestamp = Date.now()
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
       const storagePath = `${meta.category}/${timestamp}_${safeName}`
 
       const { error: uploadError } = await supabase.storage
-        .from('documents')
+        .from(BUCKET_NAME)
         .upload(storagePath, file, {
           cacheControl: '3600',
           upsert: false,
         })
 
       if (uploadError) throw uploadError
-
-      const { data: urlData } = supabase.storage
-        .from('documents')
-        .getPublicUrl(storagePath)
 
       const { data, error: insertError } = await supabase
         .from('documents')
@@ -118,7 +133,7 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
       const doc = documents.find(d => d.id === id)
 
       if (doc) {
-        await supabase.storage.from('documents').remove([doc.file_path])
+        await supabase.storage.from(BUCKET_NAME).remove([doc.file_path])
       }
 
       const { error: deleteError } = await supabase
@@ -136,7 +151,7 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
 
   function getPublicUrl(filePath: string): string {
     const supabase = createClient()
-    const { data } = supabase.storage.from('documents').getPublicUrl(filePath)
+    const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath)
     return data.publicUrl
   }
 

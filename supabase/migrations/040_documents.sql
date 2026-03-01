@@ -1,5 +1,8 @@
 -- Documents & Presentations table
-CREATE TABLE IF NOT EXISTS documents (
+-- Drop existing table if it exists (clean restart)
+DROP TABLE IF EXISTS documents CASCADE;
+
+CREATE TABLE documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   description TEXT,
@@ -28,19 +31,5 @@ CREATE POLICY "documents_insert" ON documents FOR INSERT WITH CHECK (true);
 CREATE POLICY "documents_update" ON documents FOR UPDATE USING (true);
 CREATE POLICY "documents_delete" ON documents FOR DELETE USING (true);
 
--- Storage bucket for document files
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('documents', 'documents', true)
-ON CONFLICT (id) DO NOTHING;
-
-CREATE POLICY "documents_storage_select" ON storage.objects FOR SELECT
-  USING (bucket_id = 'documents');
-
-CREATE POLICY "documents_storage_insert" ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'documents');
-
-CREATE POLICY "documents_storage_update" ON storage.objects FOR UPDATE
-  USING (bucket_id = 'documents');
-
-CREATE POLICY "documents_storage_delete" ON storage.objects FOR DELETE
-  USING (bucket_id = 'documents');
+-- Storage bucket 'documents' must be created via Supabase Dashboard or API
+-- Go to Supabase Dashboard → Storage → New Bucket → name: "documents", public: true
