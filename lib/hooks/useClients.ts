@@ -41,7 +41,7 @@ export function useClients() {
     }
   }
 
-  async function createClient(client: Partial<Client>) {
+  async function addClient(client: Partial<Client>) {
     const supabase = createClient()
     try {
       const { data, error } = await supabase
@@ -91,7 +91,7 @@ export function useClients() {
     loading,
     error,
     refetch: fetchClients,
-    createClient,
+    createClient: addClient,
     updateClient,
   }
 }
