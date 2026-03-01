@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-03-01T09:30:00Z",
+  "last_updated": "2026-03-01T12:00:00Z",
   "regions": {
     "plzensky-kraj": {
       "base_url": "https://www.firmy.cz/Zdravotnictvi-a-veterina/Zdravotnicka-zarizeni/reg/plzensky-kraj",
@@ -7,7 +7,8 @@
       "completed_pages": [1, 2, 3, 4, 5],
       "next_page": 6,
       "prospects_created": 68,
-      "status": "in_progress"
+      "status": "blocked",
+      "blocked_reason": "3x timeout on page 6 - 2026-03-01T12:00:00Z"
     },
     "praha": {
       "base_url": "https://www.firmy.cz/Zdravotnictvi-a-veterina/Zdravotnicka-zarizeni/reg/praha",
