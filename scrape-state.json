@@ -1,0 +1,35 @@
+{
+  "last_updated": "2026-03-01T09:30:00Z",
+  "regions": {
+    "plzensky-kraj": {
+      "base_url": "https://www.firmy.cz/Zdravotnictvi-a-veterina/Zdravotnicka-zarizeni/reg/plzensky-kraj",
+      "total_pages_estimate": 9,
+      "completed_pages": [1, 2, 3, 4, 5],
+      "next_page": 6,
+      "prospects_created": 68,
+      "status": "in_progress"
+    },
+    "praha": {
+      "base_url": "https://www.firmy.cz/Zdravotnictvi-a-veterina/Zdravotnicka-zarizeni/reg/praha",
+      "total_pages_estimate": 15,
+      "completed_pages": [],
+      "next_page": 1,
+      "prospects_created": 32,
+      "notes": "32 prospects exist from previous run WITHOUT contacts - need to enrich or recreate",
+      "status": "pending"
+    }
+  },
+  "segment_mapping": {
+    "default": "Ambulance a ordinace",
+    "nemocnice_keywords": ["nemocnice", "klinika", "poliklinika", "fakultní", "hospital"],
+    "nemocnice_segment": "Nemocnice a kliniky",
+    "stomatologie_keywords": ["stomatolog", "zubní", "dentální", "dentica", "dental", "dentos"],
+    "stomatologie_segment": "Stomatologické ordinace",
+    "seniori_keywords": ["domov seniorů", "LDN", "léčebna dlouhodobě", "gerontolog", "senevida"],
+    "seniori_segment": "Domovy seniorů a LDN"
+  },
+  "contact_strategy": {
+    "title_patterns": ["MUDr.", "Mgr.", "Ing.", "PhDr.", "RNDr.", "JUDr.", "prof.", "doc.", "Bc."],
+    "description": "For companies with doctor titles in name: extract first/last name, set as decision_maker. For others: create Recepce contact with available phone/email."
+  }
+}
