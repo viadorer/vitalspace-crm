@@ -4,18 +4,21 @@ import { useState, FormEvent, useEffect } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-import { ClientContact } from '@/lib/supabase/types'
+import type { ClientContact, ProspectContact } from '@/lib/supabase/types'
 import { X } from 'lucide-react'
+
+type AnyContact = ClientContact | ProspectContact
 
 interface ContactModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (contact: Omit<ClientContact, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
-  contact?: ClientContact | null
-  clientId: string
+  onSave: (contact: Record<string, unknown>) => Promise<void>
+  contact?: AnyContact | null
+  clientId?: string
+  prospectId?: string
 }
 
-export function ContactModal({ isOpen, onClose, onSave, contact, clientId }: ContactModalProps) {
+export function ContactModal({ isOpen, onClose, onSave, contact, clientId, prospectId }: ContactModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     first_name: '',
@@ -30,19 +33,22 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId }: Con
     notes: '',
   })
 
+  const isClientContact = Boolean(clientId)
+
   useEffect(() => {
     if (contact) {
+      const c = contact as unknown as Record<string, unknown>
       setFormData({
         first_name: contact.first_name || '',
         last_name: contact.last_name,
         position: contact.position || '',
         email: contact.email || '',
         phone: contact.phone || '',
-        mobile: contact.mobile || '',
+        mobile: (c.mobile as string) || '',
         linkedin_url: contact.linkedin_url || '',
-        is_primary: contact.is_primary,
+        is_primary: (c.is_primary as boolean) || false,
         is_decision_maker: contact.is_decision_maker,
-        notes: contact.notes || '',
+        notes: (c.notes as string) || '',
       })
     } else {
       setFormData({
@@ -64,10 +70,25 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId }: Con
     e.preventDefault()
     setLoading(true)
     try {
-      await onSave({
-        ...formData,
-        client_id: clientId,
-      } as any)
+      const payload: Record<string, unknown> = {
+        first_name: formData.first_name || null,
+        last_name: formData.last_name,
+        position: formData.position || null,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        linkedin_url: formData.linkedin_url || null,
+        is_decision_maker: formData.is_decision_maker,
+      }
+      if (clientId) {
+        payload.client_id = clientId
+        payload.mobile = formData.mobile || null
+        payload.is_primary = formData.is_primary
+        payload.notes = formData.notes || null
+      }
+      if (prospectId) {
+        payload.prospect_id = prospectId
+      }
+      await onSave(payload)
       onClose()
     } catch (error) {
       console.error('Chyba při ukládání kontaktu:', error)
@@ -115,11 +136,13 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId }: Con
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="Mobil"
-            value={formData.mobile}
-            onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-          />
+          {isClientContact && (
+            <Input
+              label="Mobil"
+              value={formData.mobile}
+              onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+            />
+          )}
           <Input
             label="LinkedIn URL"
             type="url"
@@ -130,15 +153,17 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId }: Con
         </div>
 
         <div className="space-y-3">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={formData.is_primary}
-              onChange={(e) => setFormData({ ...formData, is_primary: e.target.checked })}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-            />
-            <span className="text-sm font-medium text-gray-700">Primární kontakt</span>
-          </label>
+          {isClientContact && (
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.is_primary}
+                onChange={(e) => setFormData({ ...formData, is_primary: e.target.checked })}
+                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Primární kontakt</span>
+            </label>
+          )}
 
           <label className="flex items-center gap-2">
             <input
@@ -151,15 +176,17 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId }: Con
           </label>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Poznámky</label>
-          <textarea
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={3}
-          />
-        </div>
+        {isClientContact && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Poznámky</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={3}
+            />
+          </div>
+        )}
 
         <div className="flex justify-end space-x-3 pt-4">
           <Button type="button" variant="secondary" onClick={onClose}>

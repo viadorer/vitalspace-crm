@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { SegmentInsights } from './SegmentInsights'
+import { ContactModal } from './ContactModal'
+import { useProspectContacts } from '@/lib/hooks/useProspectContacts'
 import { PROSPECT_STATUSES, REGIONS, PRIORITIES } from '@/lib/utils/constants'
-import type { Prospect, CompanySegment } from '@/lib/supabase/types'
+import { Plus, User, Mail, Phone, Linkedin, CheckCircle, Pencil, Trash2 } from 'lucide-react'
+import type { Prospect, CompanySegment, ProspectContact } from '@/lib/supabase/types'
 
 interface ProspectFormProps {
   prospect?: Prospect
@@ -17,6 +20,17 @@ interface ProspectFormProps {
 
 export function ProspectForm({ prospect, segments, onSubmit, onCancel }: ProspectFormProps) {
   const [loading, setLoading] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [editingContact, setEditingContact] = useState<ProspectContact | null>(null)
+
+  const {
+    contacts,
+    loading: contactsLoading,
+    addContact,
+    updateContact,
+    deleteContact,
+  } = useProspectContacts(prospect?.id || null)
+
   const [formData, setFormData] = useState({
     company_name: prospect?.company_name || '',
     ico: prospect?.ico || '',
@@ -171,43 +185,122 @@ export function ProspectForm({ prospect, segments, onSubmit, onCancel }: Prospec
         />
       </div>
 
-      {prospect && (prospect as any).prospect_contacts && (prospect as any).prospect_contacts.length > 0 && (
-        <div className="space-y-2 pt-4 border-t">
-          <label className="block text-sm font-medium text-gray-700">Kontaktní osoby</label>
-          <div className="space-y-3">
-            {(prospect as any).prospect_contacts.map((contact: any) => (
-              <div key={contact.id} className="p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">
-                      {contact.first_name} {contact.last_name}
-                      {contact.is_decision_maker && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                          Decision maker
+      {prospect && (
+        <div className="space-y-3 pt-4 border-t">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700">Kontaktní osoby</label>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setEditingContact(null)
+                setShowContactModal(true)
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Přidat kontakt
+            </Button>
+          </div>
+
+          {contactsLoading ? (
+            <div className="text-center py-4 text-gray-500">Načítání kontaktů...</div>
+          ) : contacts.length === 0 ? (
+            <div className="text-center py-6 text-gray-500">
+              <User className="w-10 h-10 mx-auto mb-2 text-gray-400" />
+              <p>Žádné kontaktní osoby</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {contacts.map((contact) => (
+                <div key={contact.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-gray-900">
+                          {contact.first_name} {contact.last_name}
                         </span>
+                        {contact.is_decision_maker && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded">
+                            <CheckCircle className="w-3 h-3" />
+                            Rozhodovatel
+                          </span>
+                        )}
+                      </div>
+                      {contact.position && (
+                        <p className="text-sm text-gray-600 mb-2">{contact.position}</p>
                       )}
+                      <div className="space-y-1">
+                        {contact.email && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <Mail className="w-3.5 h-3.5 text-gray-400" />
+                            <a href={`mailto:${contact.email}`} className="hover:text-blue-600">{contact.email}</a>
+                          </div>
+                        )}
+                        {contact.phone && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <Phone className="w-3.5 h-3.5 text-gray-400" />
+                            <a href={`tel:${contact.phone}`} className="hover:text-blue-600">{contact.phone}</a>
+                          </div>
+                        )}
+                        {contact.linkedin_url && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <Linkedin className="w-3.5 h-3.5 text-gray-400" />
+                            <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">LinkedIn profil</a>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {contact.position && (
-                      <div className="text-sm text-gray-600 mt-0.5">{contact.position}</div>
-                    )}
-                    <div className="flex flex-wrap gap-3 mt-2 text-sm">
-                      {contact.email && (
-                        <a href={`mailto:${contact.email}`} className="text-blue-600 hover:underline">
-                          {contact.email}
-                        </a>
-                      )}
-                      {contact.phone && (
-                        <a href={`tel:${contact.phone}`} className="text-blue-600 hover:underline">
-                          {contact.phone}
-                        </a>
-                      )}
+                    <div className="flex gap-1 ml-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingContact(contact)
+                          setShowContactModal(true)
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 rounded hover:bg-gray-100"
+                        title="Upravit"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (confirm('Opravdu chcete smazat tento kontakt?')) {
+                            await deleteContact(contact.id)
+                          }
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-gray-100"
+                        title="Smazat"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
+      )}
+
+      {prospect && (
+        <ContactModal
+          isOpen={showContactModal}
+          onClose={() => {
+            setShowContactModal(false)
+            setEditingContact(null)
+          }}
+          onSave={async (contactData) => {
+            if (editingContact) {
+              await updateContact(editingContact.id, contactData as Partial<ProspectContact>)
+            } else {
+              await addContact(contactData as Omit<ProspectContact, 'id' | 'created_at'>)
+            }
+          }}
+          contact={editingContact}
+          prospectId={prospect.id}
+        />
       )}
 
       <div className="flex justify-between items-center pt-4">

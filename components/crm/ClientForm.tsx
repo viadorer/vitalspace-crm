@@ -261,14 +261,10 @@ export function ClientForm({ client, segments, onSubmit, onCancel }: ClientFormP
             setEditingContact(null)
           }}
           onSave={async (contactData) => {
-            try {
-              if (editingContact) {
-                await updateContact(editingContact.id, contactData)
-              } else {
-                await addContact(contactData)
-              }
-            } catch (error) {
-              throw error
+            if (editingContact) {
+              await updateContact(editingContact.id, contactData as Partial<ClientContact>)
+            } else {
+              await addContact(contactData as Omit<ClientContact, 'id' | 'created_at' | 'updated_at'>)
             }
           }}
           contact={editingContact}
