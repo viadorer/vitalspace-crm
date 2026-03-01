@@ -5,8 +5,12 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { SegmentInsights } from './SegmentInsights'
+import { ClientContactsList } from './ClientContactsList'
+import { ContactModal } from './ContactModal'
+import { useClientContacts } from '@/lib/hooks/useClientContacts'
 import { REGIONS } from '@/lib/utils/constants'
-import type { Client, CompanySegment } from '@/lib/supabase/types'
+import type { Client, CompanySegment, ClientContact } from '@/lib/supabase/types'
+import { Plus } from 'lucide-react'
 
 interface ClientFormProps {
   client?: Client
@@ -17,6 +21,17 @@ interface ClientFormProps {
 
 export function ClientForm({ client, segments, onSubmit, onCancel }: ClientFormProps) {
   const [loading, setLoading] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [editingContact, setEditingContact] = useState<ClientContact | null>(null)
+  
+  const {
+    contacts,
+    loading: contactsLoading,
+    addContact,
+    updateContact,
+    deleteContact,
+  } = useClientContacts(client?.id || null)
+
   const [formData, setFormData] = useState({
     company_name: client?.company_name || '',
     type: client?.type || 'B2B',
@@ -197,53 +212,68 @@ export function ClientForm({ client, segments, onSubmit, onCancel }: ClientFormP
         />
       </div>
 
-      {client && (client as any).client_contacts && (client as any).client_contacts.length > 0 && (
-        <div className="space-y-2 pt-4 border-t">
-          <label className="block text-sm font-medium text-gray-700">Kontaktní osoby</label>
-          <div className="space-y-3">
-            {(client as any).client_contacts.map((contact: any) => (
-              <div key={contact.id} className="p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">
-                      {contact.first_name} {contact.last_name}
-                      {contact.is_decision_maker && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                          Decision maker
-                        </span>
-                      )}
-                      {contact.is_primary && (
-                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
-                          Primární kontakt
-                        </span>
-                      )}
-                    </div>
-                    {contact.position && (
-                      <div className="text-sm text-gray-600 mt-0.5">{contact.position}</div>
-                    )}
-                    <div className="flex flex-wrap gap-3 mt-2 text-sm">
-                      {contact.email && (
-                        <a href={`mailto:${contact.email}`} className="text-blue-600 hover:underline">
-                          {contact.email}
-                        </a>
-                      )}
-                      {contact.phone && (
-                        <a href={`tel:${contact.phone}`} className="text-blue-600 hover:underline">
-                          {contact.phone}
-                        </a>
-                      )}
-                      {contact.mobile && contact.mobile !== contact.phone && (
-                        <a href={`tel:${contact.mobile}`} className="text-blue-600 hover:underline">
-                          {contact.mobile} (mobil)
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+      {client && (
+        <div className="space-y-3 pt-4 border-t">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700">Kontaktní osoby</label>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setEditingContact(null)
+                setShowContactModal(true)
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Přidat kontakt
+            </Button>
           </div>
+          
+          {contactsLoading ? (
+            <div className="text-center py-4 text-gray-500">Načítání kontaktů...</div>
+          ) : (
+            <ClientContactsList
+              contacts={contacts}
+              onEdit={(contact) => {
+                setEditingContact(contact)
+                setShowContactModal(true)
+              }}
+              onDelete={async (contactId) => {
+                if (confirm('Opravdu chcete smazat tento kontakt?')) {
+                  try {
+                    await deleteContact(contactId)
+                  } catch (error) {
+                    alert('Chyba při mazání kontaktu')
+                  }
+                }
+              }}
+            />
+          )}
         </div>
+      )}
+
+      {client && (
+        <ContactModal
+          isOpen={showContactModal}
+          onClose={() => {
+            setShowContactModal(false)
+            setEditingContact(null)
+          }}
+          onSave={async (contactData) => {
+            try {
+              if (editingContact) {
+                await updateContact(editingContact.id, contactData)
+              } else {
+                await addContact(contactData)
+              }
+            } catch (error) {
+              throw error
+            }
+          }}
+          contact={editingContact}
+          clientId={client.id}
+        />
       )}
 
       <div className="flex justify-end space-x-3 pt-4">
