@@ -5,12 +5,34 @@ import { useState } from 'react'
 export const dynamic = 'force-dynamic'
 import { Topbar } from '@/components/crm/Topbar'
 import { ProductCatalog } from '@/components/crm/ProductCatalog'
-import { QuoteCalculator } from '@/components/crm/QuoteCalculator'
+import { ProductDetailModal } from '@/components/crm/ProductDetailModal'
+import { ProductForm } from '@/components/crm/ProductForm'
+import { Modal } from '@/components/ui/Modal'
+import { Button } from '@/components/ui/Button'
 import { useProducts } from '@/lib/hooks/useProducts'
+import type { Product } from '@/lib/supabase/types'
 
 export default function ProductsPage() {
-  const { products, loading } = useProducts()
-  const [showCalculator, setShowCalculator] = useState(false)
+  const { products, loading, createProduct, updateProduct } = useProducts()
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [showNewProductModal, setShowNewProductModal] = useState(false)
+
+  async function handleCreateProduct(data: Partial<Product>) {
+    const result = await createProduct(data)
+    if (!result.error) {
+      setShowNewProductModal(false)
+    }
+  }
+
+  async function handleUpdateProduct(data: Partial<Product>) {
+    if (editingProduct) {
+      const result = await updateProduct(editingProduct.id, data)
+      if (!result.error) {
+        setEditingProduct(null)
+      }
+    }
+  }
 
   if (loading) {
     return (
@@ -26,34 +48,53 @@ export default function ProductsPage() {
       <Topbar
         title="Produkty"
         breadcrumbs={[{ label: 'CRM' }, { label: 'Produkty' }]}
+        actions={
+          <Button onClick={() => setShowNewProductModal(true)}>
+            + Nový produkt
+          </Button>
+        }
       />
 
       <div className="p-8">
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              {showCalculator ? 'Kalkulačka nabídek' : 'Katalog produktů'}
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {showCalculator
-                ? 'Vytvořte cenovou nabídku pro klienta'
-                : 'Přehled dostupných produktů a služeb'}
-            </p>
-          </div>
-          <button
-            onClick={() => setShowCalculator(!showCalculator)}
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
-            {showCalculator ? '← Zpět na katalog' : 'Kalkulačka nabídek →'}
-          </button>
-        </div>
-
-        {showCalculator ? (
-          <QuoteCalculator products={products} />
-        ) : (
-          <ProductCatalog products={products} />
-        )}
+        <ProductCatalog 
+          products={products} 
+          onProductSelect={setSelectedProduct}
+        />
       </div>
+
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onEdit={setEditingProduct}
+      />
+
+      <Modal
+        isOpen={showNewProductModal}
+        onClose={() => setShowNewProductModal(false)}
+        title="Nový produkt"
+        size="xl"
+      >
+        <ProductForm
+          onSubmit={handleCreateProduct}
+          onCancel={() => setShowNewProductModal(false)}
+        />
+      </Modal>
+
+      {editingProduct && (
+        <Modal
+          isOpen={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+          title={`Upravit: ${editingProduct.name}`}
+          size="xl"
+        >
+          <ProductForm
+            product={editingProduct}
+            onSubmit={handleUpdateProduct}
+            onCancel={() => setEditingProduct(null)}
+          />
+        </Modal>
+      )}
     </div>
   )
 }

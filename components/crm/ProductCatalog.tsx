@@ -50,17 +50,17 @@ export function ProductCatalog({ products, onProductSelect }: ProductCatalogProp
                 <span className="font-medium">{product.ozone_output_gh} g/h</span>
               </div>
             )}
-            {product.coverage_m3 && (
+            {product.coverage_m3_max && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Pokrytí:</span>
-                <span className="font-medium">{product.coverage_m3} m³</span>
+                <span className="font-medium">{product.coverage_m3_max} m³</span>
               </div>
             )}
           </div>
 
           <div className="pt-4 border-t border-border">
             <div className="text-2xl font-bold text-blue-600">
-              {formatCurrency(product.unit_price)}
+              {formatCurrency(product.base_price_czk)}
             </div>
           </div>
         </div>

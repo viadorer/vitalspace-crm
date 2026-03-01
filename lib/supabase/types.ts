@@ -126,15 +126,21 @@ export interface Client {
 
 export interface Product {
   id: string
+  sku: string
   name: string
   category: ProductCategory
-  description: string | null
   ozone_output_gh: number | null
-  coverage_m3: number | null
-  unit_price: number
+  coverage_m3_max: number | null
+  dimensions: string | null
+  weight_kg: number | null
+  power_consumption_w: number | null
+  description: string | null
+  base_price_czk: number
+  installation_required: boolean
+  installation_price_czk: number
+  warranty_months: number
   is_active: boolean
   created_at: string
-  updated_at: string
 }
 
 export interface Deal {

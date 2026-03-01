@@ -210,13 +210,41 @@ export function ProspectForm({ prospect, segments, onSubmit, onCancel }: Prospec
         </div>
       )}
 
-      <div className="flex justify-end space-x-3 pt-4">
-        <Button type="button" variant="secondary" onClick={onCancel}>
-          Zrušit
-        </Button>
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Ukládání...' : prospect ? 'Uložit změny' : 'Vytvořit prospect'}
-        </Button>
+      <div className="flex justify-between items-center pt-4">
+        {prospect && (
+          <Button 
+            type="button" 
+            variant="primary"
+            onClick={async () => {
+              if (confirm('Převést tento prospect na klienta?')) {
+                try {
+                  const response = await fetch(`/api/prospects/${prospect.id}/convert`, {
+                    method: 'POST'
+                  })
+                  const data = await response.json()
+                  if (data.success) {
+                    alert('Prospect úspěšně převeden na klienta!')
+                    window.location.href = `/crm/clients`
+                  } else {
+                    alert(data.error || 'Chyba při konverzi')
+                  }
+                } catch (err) {
+                  alert('Chyba při konverzi prospectu')
+                }
+              }
+            }}
+          >
+            → Převést na klienta
+          </Button>
+        )}
+        <div className="flex space-x-3">
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            Zrušit
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Ukládání...' : prospect ? 'Uložit změny' : 'Vytvořit prospect'}
+          </Button>
+        </div>
       </div>
     </form>
   )

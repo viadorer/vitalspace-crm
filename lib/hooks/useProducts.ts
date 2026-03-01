@@ -28,6 +28,45 @@ export function useProducts() {
     }
   }
 
+  async function createProduct(product: Partial<Product>) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([product])
+        .select()
+        .single()
+
+      if (error) throw error
+      await fetchProducts()
+      return { data, error: null }
+    } catch (err) {
+      return { 
+        data: null, 
+        error: err instanceof Error ? err.message : 'Chyba při vytváření produktu' 
+      }
+    }
+  }
+
+  async function updateProduct(id: string, updates: Partial<Product>) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+      await fetchProducts()
+      return { data, error: null }
+    } catch (err) {
+      return { 
+        data: null, 
+        error: err instanceof Error ? err.message : 'Chyba při aktualizaci produktu' 
+      }
+    }
+  }
+
   useEffect(() => {
     fetchProducts()
   }, [])
@@ -37,5 +76,7 @@ export function useProducts() {
     loading,
     error,
     refetch: fetchProducts,
+    createProduct,
+    updateProduct,
   }
 }
