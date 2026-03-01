@@ -82,8 +82,10 @@ export interface Prospect {
   status: ProspectStatus
   notes: string | null
   assigned_consultant: string | null
+  assigned_user_id: string | null
   created_at: string
   updated_at: string
+  assigned_user?: AppUser
 }
 
 export interface ProspectContact {
@@ -152,8 +154,39 @@ export interface Client {
   payment_terms_days: number
   notes: string | null
   assigned_consultant: string | null
+  assigned_user_id: string | null
   created_at: string
   updated_at: string
+  assigned_user?: AppUser
+}
+
+export type AuditAction = 'create' | 'update' | 'delete' | 'assign' | 'stage_change' | 'activate' | 'deactivate'
+export type AuditEntityType = 'deal' | 'prospect' | 'client' | 'deal_item' | 'deal_activity' | 'technical_audit' | 'installation' | 'document' | 'product' | 'app_user'
+
+export interface AuditLogEntry {
+  id: string
+  user_id: string | null
+  action: AuditAction
+  entity_type: AuditEntityType
+  entity_id: string
+  changes: Record<string, { old: unknown; new: unknown }>
+  metadata: Record<string, unknown>
+  created_at: string
+  user?: AppUser
+}
+
+export interface AssignmentHistoryEntry {
+  id: string
+  entity_type: 'deal' | 'prospect' | 'client'
+  entity_id: string
+  from_user_id: string | null
+  to_user_id: string | null
+  reason: string | null
+  created_by: string | null
+  created_at: string
+  from_user?: AppUser
+  to_user?: AppUser
+  creator?: AppUser
 }
 
 export interface QuantityDiscount {
@@ -200,10 +233,15 @@ export interface Deal {
   estimated_installation_date: string | null
   installation_deadline: string | null
   assigned_consultant: string | null
+  assigned_user_id: string | null
+  stage_entered_at: string | null
   lost_reason: string | null
   created_at: string
   updated_at: string
   closed_at: string | null
+  assigned_user?: AppUser
+  client?: Client
+  prospect?: Prospect
 }
 
 export interface DealItem {

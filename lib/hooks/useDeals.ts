@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { logAuditEvent } from '@/lib/hooks/useAuditLog'
 import type { Deal, DealStage } from '@/lib/supabase/types'
 
 export function useDeals() {
@@ -15,7 +16,7 @@ export function useDeals() {
       setLoading(true)
       const { data, error } = await supabase
         .from('deals')
-        .select('*, client:clients(*)')
+        .select('*, client:clients(*), prospect:prospects(id, company_name), assigned_user:app_users(*)')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -38,6 +39,12 @@ export function useDeals() {
 
       if (error) throw error
       setDeals([data, ...deals])
+      await logAuditEvent({
+        action: 'create',
+        entityType: 'deal',
+        entityId: data.id,
+        metadata: { title: data.title },
+      })
       return { data, error: null }
     } catch (err) {
       return { data: null, error: err instanceof Error ? err.message : 'Chyba při vytváření dealu' }
@@ -47,15 +54,30 @@ export function useDeals() {
   async function updateDeal(id: string, updates: Partial<Deal>) {
     const supabase = createClient()
     try {
+      const oldDeal = deals.find(d => d.id === id)
       const { data, error } = await supabase
         .from('deals')
         .update(updates)
         .eq('id', id)
-        .select()
+        .select('*, client:clients(*), prospect:prospects(id, company_name), assigned_user:app_users(*)')
         .single()
 
       if (error) throw error
       setDeals(deals.map(d => d.id === id ? data : d))
+
+      const changes: Record<string, { old: unknown; new: unknown }> = {}
+      for (const key of Object.keys(updates) as (keyof typeof updates)[]) {
+        if (oldDeal && oldDeal[key] !== updates[key]) {
+          changes[key] = { old: oldDeal[key], new: updates[key] }
+        }
+      }
+      await logAuditEvent({
+        action: oldDeal?.stage !== updates.stage ? 'stage_change' : 'update',
+        entityType: 'deal',
+        entityId: id,
+        changes,
+      })
+
       return { data, error: null }
     } catch (err) {
       return { data: null, error: err instanceof Error ? err.message : 'Chyba při aktualizaci dealu' }
@@ -75,7 +97,14 @@ export function useDeals() {
         .eq('id', id)
 
       if (error) throw error
+      const deleted = deals.find(d => d.id === id)
       setDeals(deals.filter(d => d.id !== id))
+      await logAuditEvent({
+        action: 'delete',
+        entityType: 'deal',
+        entityId: id,
+        metadata: { title: deleted?.title },
+      })
       return { error: null }
     } catch (err) {
       return { error: err instanceof Error ? err.message : 'Chyba při mazání dealu' }
