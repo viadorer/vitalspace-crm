@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { formatCurrency } from '@/lib/utils/format'
 import type { Product } from '@/lib/supabase/types'
 
-interface QuoteItem {
+export interface QuoteItem {
   product_id: string
   product_name: string
   quantity: number
