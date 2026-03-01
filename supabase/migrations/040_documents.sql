@@ -31,5 +31,16 @@ CREATE POLICY "documents_insert" ON documents FOR INSERT WITH CHECK (true);
 CREATE POLICY "documents_update" ON documents FOR UPDATE USING (true);
 CREATE POLICY "documents_delete" ON documents FOR DELETE USING (true);
 
--- Storage bucket 'documents' must be created via Supabase Dashboard or API
--- Go to Supabase Dashboard → Storage → New Bucket → name: "documents", public: true
+-- IMPORTANT: Storage bucket 'documents' must be created manually in Supabase Dashboard
+-- 
+-- Steps:
+-- 1. Go to Supabase Dashboard → Storage
+-- 2. Click "New Bucket"
+-- 3. Settings:
+--    - Name: documents
+--    - Public bucket: ON (checked)
+--    - File size limit: 50 MB
+--    - Allowed MIME types: application/pdf
+-- 4. Click "Create bucket"
+--
+-- Note: Bucket cannot be created via SQL migration due to RLS policies

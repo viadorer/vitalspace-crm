@@ -37,46 +37,6 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
     }
   }
 
-  async function ensureBucket() {
-    const supabase = createClient()
-    
-    try {
-      const { data: buckets, error: listError } = await supabase.storage.listBuckets()
-      
-      if (listError) {
-        console.error('Error listing buckets:', listError)
-        throw listError
-      }
-
-      const exists = buckets?.some(b => b.name === BUCKET_NAME)
-      
-      if (!exists) {
-        console.log(`Creating bucket: ${BUCKET_NAME}`)
-        const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
-          public: true,
-          fileSizeLimit: 52428800,
-          allowedMimeTypes: ['application/pdf'],
-        })
-        
-        if (error) {
-          if (error.message.includes('already exists')) {
-            console.log('Bucket already exists')
-            return
-          }
-          console.error('Error creating bucket:', error)
-          throw error
-        }
-        
-        console.log('Bucket created successfully:', data)
-      } else {
-        console.log(`Bucket ${BUCKET_NAME} already exists`)
-      }
-    } catch (err) {
-      console.error('ensureBucket error:', err)
-      throw err
-    }
-  }
-
   async function uploadDocument(
     file: File,
     meta: {
@@ -91,8 +51,6 @@ export function useDocuments(categoryFilter?: DocumentCategory) {
       const supabase = createClient()
 
       console.log('Starting upload:', { fileName: file.name, size: file.size, type: file.type })
-
-      await ensureBucket()
 
       const timestamp = Date.now()
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
