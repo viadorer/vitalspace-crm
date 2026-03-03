@@ -11,6 +11,8 @@ export default function CalculatorClient() {
   const { products, loading } = useProducts()
   const { clients } = useClients()
   const {
+    quoteItems,
+    quoteTotal,
     showSaveModal,
     openSaveModal,
     closeSaveModal,
@@ -45,6 +47,8 @@ export default function CalculatorClient() {
                 isOpen={showSaveModal}
                 onClose={closeSaveModal}
                 clients={clients}
+                quoteItems={quoteItems}
+                quoteTotal={quoteTotal}
                 onSaveAsProspect={saveAsProspect}
                 onSaveAsDeal={saveAsDeal}
               />
