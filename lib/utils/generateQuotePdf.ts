@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import type { QuoteItem } from '@/components/crm/QuoteCalculator'
 
 const VAT_RATE = 0.21
@@ -116,328 +117,304 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<void> 
   const vatAmount = Math.round(total * VAT_RATE * 100) / 100
   const totalWithVat = Math.round((total + vatAmount) * 100) / 100
 
-  const doc = new jsPDF('p', 'mm', 'a4')
+  const doc = new jsPDF({
+    orientation: 'p',
+    unit: 'mm',
+    format: 'a4',
+    compress: true,
+  })
+  
   const pageWidth = 210
   const margin = 20
   const contentWidth = pageWidth - 2 * margin
-  let y = 20
+  let finalY = 20
 
   // ============================================================
   // HEADER S LOGEM
   // ============================================================
   const logoBase64 = await loadLogoAsBase64()
-  const logoSize = 18
-  let textStartX = margin
-
   if (logoBase64) {
-    doc.addImage(logoBase64, 'PNG', margin, y - 5, logoSize, logoSize)
-    textStartX = margin + logoSize + 4
+    doc.addImage(logoBase64, 'PNG', margin, finalY - 5, 18, 18)
   }
 
-  doc.setFontSize(22)
-  doc.setFont('helvetica', 'bold')
-  doc.text('CENOVÁ NABÍDKA', textStartX, y + 2)
+  // Použijeme autoTable pro header s UTF-8 podporou
+  autoTable(doc, {
+    startY: finalY,
+    head: [],
+    body: [
+      [{ content: 'CENOVÁ NABÍDKA', styles: { fontSize: 18, fontStyle: 'bold', halign: 'left' } }],
+      [{ content: SUPPLIER.name, styles: { fontSize: 8, textColor: [100, 100, 100] } }],
+    ],
+    theme: 'plain',
+    margin: { left: logoBase64 ? margin + 22 : margin, right: margin },
+    styles: { cellPadding: 0, lineColor: [255, 255, 255], lineWidth: 0 },
+  })
 
-  doc.setFontSize(8)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(100, 100, 100)
-  doc.text(SUPPLIER.name, textStartX, y + 7)
-
+  // Číslo nabídky vpravo
   doc.setFontSize(10)
-  doc.text(quoteNumber, pageWidth - margin, y + 2, { align: 'right' })
+  doc.setTextColor(100, 100, 100)
+  doc.text(quoteNumber, pageWidth - margin, finalY + 2, { align: 'right' })
 
-  y += (logoBase64 ? logoSize : 4) + 2
+  finalY = (doc as any).lastAutoTable.finalY + 8
 
-  // Modrá linka pod headerem
+  // Modrá linka
   doc.setDrawColor(37, 99, 235)
   doc.setLineWidth(0.8)
-  doc.line(margin, y, pageWidth - margin, y)
-  y += 10
+  doc.line(margin, finalY, pageWidth - margin, finalY)
+  finalY += 10
 
   // ============================================================
-  // DODAVATEL & ODBĚRATEL
+  // DODAVATEL & ODBĚRATEL - použijeme autoTable pro UTF-8
   // ============================================================
-  const colWidth = (contentWidth - 10) / 2
-
-  // Dodavatel
-  doc.setTextColor(37, 99, 235)
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'bold')
-  doc.text('DODAVATEL', margin, y)
-
-  // Odběratel
-  doc.text('ODBĚRATEL', margin + colWidth + 10, y)
-  y += 5
-
-  doc.setTextColor(0, 0, 0)
-  doc.setFontSize(11)
-  doc.setFont('helvetica', 'bold')
-  doc.text(SUPPLIER.name, margin, y)
-  doc.text(customer.companyName || '—', margin + colWidth + 10, y)
-  y += 5
-
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(60, 60, 60)
-
-  const supplierLines = [
-    SUPPLIER.address,
-    `${SUPPLIER.postalCode} ${SUPPLIER.city}`,
-    '',
-    `IČO: ${SUPPLIER.ico}`,
-    `DIČ: ${SUPPLIER.dic}`,
-    '',
-    ...(SUPPLIER.phone ? [`Tel: ${SUPPLIER.phone}`] : []),
-    ...(SUPPLIER.email ? [`E-mail: ${SUPPLIER.email}`] : []),
-    ...(SUPPLIER.website ? [SUPPLIER.website] : []),
+  const supplierData = [
+    [{ content: 'DODAVATEL', styles: { fontStyle: 'bold' as const, textColor: [37, 99, 235], fontSize: 9 } }],
+    [{ content: SUPPLIER.name, styles: { fontStyle: 'bold' as const, fontSize: 11 } }],
+    [SUPPLIER.address],
+    [`${SUPPLIER.postalCode} ${SUPPLIER.city}`],
+    [''],
+    [`IČO: ${SUPPLIER.ico}`],
+    [`DIČ: ${SUPPLIER.dic}`],
+    [''],
+    ...(SUPPLIER.phone ? [[`Tel: ${SUPPLIER.phone}`]] : []),
+    ...(SUPPLIER.email ? [[`E-mail: ${SUPPLIER.email}`]] : []),
+    ...(SUPPLIER.website ? [[SUPPLIER.website]] : []),
   ]
 
-  const customerLines = [
-    ...(customer.address ? [customer.address] : []),
-    ...(customer.postalCode || customer.city
-      ? [`${customer.postalCode || ''} ${customer.city || ''}`.trim()]
-      : []),
-    '',
-    ...(customer.ico ? [`IČO: ${customer.ico}`] : []),
-    ...(customer.dic ? [`DIČ: ${customer.dic}`] : []),
-    '',
-    ...(customer.contactPerson ? [`Kontakt: ${customer.contactPerson}`] : []),
-    ...(customer.email ? [`E-mail: ${customer.email}`] : []),
-    ...(customer.phone ? [`Tel: ${customer.phone}`] : []),
+  const customerData = [
+    [{ content: 'ODBĚRATEL', styles: { fontStyle: 'bold' as const, textColor: [37, 99, 235], fontSize: 9 } }],
+    [{ content: customer.companyName || '—', styles: { fontStyle: 'bold' as const, fontSize: 11 } }],
+    ...(customer.address ? [[customer.address]] : []),
+    ...(customer.postalCode || customer.city ? [[`${customer.postalCode || ''} ${customer.city || ''}`.trim()]] : []),
+    [''],
+    ...(customer.ico ? [[`IČO: ${customer.ico}`]] : []),
+    ...(customer.dic ? [[`DIČ: ${customer.dic}`]] : []),
+    [''],
+    ...(customer.contactPerson ? [[`Kontakt: ${customer.contactPerson}`]] : []),
+    ...(customer.email ? [[`E-mail: ${customer.email}`]] : []),
+    ...(customer.phone ? [[`Tel: ${customer.phone}`]] : []),
   ]
 
-  const maxLines = Math.max(supplierLines.length, customerLines.length)
-  for (let i = 0; i < maxLines; i++) {
-    if (supplierLines[i]) {
-      doc.text(supplierLines[i], margin, y)
-    }
-    if (customerLines[i]) {
-      doc.text(customerLines[i], margin + colWidth + 10, y)
-    }
-    y += 4
+  // Sloučíme do dvou sloupců
+  const maxRows = Math.max(supplierData.length, customerData.length)
+  const combinedData = []
+  for (let i = 0; i < maxRows; i++) {
+    combinedData.push([
+      supplierData[i]?.[0] || '',
+      customerData[i]?.[0] || '',
+    ])
   }
 
-  y += 6
+  autoTable(doc, {
+    startY: finalY,
+    head: [],
+    body: combinedData,
+    theme: 'plain',
+    styles: {
+      fontSize: 9,
+      textColor: [60, 60, 60],
+      cellPadding: { top: 1, bottom: 1, left: 0, right: 0 },
+    },
+    columnStyles: {
+      0: { cellWidth: 85 },
+      1: { cellWidth: 85 },
+    },
+    margin: { left: margin, right: margin },
+  })
+
+  finalY = (doc as any).lastAutoTable.finalY + 8
 
   // ============================================================
-  // METADATA NABÍDKY
+  // METADATA
   // ============================================================
   doc.setDrawColor(220, 220, 220)
   doc.setLineWidth(0.3)
-  doc.line(margin, y, pageWidth - margin, y)
-  y += 6
+  doc.line(margin, finalY, pageWidth - margin, finalY)
+  finalY += 6
 
-  doc.setFontSize(9)
-  doc.setTextColor(100, 100, 100)
-  doc.setFont('helvetica', 'normal')
-
-  const metaCol1X = margin
-  const metaCol2X = margin + 55
-  const metaCol3X = margin + 110
-
-  doc.text('Datum vystavení:', metaCol1X, y)
-  doc.text('Platnost nabídky:', metaCol2X, y)
-  doc.text('Číslo nabídky:', metaCol3X, y)
-  y += 4
-
-  doc.setTextColor(0, 0, 0)
-  doc.setFont('helvetica', 'bold')
-  doc.text(formatDatePdf(issueDate), metaCol1X, y)
-  doc.text(formatDatePdf(validUntil), metaCol2X, y)
-  doc.text(quoteNumber, metaCol3X, y)
-  y += 8
-
-  doc.setDrawColor(220, 220, 220)
-  doc.line(margin, y, pageWidth - margin, y)
-  y += 8
-
-  // ============================================================
-  // TABULKA POLOŽEK
-  // ============================================================
-  doc.setFontSize(12)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(0, 0, 0)
-  doc.text('Položky nabídky', margin, y)
-  y += 7
-
-  // Header tabulky
-  const colX = {
-    num: margin,
-    name: margin + 8,
-    qty: margin + 95,
-    unit: margin + 110,
-    unitPrice: margin + 125,
-    total: pageWidth - margin,
-  }
-
-  doc.setFillColor(245, 247, 250)
-  doc.rect(margin, y - 4, contentWidth, 8, 'F')
-
-  doc.setFontSize(8)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(80, 80, 80)
-  doc.text('#', colX.num, y)
-  doc.text('Název položky', colX.name, y)
-  doc.text('Počet', colX.qty, y)
-  doc.text('MJ', colX.unit, y)
-  doc.text('Cena/ks', colX.unitPrice, y)
-  doc.text('Celkem', colX.total, y, { align: 'right' })
-  y += 7
-
-  doc.setDrawColor(200, 200, 200)
-  doc.setLineWidth(0.2)
-
-  // Položky
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(30, 30, 30)
-  doc.setFontSize(9)
-
-  items.forEach((item, index) => {
-    if (y > 250) {
-      doc.addPage()
-      y = 20
-    }
-
-    doc.line(margin, y - 4, pageWidth - margin, y - 4)
-
-    doc.text(String(index + 1), colX.num, y)
-    doc.text(item.product_name, colX.name, y)
-    doc.text(String(item.quantity), colX.qty, y)
-    doc.text('ks', colX.unit, y)
-    doc.text(formatCurrencyPdf(item.unit_price), colX.unitPrice, y)
-    doc.text(formatCurrencyPdf(item.line_total), colX.total, y, { align: 'right' })
-    y += 7
+  autoTable(doc, {
+    startY: finalY,
+    head: [],
+    body: [
+      [
+        { content: 'Datum vystavení:', styles: { fontStyle: 'bold', textColor: [100, 100, 100], fontSize: 9 } },
+        { content: 'Platnost nabídky:', styles: { fontStyle: 'bold', textColor: [100, 100, 100], fontSize: 9 } },
+        { content: 'Číslo nabídky:', styles: { fontStyle: 'bold', textColor: [100, 100, 100], fontSize: 9 } },
+      ],
+      [
+        { content: formatDatePdf(issueDate), styles: { fontStyle: 'bold', fontSize: 9 } },
+        { content: formatDatePdf(validUntil), styles: { fontStyle: 'bold', fontSize: 9 } },
+        { content: quoteNumber, styles: { fontStyle: 'bold', fontSize: 9 } },
+      ],
+    ],
+    theme: 'plain',
+    styles: { cellPadding: 1 },
+    columnStyles: {
+      0: { cellWidth: 55 },
+      1: { cellWidth: 55 },
+      2: { cellWidth: 60 },
+    },
+    margin: { left: margin, right: margin },
   })
 
-  doc.line(margin, y - 4, pageWidth - margin, y - 4)
-  y += 2
+  finalY = (doc as any).lastAutoTable.finalY + 6
+  doc.line(margin, finalY, pageWidth - margin, finalY)
+  finalY += 8
+
+  // ============================================================
+  // TABULKA POLOŽEK - autoTable s UTF-8
+  // ============================================================
+  autoTable(doc, {
+    startY: finalY,
+    head: [[{ content: 'Položky nabídky', colSpan: 6, styles: { fontSize: 12, fontStyle: 'bold' } }]],
+    body: [],
+    theme: 'plain',
+    styles: { cellPadding: 0 },
+    margin: { left: margin, right: margin },
+  })
+
+  finalY = (doc as any).lastAutoTable.finalY + 7
+
+  const tableData = items.map((item, index) => [
+    String(index + 1),
+    item.product_name,
+    String(item.quantity),
+    'ks',
+    formatCurrencyPdf(item.unit_price),
+    formatCurrencyPdf(item.line_total),
+  ])
+
+  autoTable(doc, {
+    startY: finalY,
+    head: [['#', 'Název položky', 'Počet', 'MJ', 'Cena/ks', 'Celkem']],
+    body: tableData,
+    theme: 'striped',
+    headStyles: {
+      fillColor: [245, 247, 250],
+      textColor: [80, 80, 80],
+      fontSize: 8,
+      fontStyle: 'bold',
+    },
+    styles: {
+      fontSize: 9,
+      textColor: [30, 30, 30],
+    },
+    columnStyles: {
+      0: { cellWidth: 8, halign: 'center' },
+      1: { cellWidth: 87 },
+      2: { cellWidth: 15, halign: 'center' },
+      3: { cellWidth: 10, halign: 'center' },
+      4: { cellWidth: 30, halign: 'right' },
+      5: { cellWidth: 30, halign: 'right' },
+    },
+    margin: { left: margin, right: margin },
+  })
+
+  finalY = (doc as any).lastAutoTable.finalY + 5
 
   // ============================================================
   // SOUHRN CEN
   // ============================================================
-  const summaryX = margin + 95
-  const summaryValueX = pageWidth - margin
+  autoTable(doc, {
+    startY: finalY,
+    head: [],
+    body: [
+      ['Celkem bez DPH:', formatCurrencyPdf(totalWithoutVat)],
+      [`DPH ${VAT_RATE * 100} %:`, formatCurrencyPdf(vatAmount)],
+      [
+        { content: 'Celkem s DPH:', styles: { fontStyle: 'bold', fontSize: 12, textColor: [37, 99, 235] } },
+        { content: formatCurrencyPdf(totalWithVat), styles: { fontStyle: 'bold', fontSize: 12, textColor: [37, 99, 235] } },
+      ],
+    ],
+    theme: 'plain',
+    styles: {
+      fontSize: 9,
+      textColor: [60, 60, 60],
+      cellPadding: { top: 2, bottom: 2 },
+    },
+    columnStyles: {
+      0: { cellWidth: 125, halign: 'right' },
+      1: { cellWidth: 45, halign: 'right' },
+    },
+    margin: { left: margin, right: margin },
+  })
 
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(60, 60, 60)
-
-  doc.text('Celkem bez DPH:', summaryX, y)
-  doc.text(formatCurrencyPdf(totalWithoutVat), summaryValueX, y, { align: 'right' })
-  y += 5
-
-  doc.text(`DPH ${VAT_RATE * 100} %:`, summaryX, y)
-  doc.text(formatCurrencyPdf(vatAmount), summaryValueX, y, { align: 'right' })
-  y += 2
-
-  doc.setDrawColor(37, 99, 235)
-  doc.setLineWidth(0.5)
-  doc.line(summaryX, y, pageWidth - margin, y)
-  y += 5
-
-  doc.setFontSize(12)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(37, 99, 235)
-  doc.text('Celkem s DPH:', summaryX, y)
-  doc.text(formatCurrencyPdf(totalWithVat), summaryValueX, y, { align: 'right' })
-  y += 12
+  finalY = (doc as any).lastAutoTable.finalY + 10
 
   // ============================================================
   // PODMÍNKY
   // ============================================================
-  doc.setTextColor(0, 0, 0)
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'bold')
-  doc.text('Podmínky nabídky', margin, y)
-  y += 6
-
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(60, 60, 60)
-
   const conditions = [
-    `Platební podmínky: ${paymentTerms}`,
-    `Dodací podmínky: ${deliveryTerms}`,
-    `Platnost nabídky: ${validityDays} dnů od data vystavení (do ${formatDatePdf(validUntil)})`,
-    'Ceny jsou uvedeny bez DPH, není-li uvedeno jinak.',
-    'Součástí nabídky je doprava a instalace, pokud není uvedeno jinak.',
-    'Záruční doba: dle specifikace jednotlivých produktů.',
+    [`Platební podmínky: ${paymentTerms}`],
+    [`Dodací podmínky: ${deliveryTerms}`],
+    [`Platnost nabídky: ${validityDays} dnů od data vystavení (do ${formatDatePdf(validUntil)})`],
+    ['Ceny jsou uvedeny bez DPH, není-li uvedeno jinak.'],
+    ['Součástí nabídky je doprava a instalace, pokud není uvedeno jinak.'],
+    ['Záruční doba: dle specifikace jednotlivých produktů.'],
   ]
 
-  conditions.forEach((line) => {
-    if (y > 270) {
-      doc.addPage()
-      y = 20
-    }
-    doc.text(`• ${line}`, margin, y)
-    y += 5
+  autoTable(doc, {
+    startY: finalY,
+    head: [[{ content: 'Podmínky nabídky', styles: { fontSize: 10, fontStyle: 'bold' } }]],
+    body: conditions,
+    theme: 'plain',
+    styles: {
+      fontSize: 9,
+      textColor: [60, 60, 60],
+      cellPadding: { top: 2, bottom: 2 },
+    },
+    margin: { left: margin, right: margin },
   })
 
-  y += 3
+  finalY = (doc as any).lastAutoTable.finalY + 5
 
   // ============================================================
   // POZNÁMKY
   // ============================================================
   if (notes) {
-    if (y > 255) {
-      doc.addPage()
-      y = 20
-    }
-
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(0, 0, 0)
-    doc.text('Poznámky', margin, y)
-    y += 6
-
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(60, 60, 60)
-    const noteLines = doc.splitTextToSize(notes, contentWidth)
-    doc.text(noteLines, margin, y)
-    y += noteLines.length * 4 + 6
+    autoTable(doc, {
+      startY: finalY,
+      head: [[{ content: 'Poznámky', styles: { fontSize: 10, fontStyle: 'bold' } }]],
+      body: [[notes]],
+      theme: 'plain',
+      styles: {
+        fontSize: 9,
+        textColor: [60, 60, 60],
+        cellPadding: { top: 2, bottom: 2 },
+      },
+      margin: { left: margin, right: margin },
+    })
+    finalY = (doc as any).lastAutoTable.finalY + 8
   }
 
   // ============================================================
   // BANKOVNÍ ÚDAJE
   // ============================================================
-  if (y > 255) {
-    doc.addPage()
-    y = 20
-  }
+  const bankData = []
+  if (SUPPLIER.bankAccount) bankData.push([`Číslo účtu: ${SUPPLIER.bankAccount}`])
+  if (SUPPLIER.bankName) bankData.push([`Banka: ${SUPPLIER.bankName}`])
 
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(0, 0, 0)
-  doc.text('Bankovní spojení', margin, y)
-  y += 6
-
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(60, 60, 60)
-
-  if (SUPPLIER.bankAccount) {
-    doc.text(`Číslo účtu: ${SUPPLIER.bankAccount}`, margin, y)
-    y += 4
+  if (bankData.length > 0) {
+    autoTable(doc, {
+      startY: finalY,
+      head: [[{ content: 'Bankovní spojení', styles: { fontSize: 10, fontStyle: 'bold' } }]],
+      body: bankData,
+      theme: 'plain',
+      styles: {
+        fontSize: 9,
+        textColor: [60, 60, 60],
+        cellPadding: { top: 2, bottom: 2 },
+      },
+      margin: { left: margin, right: margin },
+    })
+    finalY = (doc as any).lastAutoTable.finalY + 10
   }
-  if (SUPPLIER.bankName) {
-    doc.text(`Banka: ${SUPPLIER.bankName}`, margin, y)
-    y += 4
-  }
-  y += 8
 
   // ============================================================
   // PODPISY
   // ============================================================
-  if (y > 245) {
-    doc.addPage()
-    y = 20
-  }
-
-  const signY = y + 5
+  const signY = finalY + 5
   doc.setDrawColor(180, 180, 180)
   doc.setLineWidth(0.3)
-
   doc.line(margin, signY + 15, margin + 60, signY + 15)
   doc.line(pageWidth - margin - 60, signY + 15, pageWidth - margin, signY + 15)
 
@@ -445,7 +422,6 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<void> 
   doc.setTextColor(100, 100, 100)
   doc.text('Za dodavatele', margin, signY + 20)
   doc.text('Za odběratele', pageWidth - margin - 60, signY + 20)
-
   doc.text('Datum a podpis', margin, signY + 24)
   doc.text('Datum a podpis', pageWidth - margin - 60, signY + 24)
 
@@ -459,8 +435,7 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<void> 
 
   doc.setFontSize(7)
   doc.setTextColor(140, 140, 140)
-  doc.setFont('helvetica', 'normal')
-  doc.text(SUPPLIER.registrationNote, pageWidth / 2, footerY, { align: 'center' })
+  doc.text(SUPPLIER.registrationNote, pageWidth / 2, footerY, { align: 'center', maxWidth: contentWidth })
   doc.text(
     `${SUPPLIER.name} | ${SUPPLIER.phone} | ${SUPPLIER.email}`,
     pageWidth / 2,
