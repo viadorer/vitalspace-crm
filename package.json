@@ -14,6 +14,7 @@
     "@types/react-beautiful-dnd": "^13.1.8",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
+    "jspdf-font": "^1.0.7",
     "lucide-react": "^0.460.0",
     "next": "^16.1.6",
     "react": "^18.3.1",

@@ -161,7 +161,7 @@ export interface Client {
 }
 
 export type AuditAction = 'create' | 'update' | 'delete' | 'assign' | 'stage_change' | 'activate' | 'deactivate'
-export type AuditEntityType = 'deal' | 'prospect' | 'client' | 'deal_item' | 'deal_activity' | 'technical_audit' | 'installation' | 'document' | 'product' | 'app_user'
+export type AuditEntityType = 'deal' | 'prospect' | 'client' | 'deal_item' | 'deal_activity' | 'prospect_activity' | 'contact_activity' | 'technical_audit' | 'installation' | 'document' | 'product' | 'app_user'
 
 export interface AuditLogEntry {
   id: string
@@ -270,16 +270,49 @@ export interface DealStageHistory {
   created_at: string
 }
 
+export type ActivityType = 'note' | 'call' | 'email' | 'meeting' | 'task' | 'document'
+
 export interface DealActivity {
   id: string
   deal_id: string
-  type: 'note' | 'call' | 'email' | 'meeting' | 'task' | 'document'
+  type: ActivityType
   subject: string | null
   body: string | null
   is_completed: boolean
   due_date: string | null
   assigned_to: string | null
+  created_by: string | null
   created_at: string
+  updated_at: string
+}
+
+export interface ProspectActivity {
+  id: string
+  prospect_id: string
+  type: ActivityType
+  subject: string | null
+  body: string | null
+  is_completed: boolean
+  due_date: string | null
+  assigned_to: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ContactActivity {
+  id: string
+  contact_id: string
+  contact_type: 'client_contact' | 'prospect_contact'
+  type: ActivityType
+  subject: string | null
+  body: string | null
+  is_completed: boolean
+  due_date: string | null
+  assigned_to: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface TechnicalAudit {
