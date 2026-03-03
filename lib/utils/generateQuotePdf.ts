@@ -81,7 +81,23 @@ function formatDatePdf(date: Date): string {
   }).format(date)
 }
 
-export function generateQuotePdf(options: QuotePdfOptions): void {
+async function loadLogoAsBase64(): Promise<string | null> {
+  try {
+    const response = await fetch('/logo-vitalspace.png')
+    if (!response.ok) return null
+    const blob = await response.blob()
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
+}
+
+export async function generateQuotePdf(options: QuotePdfOptions): Promise<void> {
   const {
     items,
     total,
@@ -107,17 +123,30 @@ export function generateQuotePdf(options: QuotePdfOptions): void {
   let y = 20
 
   // ============================================================
-  // HEADER
+  // HEADER S LOGEM
   // ============================================================
+  const logoBase64 = await loadLogoAsBase64()
+  const logoSize = 18
+  let textStartX = margin
+
+  if (logoBase64) {
+    doc.addImage(logoBase64, 'PNG', margin, y - 5, logoSize, logoSize)
+    textStartX = margin + logoSize + 4
+  }
+
   doc.setFontSize(22)
   doc.setFont('helvetica', 'bold')
-  doc.text('CENOVÁ NABÍDKA', margin, y)
+  doc.text('CENOVÁ NABÍDKA', textStartX, y + 2)
 
-  doc.setFontSize(10)
+  doc.setFontSize(8)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(100, 100, 100)
-  doc.text(quoteNumber, pageWidth - margin, y, { align: 'right' })
-  y += 4
+  doc.text(SUPPLIER.name, textStartX, y + 7)
+
+  doc.setFontSize(10)
+  doc.text(quoteNumber, pageWidth - margin, y + 2, { align: 'right' })
+
+  y += (logoBase64 ? logoSize : 4) + 2
 
   // Modrá linka pod headerem
   doc.setDrawColor(37, 99, 235)

@@ -68,12 +68,12 @@ export function SaveQuoteModal({
     notes: '',
   })
 
-  function handleExportPdf() {
+  async function handleExportPdf() {
     if (!exportData.companyName) {
       alert('Vyplňte alespoň název firmy')
       return
     }
-    generateQuotePdf({
+    await generateQuotePdf({
       items: quoteItems,
       total: quoteTotal,
       customer: {
