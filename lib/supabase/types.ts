@@ -271,10 +271,12 @@ export interface DealStageHistory {
 }
 
 export type ActivityType = 'note' | 'call' | 'email' | 'meeting' | 'task' | 'document'
+export type ActivityEntityType = 'prospect' | 'client' | 'deal' | 'client_contact' | 'prospect_contact'
 
-export interface DealActivity {
+export interface Activity {
   id: string
-  deal_id: string
+  entity_type: ActivityEntityType
+  entity_id: string
   type: ActivityType
   subject: string | null
   body: string | null
@@ -286,34 +288,7 @@ export interface DealActivity {
   updated_at: string
 }
 
-export interface ProspectActivity {
-  id: string
-  prospect_id: string
-  type: ActivityType
-  subject: string | null
-  body: string | null
-  is_completed: boolean
-  due_date: string | null
-  assigned_to: string | null
-  created_by: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface ContactActivity {
-  id: string
-  contact_id: string
-  contact_type: 'client_contact' | 'prospect_contact'
-  type: ActivityType
-  subject: string | null
-  body: string | null
-  is_completed: boolean
-  due_date: string | null
-  assigned_to: string | null
-  created_by: string | null
-  created_at: string
-  updated_at: string
-}
+export type DealActivity = Activity
 
 export interface TechnicalAudit {
   id: string

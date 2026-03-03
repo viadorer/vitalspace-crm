@@ -123,9 +123,10 @@ async function handleCreateActivity(
     : null
 
   const { data: created } = await supabase
-    .from('deal_activities')
+    .from('activities')
     .insert({
-      deal_id: ctx.dealId,
+      entity_type: 'deal',
+      entity_id: ctx.dealId,
       type: rule.activity_type || 'task',
       subject: rule.activity_subject,
       due_date: dueDate,

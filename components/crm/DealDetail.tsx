@@ -149,9 +149,10 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
         .eq('deal_id', dealId)
         .order('created_at', { ascending: false }),
       supabase
-        .from('deal_activities')
+        .from('activities')
         .select('*')
-        .eq('deal_id', dealId)
+        .eq('entity_type', 'deal')
+        .eq('entity_id', dealId)
         .order('created_at', { ascending: false }),
       supabase
         .from('technical_audits')
@@ -209,13 +210,16 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
 
     setSavingActivity(true)
     const supabase = createClient()
+    const { data: userData } = await supabase.auth.getUser()
     const { data: created, error } = await supabase
-      .from('deal_activities')
+      .from('activities')
       .insert({
-        deal_id: dealId,
+        entity_type: 'deal',
+        entity_id: dealId,
         type: newActivity.type,
         subject: newActivity.subject,
         body: newActivity.body || null,
+        created_by: userData?.user?.id || null,
       })
       .select()
       .single()
