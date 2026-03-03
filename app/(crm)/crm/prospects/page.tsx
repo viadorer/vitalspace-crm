@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { ProspectTable } from '@/components/crm/ProspectTable'
 import { ProspectForm } from '@/components/crm/ProspectForm'
+import { ActivityPanel } from '@/components/crm/ActivityPanel'
 import { useProspects } from '@/lib/hooks/useProspects'
 import { createClient } from '@/lib/supabase/client'
 import type { Prospect, CompanySegment } from '@/lib/supabase/types'
@@ -95,6 +96,9 @@ export default function ProspectsPage() {
             onSubmit={handleUpdateProspect}
             onCancel={() => setSelectedProspect(null)}
           />
+          <div className="mt-4">
+            <ActivityPanel entityType="prospect" entityId={selectedProspect.id} />
+          </div>
         </Modal>
       )}
     </div>

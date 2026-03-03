@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { ClientTable } from '@/components/crm/ClientTable'
 import { ClientForm } from '@/components/crm/ClientForm'
+import { ActivityPanel } from '@/components/crm/ActivityPanel'
 import { useClients } from '@/lib/hooks/useClients'
 import { createClient } from '@/lib/supabase/client'
 import type { Client, CompanySegment } from '@/lib/supabase/types'
@@ -106,6 +107,9 @@ export default function ClientsPage() {
               setSelectedClient(null)
             }}
           />
+          <div className="mt-4">
+            <ActivityPanel entityType="client" entityId={editingClient.id} />
+          </div>
         </Modal>
       )}
     </div>
