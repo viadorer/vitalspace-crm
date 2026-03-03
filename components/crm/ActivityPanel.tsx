@@ -16,6 +16,14 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
   document: 'Dokument',
 }
 
+const ENTITY_TYPE_BADGE: Record<string, { label: string; className: string }> = {
+  prospect: { label: 'Prospect', className: 'bg-yellow-100 text-yellow-700' },
+  client: { label: 'Klient', className: 'bg-green-100 text-green-700' },
+  deal: { label: 'Deal', className: 'bg-blue-100 text-blue-700' },
+  client_contact: { label: 'Kontakt', className: 'bg-purple-100 text-purple-700' },
+  prospect_contact: { label: 'Kontakt', className: 'bg-purple-100 text-purple-700' },
+}
+
 const ACTIVITY_TYPES = [
   { value: 'note', label: 'Poznámka' },
   { value: 'call', label: 'Telefonát' },
@@ -142,10 +150,15 @@ export function ActivityPanel({ entityType, entityId, defaultExpanded = true }: 
                     </button>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-medium text-gray-500">
                         {ACTIVITY_TYPE_LABELS[activity.type] || activity.type}
                       </span>
+                      {activity.entity_type !== entityType && ENTITY_TYPE_BADGE[activity.entity_type] && (
+                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${ENTITY_TYPE_BADGE[activity.entity_type].className}`}>
+                          {ENTITY_TYPE_BADGE[activity.entity_type].label}
+                        </span>
+                      )}
                       {activity.is_completed && (
                         <span className="text-xs text-green-600">✓ Splněno</span>
                       )}

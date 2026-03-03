@@ -16,6 +16,55 @@ interface NewActivityInput {
   assigned_to?: string
 }
 
+async function resolveRelatedEntityIds(
+  entityType: ActivityEntityType,
+  entityId: string
+): Promise<string[]> {
+  const supabase = createClient()
+  const ids = new Set<string>([entityId])
+
+  if (entityType === 'prospect') {
+    const { data: clients } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('prospect_id', entityId)
+    clients?.forEach((c) => ids.add(c.id))
+
+    const { data: deals } = await supabase
+      .from('deals')
+      .select('id')
+      .eq('prospect_id', entityId)
+    deals?.forEach((d) => ids.add(d.id))
+  }
+
+  if (entityType === 'client') {
+    const { data: client } = await supabase
+      .from('clients')
+      .select('prospect_id')
+      .eq('id', entityId)
+      .single()
+    if (client?.prospect_id) ids.add(client.prospect_id)
+
+    const { data: deals } = await supabase
+      .from('deals')
+      .select('id')
+      .eq('client_id', entityId)
+    deals?.forEach((d) => ids.add(d.id))
+  }
+
+  if (entityType === 'deal') {
+    const { data: deal } = await supabase
+      .from('deals')
+      .select('client_id, prospect_id')
+      .eq('id', entityId)
+      .single()
+    if (deal?.client_id) ids.add(deal.client_id)
+    if (deal?.prospect_id) ids.add(deal.prospect_id)
+  }
+
+  return Array.from(ids)
+}
+
 export function useActivities({ entityType, entityId }: UseActivitiesOptions) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,11 +84,13 @@ export function useActivities({ entityType, entityId }: UseActivitiesOptions) {
 
     setLoading(true)
     const supabase = createClient()
+
+    const allIds = await resolveRelatedEntityIds(entityType, entityId)
+
     const { data, error } = await supabase
       .from('activities')
       .select('*')
-      .eq('entity_type', entityType)
-      .eq('entity_id', entityId)
+      .in('entity_id', allIds)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -129,30 +180,6 @@ export function useActivities({ entityType, entityId }: UseActivitiesOptions) {
     await loadActivities()
   }
 
-  async function getAllActivitiesForFlow(prospectId?: string, clientId?: string, dealId?: string): Promise<Activity[]> {
-    const supabase = createClient()
-    const entityIds: string[] = []
-    
-    if (prospectId) entityIds.push(prospectId)
-    if (clientId) entityIds.push(clientId)
-    if (dealId) entityIds.push(dealId)
-
-    if (entityIds.length === 0) return []
-
-    const { data, error } = await supabase
-      .from('activities')
-      .select('*')
-      .in('entity_id', entityIds)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error loading flow activities:', error)
-      return []
-    }
-
-    return (data || []) as Activity[]
-  }
-
   return {
     activities,
     loading,
@@ -160,7 +187,6 @@ export function useActivities({ entityType, entityId }: UseActivitiesOptions) {
     updateActivity,
     toggleComplete,
     deleteActivity,
-    getAllActivitiesForFlow,
     refresh: loadActivities,
   }
 }
