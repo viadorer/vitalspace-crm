@@ -137,7 +137,6 @@ export async function GET(
 async function generatePDF(data: QuoteData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
-      // Registrace fontů PŘED inicializací PDFDocument
       const fontPath = path.join(process.cwd(), 'public/fonts/Roboto-Regular.ttf')
       const fontBoldPath = path.join(process.cwd(), 'public/fonts/Roboto-Bold.ttf')
       
@@ -145,6 +144,7 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
         size: 'A4',
         margin: 50,
         bufferPages: true,
+        autoFirstPage: false,
       })
 
       const chunks: Buffer[] = []
@@ -152,10 +152,11 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
       doc.on('end', () => resolve(Buffer.concat(chunks)))
       doc.on('error', reject)
 
-      // Registrace fontů a OKAMŽITÉ nastavení
       doc.registerFont('Roboto', fontPath)
       doc.registerFont('Roboto-Bold', fontBoldPath)
-      doc.font('Roboto') // Nastav font IHNED po registraci
+      
+      doc.addPage()
+      doc.font('Roboto')
 
       // Header
       doc.font('Roboto-Bold').fontSize(24).text('CENOVÁ NABÍDKA', { align: 'left' })
