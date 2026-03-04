@@ -131,13 +131,14 @@ export function SaveQuoteModal({
       // Přidej položky dealu
       const dealItems = quoteItems.map((item) => ({
         deal_id: deal.id,
-        product_id: item.product_id,
+        product_id: item.product_id || null, // Pokud není product_id, použij null
         quantity: item.quantity,
         unit_price_czk: item.unit_price,
         discount_percent: 0,
       }))
 
       console.log('Vkládám deal items:', dealItems)
+      console.log('Quote items:', quoteItems)
 
       const { error: itemsError } = await supabase
         .from('deal_items')
