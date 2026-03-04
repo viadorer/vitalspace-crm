@@ -61,13 +61,14 @@ export async function GET(
         *,
         client:clients(*),
         prospect:prospects(*),
-        deal_items(*)
+        deal_items(*, product:products(name))
       `)
       .eq('id', id)
       .single()
 
     if (error || !deal) {
-      return NextResponse.json({ error: 'Nabídka nenalezena' }, { status: 404 })
+      console.error('Error loading deal:', error)
+      return NextResponse.json({ error: 'Nabídka nenalezena', details: error?.message }, { status: 404 })
     }
 
     // Připrav data pro PDF
@@ -76,11 +77,11 @@ export async function GET(
       id: deal.id,
       deal_id: deal.id,
       quote_number: deal.deal_number || `CN-${Date.now()}`,
-      items: deal.deal_items.map((item: any) => ({
-        product_name: item.product_name,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        line_total: item.line_total,
+      items: (deal.deal_items || []).map((item: any) => ({
+        product_name: item.product?.name || 'Neznámý produkt',
+        quantity: item.quantity || 1,
+        unit_price: item.unit_price_czk || 0,
+        line_total: item.line_total_czk || 0,
       })),
       total: deal.total_value_czk || 0,
       customer: {
@@ -94,12 +95,25 @@ export async function GET(
         email: customer?.email || '',
         phone: customer?.phone || '',
       },
-      notes: deal.notes || '',
+      notes: '',
       created_at: deal.created_at,
     }
 
     // Vytvoř PDF
-    const pdfBuffer = await generatePDF(quoteData)
+    let pdfBuffer: Buffer
+    try {
+      pdfBuffer = await generatePDF(quoteData)
+    } catch (pdfError) {
+      console.error('Error in generatePDF:', pdfError)
+      return NextResponse.json(
+        { 
+          error: 'Chyba při generování PDF', 
+          details: pdfError instanceof Error ? pdfError.message : String(pdfError),
+          stack: pdfError instanceof Error ? pdfError.stack : undefined
+        },
+        { status: 500 }
+      )
+    }
 
     // Vrať PDF jako response
     return new NextResponse(new Uint8Array(pdfBuffer), {
@@ -111,7 +125,10 @@ export async function GET(
   } catch (error) {
     console.error('Error generating PDF:', error)
     return NextResponse.json(
-      { error: 'Chyba při generování PDF' },
+      { 
+        error: 'Chyba při generování PDF',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }

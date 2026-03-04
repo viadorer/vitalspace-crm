@@ -168,9 +168,8 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
         .eq('deal_id', dealId)
         .order('scheduled_date'),
       supabase
-        .from('documents')
+        .from('crm_documents')
         .select('*')
-        .eq('deal_id', dealId)
         .order('created_at', { ascending: false }),
       supabase
         .from('app_users')
