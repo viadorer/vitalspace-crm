@@ -11,12 +11,14 @@ import { ActivityPanel } from '@/components/crm/ActivityPanel'
 import { DealForm } from '@/components/crm/DealForm'
 import { useProspects } from '@/lib/hooks/useProspects'
 import { useDeals } from '@/lib/hooks/useDeals'
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
 import { createClient } from '@/lib/supabase/client'
 import type { Prospect, CompanySegment, Deal, Client } from '@/lib/supabase/types'
 
 export default function ProspectsPage() {
   const { prospects, loading, createProspect, updateProspect, deleteProspect } = useProspects()
   const { createDeal } = useDeals()
+  const { isSuperAdmin } = useCurrentUser()
   const [segments, setSegments] = useState<CompanySegment[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null)
@@ -178,13 +180,16 @@ export default function ProspectsPage() {
             <ActivityPanel entityType="prospect" entityId={selectedProspect.id} />
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between">
-            <Button onClick={handleDeleteProspect} variant="secondary">
-              Smazat prospect
-            </Button>
+            {isSuperAdmin() && (
+              <Button onClick={handleDeleteProspect} variant="secondary">
+                Smazat prospect
+              </Button>
+            )}
             <Button 
               onClick={() => setShowNewDealModal(true)} 
               variant="primary"
               disabled={converting}
+              className={!isSuperAdmin() ? 'ml-auto' : ''}
             >
               {converting ? 'Převodím...' : '+ Vytvořit deal (převede na klienta)'}
             </Button>

@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { DEAL_STAGES, APP_ROLES } from '@/lib/utils/constants'
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils/format'
 import { logAuditEvent, logAssignment, fetchAuditLog } from '@/lib/hooks/useAuditLog'
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
 import {
   Building2,
   Calendar,
@@ -100,6 +101,7 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
 }
 
 export function DealDetail({ dealId, onClose }: DealDetailProps) {
+  const { isSuperAdmin } = useCurrentUser()
   const [data, setData] = useState<DealDetailData | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -361,11 +363,13 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
               Sleva {deal.discount_percent}% z {formatCurrency(deal.total_value_czk)}
             </div>
           )}
-          <div className="mt-2">
-            <Button onClick={handleDeleteDeal} variant="secondary" disabled={deleting}>
-              {deleting ? 'Mažu...' : 'Smazat deal'}
-            </Button>
-          </div>
+          {isSuperAdmin() && (
+            <div className="mt-2">
+              <Button onClick={handleDeleteDeal} variant="secondary" disabled={deleting}>
+                {deleting ? 'Mažu...' : 'Smazat deal'}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

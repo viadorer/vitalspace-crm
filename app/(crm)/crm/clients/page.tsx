@@ -11,12 +11,14 @@ import { ActivityPanel } from '@/components/crm/ActivityPanel'
 import { DealForm } from '@/components/crm/DealForm'
 import { useClients } from '@/lib/hooks/useClients'
 import { useDeals } from '@/lib/hooks/useDeals'
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
 import { createClient } from '@/lib/supabase/client'
 import type { Client, CompanySegment, Deal } from '@/lib/supabase/types'
 
 export default function ClientsPage() {
   const { clients, loading, createClient: addClient, updateClient, deleteClient } = useClients()
   const { createDeal } = useDeals()
+  const { isSuperAdmin } = useCurrentUser()
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [showNewClientModal, setShowNewClientModal] = useState(false)
@@ -137,10 +139,12 @@ export default function ClientsPage() {
             <ActivityPanel entityType="client" entityId={editingClient.id} />
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between">
-            <Button onClick={handleDeleteClient} variant="secondary">
-              Smazat klienta
-            </Button>
-            <Button onClick={() => setShowNewDealModal(true)} variant="primary">
+            {isSuperAdmin() && (
+              <Button onClick={handleDeleteClient} variant="secondary">
+                Smazat klienta
+              </Button>
+            )}
+            <Button onClick={() => setShowNewDealModal(true)} variant="primary" className={!isSuperAdmin() ? 'ml-auto' : ''}>
               + Vytvořit deal
             </Button>
           </div>
