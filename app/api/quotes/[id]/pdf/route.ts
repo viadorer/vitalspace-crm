@@ -144,7 +144,7 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
       const doc = new PDFDocument({
         size: 'A4',
         margin: 50,
-        autoFirstPage: false, // Vypnout automatické vytvoření první stránky
+        bufferPages: true,
       })
 
       const chunks: Buffer[] = []
@@ -152,13 +152,10 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
       doc.on('end', () => resolve(Buffer.concat(chunks)))
       doc.on('error', reject)
 
-      // Registrace fontů
+      // Registrace fontů a OKAMŽITÉ nastavení
       doc.registerFont('Roboto', fontPath)
       doc.registerFont('Roboto-Bold', fontBoldPath)
-
-      // Vytvoř první stránku a nastav font HNED
-      doc.addPage()
-      doc.font('Roboto')
+      doc.font('Roboto') // Nastav font IHNED po registraci
 
       // Header
       doc.font('Roboto-Bold').fontSize(24).text('CENOVÁ NABÍDKA', { align: 'left' })
