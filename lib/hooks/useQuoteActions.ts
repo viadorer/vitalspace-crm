@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { generateQuotePdf } from '@/lib/utils/generateQuotePdf'
 import { saveQuoteDocument } from '@/lib/utils/saveQuoteDocument'
 import type { QuoteItem } from '@/components/crm/QuoteCalculator'
 
@@ -104,25 +103,18 @@ export function useQuoteActions() {
       if (itemsError) throw itemsError
 
       try {
-        const pdfResult = await generateQuotePdf({
-          items: quoteItems,
-          total: quoteTotal,
-          customer: {
-            companyName: client?.company_name || title,
-            address: client?.address || undefined,
-            city: client?.city || undefined,
-            ico: client?.ico || undefined,
-            dic: client?.dic || undefined,
-            email: client?.email || undefined,
-            phone: client?.phone || undefined,
-          },
-        })
-
+        // Generuj PDF přes API endpoint
+        const response = await fetch(`/api/quotes/${deal.id}/pdf`)
+        if (!response.ok) throw new Error('Chyba při generování PDF')
+        
+        const blob = await response.blob()
+        const fileName = `nabidka-${deal.deal_number || deal.id}.pdf`
+        
         await saveQuoteDocument({
-          blob: pdfResult.blob,
-          fileName: pdfResult.fileName,
-          quoteNumber: pdfResult.quoteNumber,
-          title: `Nabídka ${pdfResult.quoteNumber} – ${client?.company_name || title}`,
+          blob,
+          fileName,
+          quoteNumber: deal.deal_number || `CN-${Date.now()}`,
+          title: `Nabídka ${deal.deal_number || deal.id} – ${client?.company_name || title}`,
           dealId: deal.id,
           clientId,
         })

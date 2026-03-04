@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Building2, UserPlus, Download } from 'lucide-react'
-import { generateQuotePdf } from '@/lib/utils/generateQuotePdf'
 import { saveQuoteDocument } from '@/lib/utils/saveQuoteDocument'
 import type { Client } from '@/lib/supabase/types'
 import type { QuoteItem } from '@/components/crm/QuoteCalculator'
@@ -70,46 +69,7 @@ export function SaveQuoteModal({
   })
 
   async function handleExportPdf() {
-    if (!exportData.companyName) {
-      alert('Vyplňte alespoň název firmy')
-      return
-    }
-
-    const result = await generateQuotePdf({
-      items: quoteItems,
-      total: quoteTotal,
-      customer: {
-        companyName: exportData.companyName,
-        address: exportData.address || undefined,
-        city: exportData.city || undefined,
-        postalCode: exportData.postalCode || undefined,
-        ico: exportData.ico || undefined,
-        dic: exportData.dic || undefined,
-        contactPerson: exportData.contactPerson || undefined,
-        email: exportData.email || undefined,
-        phone: exportData.phone || undefined,
-      },
-      validityDays: exportData.validityDays,
-      paymentTerms: exportData.paymentTerms,
-      deliveryTerms: exportData.deliveryTerms,
-      notes: exportData.notes || undefined,
-    })
-
-    const matchedClient = clients.find(
-      (c) => c.company_name === exportData.companyName || c.ico === exportData.ico
-    )
-
-    try {
-      await saveQuoteDocument({
-        blob: result.blob,
-        fileName: result.fileName,
-        quoteNumber: result.quoteNumber,
-        title: `Nabídka ${result.quoteNumber} – ${exportData.companyName}`,
-        clientId: matchedClient?.id,
-      })
-    } catch (err) {
-      console.error('Chyba při ukládání dokumentu:', err)
-    }
+    alert('Export PDF je dostupný pouze po uložení nabídky jako deal. Vyberte "Uložit ke klientovi" a PDF se vygeneruje automaticky.')
   }
 
   function prefillExportFromClient(clientId: string) {
