@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { QuoteItem } from '@/components/crm/QuoteCalculator'
+import { registerRobotoFont, setRoboto } from './pdfFonts'
 
 const VAT_RATE = 0.21
 const DEFAULT_VALIDITY_DAYS = 30
@@ -130,6 +131,10 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
     compress: true,
   })
   
+  // Registrace Roboto fontu pro podporu češtiny
+  registerRobotoFont(doc)
+  setRoboto(doc, 'normal')
+  
   const pageWidth = 210
   const margin = 20
   const contentWidth = pageWidth - 2 * margin
@@ -153,7 +158,13 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
     ],
     theme: 'plain',
     margin: { left: logoBase64 ? margin + 22 : margin, right: margin },
-    styles: { cellPadding: 0, lineColor: [255, 255, 255], lineWidth: 0 },
+    styles: { 
+      font: 'Roboto',
+      fontStyle: 'normal',
+      cellPadding: 0, 
+      lineColor: [255, 255, 255], 
+      lineWidth: 0 
+    },
   })
 
   // Číslo nabídky vpravo
@@ -216,6 +227,8 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
     body: combinedData,
     theme: 'plain',
     styles: {
+      font: 'Roboto',
+      fontStyle: 'normal',
       fontSize: 9,
       textColor: [60, 60, 60],
       cellPadding: { top: 1, bottom: 1, left: 0, right: 0 },
@@ -253,7 +266,11 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
       ],
     ],
     theme: 'plain',
-    styles: { cellPadding: 1 },
+    styles: { 
+      font: 'Roboto',
+      fontStyle: 'normal',
+      cellPadding: 1 
+    },
     columnStyles: {
       0: { cellWidth: 55 },
       1: { cellWidth: 55 },
@@ -274,7 +291,11 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
     head: [[{ content: 'Položky nabídky', colSpan: 6, styles: { fontSize: 12, fontStyle: 'bold' } }]],
     body: [],
     theme: 'plain',
-    styles: { cellPadding: 0 },
+    styles: { 
+      font: 'Roboto',
+      fontStyle: 'normal',
+      cellPadding: 0 
+    },
     margin: { left: margin, right: margin },
   })
 
@@ -295,12 +316,15 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
     body: tableData,
     theme: 'striped',
     headStyles: {
+      font: 'Roboto',
       fillColor: [245, 247, 250],
       textColor: [80, 80, 80],
       fontSize: 8,
       fontStyle: 'bold',
     },
     styles: {
+      font: 'Roboto',
+      fontStyle: 'normal',
       fontSize: 9,
       textColor: [30, 30, 30],
     },
@@ -333,6 +357,8 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
     ],
     theme: 'plain',
     styles: {
+      font: 'Roboto',
+      fontStyle: 'normal',
       fontSize: 9,
       textColor: [60, 60, 60],
       cellPadding: { top: 2, bottom: 2 },
@@ -363,7 +389,13 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
     head: [[{ content: 'Podmínky nabídky', styles: { fontSize: 10, fontStyle: 'bold' } }]],
     body: conditions,
     theme: 'plain',
+    headStyles: {
+      font: 'Roboto',
+      fontStyle: 'bold',
+    },
     styles: {
+      font: 'Roboto',
+      fontStyle: 'normal',
       fontSize: 9,
       textColor: [60, 60, 60],
       cellPadding: { top: 2, bottom: 2 },
@@ -382,7 +414,13 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
       head: [[{ content: 'Poznámky', styles: { fontSize: 10, fontStyle: 'bold' } }]],
       body: [[notes]],
       theme: 'plain',
+      headStyles: {
+        font: 'Roboto',
+        fontStyle: 'bold',
+      },
       styles: {
+        font: 'Roboto',
+        fontStyle: 'normal',
         fontSize: 9,
         textColor: [60, 60, 60],
         cellPadding: { top: 2, bottom: 2 },
@@ -405,7 +443,13 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
       head: [[{ content: 'Bankovní spojení', styles: { fontSize: 10, fontStyle: 'bold' } }]],
       body: bankData,
       theme: 'plain',
+      headStyles: {
+        font: 'Roboto',
+        fontStyle: 'bold',
+      },
       styles: {
+        font: 'Roboto',
+        fontStyle: 'normal',
         fontSize: 9,
         textColor: [60, 60, 60],
         cellPadding: { top: 2, bottom: 2 },
@@ -424,6 +468,7 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
   doc.line(margin, signY + 15, margin + 60, signY + 15)
   doc.line(pageWidth - margin - 60, signY + 15, pageWidth - margin, signY + 15)
 
+  setRoboto(doc, 'normal')
   doc.setFontSize(8)
   doc.setTextColor(100, 100, 100)
   doc.text('Za dodavatele', margin, signY + 20)
@@ -439,6 +484,7 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuoteP
   doc.setLineWidth(0.2)
   doc.line(margin, footerY - 3, pageWidth - margin, footerY - 3)
 
+  setRoboto(doc, 'normal')
   doc.setFontSize(7)
   doc.setTextColor(140, 140, 140)
   doc.text(SUPPLIER.registrationNote, pageWidth / 2, footerY, { align: 'center', maxWidth: contentWidth })
