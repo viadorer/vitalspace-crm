@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { generateQuotePdf } from '@/lib/utils/generateQuotePdf'
+import { saveQuoteDocument } from '@/lib/utils/saveQuoteDocument'
 import type { QuoteItem } from '@/components/crm/QuoteCalculator'
 
 interface ProspectFormData {
@@ -65,6 +67,13 @@ export function useQuoteActions() {
     setSaving(true)
     try {
       const supabase = createClient()
+
+      const { data: client } = await supabase
+        .from('clients')
+        .select('company_name, ico, address, city, dic, email, phone')
+        .eq('id', clientId)
+        .single()
+
       const { data: deal, error: dealError } = await supabase
         .from('deals')
         .insert({
@@ -93,6 +102,34 @@ export function useQuoteActions() {
         .insert(dealItems)
 
       if (itemsError) throw itemsError
+
+      try {
+        const pdfResult = await generateQuotePdf({
+          items: quoteItems,
+          total: quoteTotal,
+          customer: {
+            companyName: client?.company_name || title,
+            address: client?.address || undefined,
+            city: client?.city || undefined,
+            ico: client?.ico || undefined,
+            dic: client?.dic || undefined,
+            email: client?.email || undefined,
+            phone: client?.phone || undefined,
+          },
+        })
+
+        await saveQuoteDocument({
+          blob: pdfResult.blob,
+          fileName: pdfResult.fileName,
+          quoteNumber: pdfResult.quoteNumber,
+          title: `Nabídka ${pdfResult.quoteNumber} – ${client?.company_name || title}`,
+          dealId: deal.id,
+          clientId,
+        })
+      } catch (pdfErr) {
+        console.error('Chyba při generování/ukládání PDF nabídky:', pdfErr)
+      }
+
       router.push('/crm/pipeline')
     } finally {
       setSaving(false)

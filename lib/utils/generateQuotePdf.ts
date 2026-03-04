@@ -98,7 +98,13 @@ async function loadLogoAsBase64(): Promise<string | null> {
   }
 }
 
-export async function generateQuotePdf(options: QuotePdfOptions): Promise<void> {
+export interface QuotePdfResult {
+  blob: Blob
+  fileName: string
+  quoteNumber: string
+}
+
+export async function generateQuotePdf(options: QuotePdfOptions): Promise<QuotePdfResult> {
   const {
     items,
     total,
@@ -444,8 +450,11 @@ export async function generateQuotePdf(options: QuotePdfOptions): Promise<void> 
   )
 
   // ============================================================
-  // STÁHNOUT
+  // VRÁTIT BLOB + STÁHNOUT
   // ============================================================
   const fileName = `Nabidka_${quoteNumber}_${customer.companyName?.replace(/[^a-zA-Z0-9]/g, '_') || 'klient'}.pdf`
+  const pdfBlob = doc.output('blob')
   doc.save(fileName)
+
+  return { blob: pdfBlob, fileName, quoteNumber }
 }
