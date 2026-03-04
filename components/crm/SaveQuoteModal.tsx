@@ -69,7 +69,112 @@ export function SaveQuoteModal({
   })
 
   async function handleExportPdf() {
-    alert('Export PDF je dostupný pouze po uložení nabídky jako deal. Vyberte "Uložit ke klientovi" a PDF se vygeneruje automaticky.')
+    if (!exportData.companyName) {
+      alert('Vyplňte alespoň název firmy')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const supabase = (await import('@/lib/supabase/client')).createClient()
+
+      // Najdi nebo vytvoř klienta
+      let clientId = ''
+      const matchedClient = clients.find(
+        (c) => c.company_name === exportData.companyName || (exportData.ico && c.ico === exportData.ico)
+      )
+
+      if (matchedClient) {
+        clientId = matchedClient.id
+      } else {
+        // Vytvoř nového klienta
+        const { data: newClient, error: clientError } = await supabase
+          .from('clients')
+          .insert({
+            company_name: exportData.companyName,
+            address: exportData.address || null,
+            city: exportData.city || null,
+            postal_code: exportData.postalCode || null,
+            ico: exportData.ico || null,
+            dic: exportData.dic || null,
+            email: exportData.email || null,
+            phone: exportData.phone || null,
+            contact_person: exportData.contactPerson || null,
+          })
+          .select()
+          .single()
+
+        if (clientError) throw clientError
+        clientId = newClient.id
+      }
+
+      // Vytvoř deal
+      const { data: deal, error: dealError } = await supabase
+        .from('deals')
+        .insert({
+          client_id: clientId,
+          title: `Nabídka – ${exportData.companyName}`,
+          stage: 'lead',
+          total_value_czk: quoteTotal,
+          final_price_czk: quoteTotal,
+          discount_percent: 0,
+          notes: exportData.notes || null,
+        })
+        .select()
+        .single()
+
+      if (dealError) throw dealError
+
+      // Přidej položky dealu
+      const dealItems = quoteItems.map((item) => ({
+        deal_id: deal.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price_czk: item.unit_price,
+        discount_percent: 0,
+      }))
+
+      const { error: itemsError } = await supabase
+        .from('deal_items')
+        .insert(dealItems)
+
+      if (itemsError) throw itemsError
+
+      // Vygeneruj PDF přes API
+      const response = await fetch(`/api/quotes/${deal.id}/pdf`)
+      if (!response.ok) throw new Error('Chyba při generování PDF')
+
+      const blob = await response.blob()
+      const fileName = `nabidka-${deal.deal_number || deal.id}.pdf`
+
+      // Ulož PDF do databáze
+      await saveQuoteDocument({
+        blob,
+        fileName,
+        quoteNumber: deal.deal_number || `CN-${Date.now()}`,
+        title: `Nabídka ${deal.deal_number || deal.id} – ${exportData.companyName}`,
+        dealId: deal.id,
+        clientId,
+      })
+
+      // Stáhni PDF
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      alert('PDF vygenerováno a uloženo. Deal byl vytvořen.')
+      onClose()
+    } catch (error) {
+      console.error('Chyba při exportu PDF:', error)
+      alert('Chyba při generování PDF')
+    } finally {
+      setLoading(false)
+    }
   }
 
   function prefillExportFromClient(clientId: string) {
