@@ -26,6 +26,10 @@ export function useProspects() {
             email,
             phone,
             is_decision_maker
+          ),
+          converted_client:clients!prospects_converted_to_client_id_fkey(
+            id,
+            company_name
           )
         `)
         .order('created_at', { ascending: false })

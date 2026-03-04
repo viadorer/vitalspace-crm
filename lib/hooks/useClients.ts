@@ -28,6 +28,15 @@ export function useClients() {
             mobile,
             is_primary,
             is_decision_maker
+          ),
+          original_prospect:prospects!clients_original_prospect_id_fkey(
+            id,
+            company_name
+          ),
+          deals(
+            id,
+            title,
+            stage
           )
         `)
         .order('created_at', { ascending: false })

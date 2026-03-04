@@ -45,6 +45,7 @@ export async function POST(
       .from('clients')
       .insert({
         prospect_id: prospectId,
+        original_prospect_id: prospectId,
         company_name: prospect.company_name,
         type: 'B2B',
         ico: prospect.ico,
@@ -78,6 +79,15 @@ export async function POST(
       )
     }
 
+    // Aktualizovat prospect - uložit vazbu na klienta
+    await supabase
+      .from('prospects')
+      .update({ 
+        status: 'converted',
+        converted_to_client_id: client.id
+      })
+      .eq('id', prospectId)
+
     // Převést prospect_contacts na client_contacts
     if (prospect.prospect_contacts && prospect.prospect_contacts.length > 0) {
       const clientContacts = prospect.prospect_contacts.map((contact: any) => ({
@@ -98,12 +108,6 @@ export async function POST(
         console.error('Chyba při převodu kontaktů:', contactsError)
       }
     }
-
-    // Aktualizovat status prospectu
-    await supabase
-      .from('prospects')
-      .update({ status: 'qualified' })
-      .eq('id', prospectId)
 
     return NextResponse.json({
       success: true,
