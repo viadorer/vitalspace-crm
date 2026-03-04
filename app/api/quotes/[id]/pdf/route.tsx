@@ -395,8 +395,7 @@ const QuotePDF = ({ data }: { data: QuoteData }) => {
 }
 
 async function generatePDF(data: QuoteData): Promise<Buffer> {
-  const doc = <QuotePDF data={data} />
-  const asPdf = pdf(doc)
+  const asPdf = pdf(<QuotePDF data={data} />)
   const blob = await asPdf.toBlob()
   const arrayBuffer = await blob.arrayBuffer()
   return Buffer.from(arrayBuffer)
