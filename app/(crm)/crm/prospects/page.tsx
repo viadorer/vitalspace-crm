@@ -8,22 +8,32 @@ import { Modal } from '@/components/ui/Modal'
 import { ProspectTable } from '@/components/crm/ProspectTable'
 import { ProspectForm } from '@/components/crm/ProspectForm'
 import { ActivityPanel } from '@/components/crm/ActivityPanel'
+import { DealForm } from '@/components/crm/DealForm'
 import { useProspects } from '@/lib/hooks/useProspects'
+import { useDeals } from '@/lib/hooks/useDeals'
 import { createClient } from '@/lib/supabase/client'
-import type { Prospect, CompanySegment } from '@/lib/supabase/types'
+import type { Prospect, CompanySegment, Deal, Client } from '@/lib/supabase/types'
 
 export default function ProspectsPage() {
   const { prospects, loading, createProspect, updateProspect } = useProspects()
+  const { createDeal } = useDeals()
   const [segments, setSegments] = useState<CompanySegment[]>([])
+  const [clients, setClients] = useState<Client[]>([])
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null)
   const [showNewProspectModal, setShowNewProspectModal] = useState(false)
+  const [showNewDealModal, setShowNewDealModal] = useState(false)
+  const [converting, setConverting] = useState(false)
   useEffect(() => {
-    async function fetchSegments() {
+    async function fetchData() {
       const supabase = createClient()
-      const { data } = await supabase.from('company_segments').select('*').order('name')
-      if (data) setSegments(data)
+      const [segmentsRes, clientsRes] = await Promise.all([
+        supabase.from('company_segments').select('*').order('name'),
+        supabase.from('clients').select('*').order('company_name')
+      ])
+      if (segmentsRes.data) setSegments(segmentsRes.data)
+      if (clientsRes.data) setClients(clientsRes.data)
     }
-    fetchSegments()
+    fetchData()
   }, [])
 
   async function handleCreateProspect(data: Partial<Prospect>) {
@@ -39,6 +49,62 @@ export default function ProspectsPage() {
       if (!result.error) {
         setSelectedProspect(null)
       }
+    }
+  }
+
+  async function handleCreateDealFromProspect(dealData: Partial<Deal>) {
+    if (!selectedProspect) return
+
+    setConverting(true)
+    try {
+      const supabase = createClient()
+      
+      const { data: newClient, error: clientError } = await supabase
+        .from('clients')
+        .insert({
+          prospect_id: selectedProspect.id,
+          company_name: selectedProspect.company_name,
+          ico: selectedProspect.ico,
+          dic: selectedProspect.dic,
+          segment_id: selectedProspect.segment_id,
+          region: selectedProspect.region,
+          city: selectedProspect.city,
+          address: selectedProspect.address,
+          website: selectedProspect.website,
+          employees_count_est: selectedProspect.employees_count_est,
+          estimated_floor_area_m2: selectedProspect.estimated_floor_area_m2,
+          source: selectedProspect.source,
+          notes: selectedProspect.notes,
+          assigned_user_id: selectedProspect.assigned_user_id,
+          type: 'B2B',
+          payment_terms_days: 14,
+        })
+        .select()
+        .single()
+
+      if (clientError) throw clientError
+
+      await supabase
+        .from('prospects')
+        .update({ status: 'converted' })
+        .eq('id', selectedProspect.id)
+
+      const result = await createDeal({
+        ...dealData,
+        client_id: newClient.id,
+        prospect_id: selectedProspect.id,
+      })
+
+      if (!result.error) {
+        setShowNewDealModal(false)
+        setSelectedProspect(null)
+        alert('Prospect úspěšně převeden na klienta a vytvořen deal!')
+      }
+    } catch (err) {
+      console.error('Chyba při konverzi prospectu:', err)
+      alert('Chyba při konverzi prospectu na klienta')
+    } finally {
+      setConverting(false)
     }
   }
 
@@ -99,6 +165,35 @@ export default function ProspectsPage() {
           <div className="mt-4">
             <ActivityPanel entityType="prospect" entityId={selectedProspect.id} />
           </div>
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Button 
+              onClick={() => setShowNewDealModal(true)} 
+              variant="primary"
+              disabled={converting}
+            >
+              {converting ? 'Převodím...' : '+ Vytvořit deal (převede na klienta)'}
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {showNewDealModal && selectedProspect && (
+        <Modal
+          isOpen={showNewDealModal}
+          onClose={() => setShowNewDealModal(false)}
+          title={`Nový deal pro ${selectedProspect.company_name}`}
+          size="lg"
+        >
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Poznámka:</strong> Prospect bude automaticky převeden na klienta při vytvoření dealu.
+            </p>
+          </div>
+          <DealForm
+            clients={clients}
+            onSubmit={handleCreateDealFromProspect}
+            onCancel={() => setShowNewDealModal(false)}
+          />
         </Modal>
       )}
     </div>

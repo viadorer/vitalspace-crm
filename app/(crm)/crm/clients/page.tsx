@@ -8,15 +8,19 @@ import { Modal } from '@/components/ui/Modal'
 import { ClientTable } from '@/components/crm/ClientTable'
 import { ClientForm } from '@/components/crm/ClientForm'
 import { ActivityPanel } from '@/components/crm/ActivityPanel'
+import { DealForm } from '@/components/crm/DealForm'
 import { useClients } from '@/lib/hooks/useClients'
+import { useDeals } from '@/lib/hooks/useDeals'
 import { createClient } from '@/lib/supabase/client'
-import type { Client, CompanySegment } from '@/lib/supabase/types'
+import type { Client, CompanySegment, Deal } from '@/lib/supabase/types'
 
 export default function ClientsPage() {
   const { clients, loading, createClient: addClient, updateClient } = useClients()
+  const { createDeal } = useDeals()
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [showNewClientModal, setShowNewClientModal] = useState(false)
+  const [showNewDealModal, setShowNewDealModal] = useState(false)
   const [segments, setSegments] = useState<CompanySegment[]>([])
   useEffect(() => {
     async function fetchSegments() {
@@ -41,6 +45,15 @@ export default function ClientsPage() {
         setEditingClient(null)
         setSelectedClient(null)
       }
+    }
+  }
+
+  async function handleCreateDeal(data: Partial<Deal>) {
+    const result = await createDeal(data)
+    if (!result.error) {
+      setShowNewDealModal(false)
+      setEditingClient(null)
+      setSelectedClient(null)
     }
   }
 
@@ -110,6 +123,26 @@ export default function ClientsPage() {
           <div className="mt-4">
             <ActivityPanel entityType="client" entityId={editingClient.id} />
           </div>
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Button onClick={() => setShowNewDealModal(true)} variant="primary">
+              + Vytvořit deal
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {showNewDealModal && editingClient && (
+        <Modal
+          isOpen={showNewDealModal}
+          onClose={() => setShowNewDealModal(false)}
+          title={`Nový deal pro ${editingClient.company_name}`}
+          size="lg"
+        >
+          <DealForm
+            clients={clients}
+            onSubmit={handleCreateDeal}
+            onCancel={() => setShowNewDealModal(false)}
+          />
         </Modal>
       )}
     </div>
