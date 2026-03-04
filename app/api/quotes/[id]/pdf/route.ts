@@ -137,9 +137,14 @@ export async function GET(
 async function generatePDF(data: QuoteData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
+      // Registrace fontů PŘED inicializací PDFDocument
+      const fontPath = path.join(process.cwd(), 'public/fonts/Roboto-Regular.ttf')
+      const fontBoldPath = path.join(process.cwd(), 'public/fonts/Roboto-Bold.ttf')
+      
       const doc = new PDFDocument({
         size: 'A4',
         margin: 50,
+        autoFirstPage: false, // Vypnout automatické vytvoření první stránky
       })
 
       const chunks: Buffer[] = []
@@ -148,13 +153,11 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
       doc.on('error', reject)
 
       // Registrace fontů
-      const fontPath = path.join(process.cwd(), 'public/fonts/Roboto-Regular.ttf')
-      const fontBoldPath = path.join(process.cwd(), 'public/fonts/Roboto-Bold.ttf')
-      
       doc.registerFont('Roboto', fontPath)
       doc.registerFont('Roboto-Bold', fontBoldPath)
 
-      // Nastavení fontu
+      // Vytvoř první stránku a nastav font HNED
+      doc.addPage()
       doc.font('Roboto')
 
       // Header
