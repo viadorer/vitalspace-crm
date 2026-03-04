@@ -80,12 +80,14 @@ export interface Prospect {
   source: string | null
   priority: number
   status: ProspectStatus
+  converted_to_client_id: string | null
   notes: string | null
   assigned_consultant: string | null
   assigned_user_id: string | null
   created_at: string
   updated_at: string
   assigned_user?: AppUser
+  converted_client?: { id: string; company_name: string }
 }
 
 export interface ProspectContact {
@@ -134,6 +136,7 @@ export interface Touchpoint {
 export interface Client {
   id: string
   prospect_id: string | null
+  original_prospect_id: string | null
   company_name: string
   type: 'B2B' | 'B2C'
   ico: string | null
@@ -158,6 +161,8 @@ export interface Client {
   created_at: string
   updated_at: string
   assigned_user?: AppUser
+  original_prospect?: { id: string; company_name: string }
+  deals?: Array<{ id: string; title: string; stage: string }>
 }
 
 export type AuditAction = 'create' | 'update' | 'delete' | 'assign' | 'stage_change' | 'activate' | 'deactivate'

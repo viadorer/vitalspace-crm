@@ -43,16 +43,15 @@ export async function saveQuoteDocument({
   }
 
   const { data: doc, error: insertError } = await supabase
-    .from('documents')
+    .from('crm_documents')
     .insert({
-      deal_id: dealId || null,
-      client_id: clientId || null,
-      doc_type: 'proposal',
       title: title || `Nabídka ${quoteNumber}`,
+      category: 'proposal',
+      file_name: fileName,
       file_path: storagePath,
-      file_size_bytes: blob.size,
+      file_size: blob.size,
       mime_type: 'application/pdf',
-      created_by: userId,
+      uploaded_by: userId,
     })
     .select('id')
     .single()
