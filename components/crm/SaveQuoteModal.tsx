@@ -118,7 +118,6 @@ export function SaveQuoteModal({
           total_value_czk: quoteTotal,
           final_price_czk: quoteTotal,
           discount_percent: 0,
-          notes: exportData.notes || null,
         })
         .select()
         .single()
