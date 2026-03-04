@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Prospect, CompanySegment, Deal, Client } from '@/lib/supabase/types'
 
 export default function ProspectsPage() {
-  const { prospects, loading, createProspect, updateProspect } = useProspects()
+  const { prospects, loading, createProspect, updateProspect, deleteProspect } = useProspects()
   const { createDeal } = useDeals()
   const [segments, setSegments] = useState<CompanySegment[]>([])
   const [clients, setClients] = useState<Client[]>([])
@@ -108,6 +108,18 @@ export default function ProspectsPage() {
     }
   }
 
+  async function handleDeleteProspect() {
+    if (!selectedProspect) return
+    if (!confirm(`Opravdu chcete smazat prospect ${selectedProspect.company_name}?`)) return
+
+    const result = await deleteProspect(selectedProspect.id)
+    if (!result.error) {
+      setSelectedProspect(null)
+    } else {
+      alert(`Chyba: ${result.error}`)
+    }
+  }
+
   if (loading) {
     return (
       <div>
@@ -165,7 +177,10 @@ export default function ProspectsPage() {
           <div className="mt-4">
             <ActivityPanel entityType="prospect" entityId={selectedProspect.id} />
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between">
+            <Button onClick={handleDeleteProspect} variant="secondary">
+              Smazat prospect
+            </Button>
             <Button 
               onClick={() => setShowNewDealModal(true)} 
               variant="primary"

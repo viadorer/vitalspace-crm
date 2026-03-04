@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Client, CompanySegment, Deal } from '@/lib/supabase/types'
 
 export default function ClientsPage() {
-  const { clients, loading, createClient: addClient, updateClient } = useClients()
+  const { clients, loading, createClient: addClient, updateClient, deleteClient } = useClients()
   const { createDeal } = useDeals()
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
@@ -54,6 +54,19 @@ export default function ClientsPage() {
       setShowNewDealModal(false)
       setEditingClient(null)
       setSelectedClient(null)
+    }
+  }
+
+  async function handleDeleteClient() {
+    if (!editingClient) return
+    if (!confirm(`Opravdu chcete smazat klienta ${editingClient.company_name}?`)) return
+
+    const result = await deleteClient(editingClient.id)
+    if (!result.error) {
+      setEditingClient(null)
+      setSelectedClient(null)
+    } else {
+      alert(`Chyba: ${result.error}`)
     }
   }
 
@@ -123,7 +136,10 @@ export default function ClientsPage() {
           <div className="mt-4">
             <ActivityPanel entityType="client" entityId={editingClient.id} />
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between">
+            <Button onClick={handleDeleteClient} variant="secondary">
+              Smazat klienta
+            </Button>
             <Button onClick={() => setShowNewDealModal(true)} variant="primary">
               + Vytvořit deal
             </Button>

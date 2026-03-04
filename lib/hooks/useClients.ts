@@ -82,6 +82,24 @@ export function useClients() {
     }
   }
 
+  async function deleteClient(id: string) {
+    const supabase = createClient()
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      setClients(clients.filter(c => c.id !== id))
+      return { error: null }
+    } catch (err) {
+      return { 
+        error: err instanceof Error ? err.message : 'Chyba při mazání klienta' 
+      }
+    }
+  }
+
   useEffect(() => {
     fetchClients()
   }, [])
@@ -93,5 +111,6 @@ export function useClients() {
     refetch: fetchClients,
     createClient: addClient,
     updateClient,
+    deleteClient,
   }
 }

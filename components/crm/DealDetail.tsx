@@ -119,6 +119,7 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
   const [assignUserId, setAssignUserId] = useState('')
   const [assignReason, setAssignReason] = useState('')
   const [savingAssign, setSavingAssign] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   async function fetchDealDetail() {
     const supabase = createClient()
@@ -262,6 +263,31 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
     await fetchDealDetail()
   }
 
+  async function handleDeleteDeal() {
+    if (!data) return
+    if (!confirm(`Opravdu chcete smazat deal "${data.deal.title}"?`)) return
+
+    setDeleting(true)
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('deals')
+      .delete()
+      .eq('id', dealId)
+
+    if (!error) {
+      await logAuditEvent({
+        action: 'delete',
+        entityType: 'deal',
+        entityId: dealId,
+        metadata: { title: data.deal.title },
+      })
+      onClose()
+    } else {
+      alert(`Chyba: ${error.message}`)
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="p-8 text-center">
@@ -335,6 +361,11 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
               Sleva {deal.discount_percent}% z {formatCurrency(deal.total_value_czk)}
             </div>
           )}
+          <div className="mt-2">
+            <Button onClick={handleDeleteDeal} variant="secondary" disabled={deleting}>
+              {deleting ? 'Mažu...' : 'Smazat deal'}
+            </Button>
+          </div>
         </div>
       </div>
 
