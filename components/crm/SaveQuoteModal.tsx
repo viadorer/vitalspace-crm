@@ -123,7 +123,10 @@ export function SaveQuoteModal({
         .select()
         .single()
 
-      if (dealError) throw dealError
+      if (dealError) {
+        console.error('Chyba při vytváření dealu:', dealError)
+        throw new Error(`Chyba při vytváření dealu: ${dealError.message}`)
+      }
 
       // Přidej položky dealu
       const dealItems = quoteItems.map((item) => ({
@@ -134,11 +137,16 @@ export function SaveQuoteModal({
         discount_percent: 0,
       }))
 
+      console.log('Vkládám deal items:', dealItems)
+
       const { error: itemsError } = await supabase
         .from('deal_items')
         .insert(dealItems)
 
-      if (itemsError) throw itemsError
+      if (itemsError) {
+        console.error('Chyba při vkládání deal items:', itemsError)
+        throw new Error(`Chyba při vkládání položek: ${itemsError.message}`)
+      }
 
       // Vygeneruj PDF přes API
       const response = await fetch(`/api/quotes/${deal.id}/pdf`)
