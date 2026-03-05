@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "@react-pdf/renderer": "^4.3.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
@@ -19,6 +20,7 @@
     "jspdf-font": "^1.0.7",
     "lucide-react": "^0.460.0",
     "next": "^16.1.6",
+    "pdf-lib": "^1.17.1",
     "pdfkit": "^0.17.2",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import PDFDocument from 'pdfkit'
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import fs from 'fs/promises'
 import path from 'path'
-import fs from 'fs'
 
 const VAT_RATE = 0.21
 
@@ -135,197 +135,142 @@ export async function GET(
   }
 }
 
-process.env.FONTDATA_PATH = path.join(process.cwd(), 'public/fonts/afm')
-
 async function generatePDF(data: QuoteData): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    try {
-      const fontPath = path.join(process.cwd(), 'public/fonts/Roboto-Regular.ttf')
-      const fontBoldPath = path.join(process.cwd(), 'public/fonts/Roboto-Bold.ttf')
-      
-      const doc = new PDFDocument({
-        size: 'A4',
-        margin: 50,
-        bufferPages: true,
-      })
-
-      const chunks: Buffer[] = []
-      doc.on('data', (chunk) => chunks.push(chunk))
-      doc.on('end', () => resolve(Buffer.concat(chunks)))
-      doc.on('error', reject)
-
-      doc.registerFont('Roboto', fontPath)
-      doc.registerFont('Roboto-Bold', fontBoldPath)
-      doc.font('Roboto')
-
-      doc.font('Roboto-Bold').fontSize(24).text('CENOVÁ NABÍDKA', { align: 'left' })
-      doc.font('Roboto').fontSize(10).fillColor('#666666')
-        .text(SUPPLIER.name, { align: 'left' })
-      
-      doc.fontSize(10).fillColor('#666666')
-        .text(data.quote_number, 500, 50, { align: 'right' })
-
-      doc.moveDown(2)
-
-      doc.strokeColor('#2563eb').lineWidth(2)
-        .moveTo(50, doc.y).lineTo(550, doc.y).stroke()
-      
-      doc.moveDown(1)
-
-      const startY = doc.y
-      
-      doc.font('Roboto-Bold').fontSize(9).fillColor('#2563eb')
-        .text('DODAVATEL', 50, startY)
-      
-      doc.font('Roboto-Bold').fontSize(11).fillColor('#000000')
-        .text(SUPPLIER.name, 50, startY + 20)
-      
-      doc.font('Roboto').fontSize(9).fillColor('#000000')
-        .text(SUPPLIER.address, 50, startY + 35)
-        .text(`${SUPPLIER.postalCode} ${SUPPLIER.city}`, 50, startY + 50)
-        .text(`IČO: ${SUPPLIER.ico}`, 50, startY + 75)
-        .text(`DIČ: ${SUPPLIER.dic}`, 50, startY + 90)
-        .text(`Tel: ${SUPPLIER.phone}`, 50, startY + 115)
-        .text(`E-mail: ${SUPPLIER.email}`, 50, startY + 130)
-        .text(SUPPLIER.website, 50, startY + 145)
-
-      doc.font('Roboto-Bold').fontSize(9).fillColor('#2563eb')
-        .text('ODBĚRATEL', 320, startY)
-      
-      doc.font('Roboto-Bold').fontSize(11).fillColor('#000000')
-        .text(data.customer.companyName, 320, startY + 20)
-      
-      let customerY = startY + 35
-      if (data.customer.address) {
-        doc.font('Roboto').fontSize(9).fillColor('#000000')
-          .text(data.customer.address, 320, customerY)
-        customerY += 15
-      }
-      if (data.customer.postalCode && data.customer.city) {
-        doc.text(`${data.customer.postalCode} ${data.customer.city}`, 320, customerY)
-        customerY += 25
-      }
-      if (data.customer.ico) {
-        doc.text(`IČO: ${data.customer.ico}`, 320, customerY)
-        customerY += 15
-      }
-      if (data.customer.dic) {
-        doc.text(`DIČ: ${data.customer.dic}`, 320, customerY)
-      }
-
-      doc.y = Math.max(doc.y, startY + 170)
-      doc.moveDown(2)
-
-      doc.strokeColor('#dcdcdc').lineWidth(0.5)
-        .moveTo(50, doc.y).lineTo(550, doc.y).stroke()
-      
-      doc.moveDown(0.5)
-
-      const metaY = doc.y
-      doc.font('Roboto-Bold').fontSize(9).fillColor('#666666')
-        .text('Datum vystavení:', 50, metaY)
-        .text('Platnost nabídky:', 200, metaY)
-        .text('Číslo nabídky:', 350, metaY)
-      
-      doc.font('Roboto-Bold').fontSize(9).fillColor('#000000')
-        .text(new Date(data.created_at).toLocaleDateString('cs-CZ'), 50, metaY + 15)
-        .text(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('cs-CZ'), 200, metaY + 15)
-        .text(data.quote_number, 350, metaY + 15)
-
-      doc.y = metaY + 35
-      doc.strokeColor('#dcdcdc').lineWidth(0.5)
-        .moveTo(50, doc.y).lineTo(550, doc.y).stroke()
-      
-      doc.moveDown(1)
-
-      doc.font('Roboto-Bold').fontSize(12).fillColor('#000000')
-        .text('Položky nabídky', { align: 'left' })
-      
-      doc.moveDown(0.5)
-
-      const tableTop = doc.y
-      const col1 = 50
-      const col2 = 80
-      const col3 = 380
-      const col4 = 430
-      const col5 = 480
-
-      doc.font('Roboto-Bold').fontSize(8).fillColor('#505050')
-        .text('#', col1, tableTop)
-        .text('Název položky', col2, tableTop)
-        .text('Počet', col3, tableTop)
-        .text('Cena/ks', col4, tableTop)
-        .text('Celkem', col5, tableTop)
-
-      doc.moveDown(0.5)
-
-      let itemY = doc.y
-      doc.font('Roboto').fontSize(9).fillColor('#1e1e1e')
-      
-      data.items.forEach((item, index) => {
-        if (itemY > 700) {
-          doc.addPage()
-          itemY = 50
-        }
-
-        doc.text(String(index + 1), col1, itemY)
-        doc.text(item.product_name, col2, itemY, { width: 290 })
-        doc.text(String(item.quantity), col3, itemY)
-        doc.text(`${item.unit_price.toLocaleString('cs-CZ')} Kč`, col4, itemY)
-        doc.text(`${item.line_total.toLocaleString('cs-CZ')} Kč`, col5, itemY)
-        
-        itemY += 20
-      })
-
-      doc.y = itemY + 10
-
-      const totalWithoutVat = data.total
-      const vatAmount = Math.round(data.total * VAT_RATE * 100) / 100
-      const totalWithVat = Math.round((data.total + vatAmount) * 100) / 100
-
-      doc.font('Roboto').fontSize(9).fillColor('#3c3c3c')
-        .text('Celkem bez DPH:', 400, doc.y, { align: 'right', width: 100 })
-        .text(`${totalWithoutVat.toLocaleString('cs-CZ')} Kč`, 510, doc.y, { align: 'right' })
-      
-      doc.moveDown(0.5)
-      doc.text(`DPH ${VAT_RATE * 100} %:`, 400, doc.y, { align: 'right', width: 100 })
-        .text(`${vatAmount.toLocaleString('cs-CZ')} Kč`, 510, doc.y, { align: 'right' })
-      
-      doc.moveDown(0.5)
-      doc.font('Roboto-Bold').fontSize(12).fillColor('#2563eb')
-        .text('Celkem s DPH:', 400, doc.y, { align: 'right', width: 100 })
-        .text(`${totalWithVat.toLocaleString('cs-CZ')} Kč`, 510, doc.y, { align: 'right' })
-
-      doc.moveDown(2)
-
-      doc.font('Roboto-Bold').fontSize(10).fillColor('#000000')
-        .text('Podmínky nabídky')
-      
-      doc.moveDown(0.5)
-      doc.font('Roboto').fontSize(9).fillColor('#3c3c3c')
-        .text('Platební podmínky: 14 dnů od vystavení faktury')
-        .text('Dodací podmínky: Dle dohody, obvykle 2–4 týdny od potvrzení objednávky')
-        .text('Platnost nabídky: 30 dnů od data vystavení')
-        .text('Ceny jsou uvedeny bez DPH, není-li uvedeno jinak.')
-        .text('Součástí nabídky je doprava a instalace, pokud není uvedeno jinak.')
-        .text('Záruční doba: dle specifikace jednotlivých produktů.')
-
-      if (data.notes) {
-        doc.moveDown(1)
-        doc.font('Roboto-Bold').fontSize(10).fillColor('#000000')
-          .text('Poznámky')
-        doc.moveDown(0.5)
-        doc.font('Roboto').fontSize(9).fillColor('#3c3c3c')
-          .text(data.notes)
-      }
-
-      doc.fontSize(7).fillColor('#8c8c8c')
-        .text(SUPPLIER.registrationNote, 50, 780, { align: 'center', width: 500 })
-        .text(`${SUPPLIER.name} | ${SUPPLIER.phone} | ${SUPPLIER.email}`, 50, 790, { align: 'center', width: 500 })
-
-      doc.end()
-    } catch (error) {
-      reject(error)
-    }
+  const pdfDoc = await PDFDocument.create()
+  const page = pdfDoc.addPage([595, 842])
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  
+  const { width, height } = page.getSize()
+  let y = height - 50
+  
+  page.drawText('CENOVÁ NABÍDKA', { x: 50, y, size: 24, font: fontBold })
+  y -= 15
+  page.drawText(SUPPLIER.name, { x: 50, y, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
+  page.drawText(data.quote_number, { x: 500, y: height - 50, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
+  
+  y -= 30
+  page.drawLine({ start: { x: 50, y }, end: { x: 550, y }, thickness: 2, color: rgb(0.15, 0.39, 0.92) })
+  
+  y -= 30
+  const startY = y
+  
+  page.drawText('DODAVATEL', { x: 50, y, size: 9, font: fontBold, color: rgb(0.15, 0.39, 0.92) })
+  y -= 15
+  page.drawText(SUPPLIER.name, { x: 50, y, size: 11, font: fontBold })
+  y -= 12
+  page.drawText(SUPPLIER.address, { x: 50, y, size: 9, font })
+  y -= 12
+  page.drawText(`${SUPPLIER.postalCode} ${SUPPLIER.city}`, { x: 50, y, size: 9, font })
+  y -= 20
+  page.drawText(`IČO: ${SUPPLIER.ico}`, { x: 50, y, size: 9, font })
+  y -= 12
+  page.drawText(`DIČ: ${SUPPLIER.dic}`, { x: 50, y, size: 9, font })
+  y -= 20
+  page.drawText(`Tel: ${SUPPLIER.phone}`, { x: 50, y, size: 9, font })
+  y -= 12
+  page.drawText(`E-mail: ${SUPPLIER.email}`, { x: 50, y, size: 9, font })
+  y -= 12
+  page.drawText(SUPPLIER.website, { x: 50, y, size: 9, font })
+  
+  let customerY = startY
+  page.drawText('ODBĚRATEL', { x: 320, y: customerY, size: 9, font: fontBold, color: rgb(0.15, 0.39, 0.92) })
+  customerY -= 15
+  page.drawText(data.customer.companyName, { x: 320, y: customerY, size: 11, font: fontBold })
+  customerY -= 12
+  if (data.customer.address) {
+    page.drawText(data.customer.address, { x: 320, y: customerY, size: 9, font })
+    customerY -= 12
+  }
+  if (data.customer.postalCode && data.customer.city) {
+    page.drawText(`${data.customer.postalCode} ${data.customer.city}`, { x: 320, y: customerY, size: 9, font })
+    customerY -= 20
+  }
+  if (data.customer.ico) {
+    page.drawText(`IČO: ${data.customer.ico}`, { x: 320, y: customerY, size: 9, font })
+    customerY -= 12
+  }
+  if (data.customer.dic) {
+    page.drawText(`DIČ: ${data.customer.dic}`, { x: 320, y: customerY, size: 9, font })
+  }
+  
+  y = Math.min(y, customerY) - 30
+  page.drawLine({ start: { x: 50, y }, end: { x: 550, y }, thickness: 0.5, color: rgb(0.86, 0.86, 0.86) })
+  
+  y -= 20
+  const metaY = y
+  page.drawText('Datum vystavení:', { x: 50, y: metaY, size: 9, font: fontBold, color: rgb(0.4, 0.4, 0.4) })
+  page.drawText('Platnost nabídky:', { x: 200, y: metaY, size: 9, font: fontBold, color: rgb(0.4, 0.4, 0.4) })
+  page.drawText('Číslo nabídky:', { x: 350, y: metaY, size: 9, font: fontBold, color: rgb(0.4, 0.4, 0.4) })
+  
+  y -= 12
+  page.drawText(new Date(data.created_at).toLocaleDateString('cs-CZ'), { x: 50, y, size: 9, font: fontBold })
+  page.drawText(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('cs-CZ'), { x: 200, y, size: 9, font: fontBold })
+  page.drawText(data.quote_number, { x: 350, y, size: 9, font: fontBold })
+  
+  y -= 20
+  page.drawLine({ start: { x: 50, y }, end: { x: 550, y }, thickness: 0.5, color: rgb(0.86, 0.86, 0.86) })
+  
+  y -= 25
+  page.drawText('Položky nabídky', { x: 50, y, size: 12, font: fontBold })
+  
+  y -= 20
+  page.drawText('#', { x: 50, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
+  page.drawText('Název položky', { x: 80, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
+  page.drawText('Počet', { x: 380, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
+  page.drawText('Cena/ks', { x: 430, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
+  page.drawText('Celkem', { x: 480, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
+  
+  y -= 15
+  
+  data.items.forEach((item, index) => {
+    page.drawText(String(index + 1), { x: 50, y, size: 9, font })
+    page.drawText(item.product_name.substring(0, 40), { x: 80, y, size: 9, font })
+    page.drawText(String(item.quantity), { x: 380, y, size: 9, font })
+    page.drawText(`${item.unit_price.toLocaleString('cs-CZ')} Kč`, { x: 430, y, size: 9, font })
+    page.drawText(`${item.line_total.toLocaleString('cs-CZ')} Kč`, { x: 480, y, size: 9, font })
+    y -= 15
   })
+  
+  y -= 20
+  const totalWithoutVat = data.total
+  const vatAmount = Math.round(data.total * VAT_RATE * 100) / 100
+  const totalWithVat = Math.round((data.total + vatAmount) * 100) / 100
+  
+  page.drawText('Celkem bez DPH:', { x: 400, y, size: 9, font })
+  page.drawText(`${totalWithoutVat.toLocaleString('cs-CZ')} Kč`, { x: 510, y, size: 9, font })
+  y -= 12
+  page.drawText(`DPH ${VAT_RATE * 100} %:`, { x: 400, y, size: 9, font })
+  page.drawText(`${vatAmount.toLocaleString('cs-CZ')} Kč`, { x: 510, y, size: 9, font })
+  y -= 15
+  page.drawText('Celkem s DPH:', { x: 400, y, size: 12, font: fontBold, color: rgb(0.15, 0.39, 0.92) })
+  page.drawText(`${totalWithVat.toLocaleString('cs-CZ')} Kč`, { x: 510, y, size: 12, font: fontBold, color: rgb(0.15, 0.39, 0.92) })
+  
+  y -= 30
+  page.drawText('Podmínky nabídky', { x: 50, y, size: 10, font: fontBold })
+  y -= 15
+  page.drawText('Platební podmínky: 14 dnů od vystavení faktury', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  y -= 12
+  page.drawText('Dodací podmínky: Dle dohody, obvykle 2-4 týdny od potvrzení objednávky', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  y -= 12
+  page.drawText('Platnost nabídky: 30 dnů od data vystavení', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  y -= 12
+  page.drawText('Ceny jsou uvedeny bez DPH, není-li uvedeno jinak.', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  y -= 12
+  page.drawText('Součástí nabídky je doprava a instalace, pokud není uvedeno jinak.', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  y -= 12
+  page.drawText('Záruční doba: dle specifikace jednotlivých produktů.', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  
+  if (data.notes) {
+    y -= 20
+    page.drawText('Poznámky', { x: 50, y, size: 10, font: fontBold })
+    y -= 15
+    page.drawText(data.notes.substring(0, 100), { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  }
+  
+  page.drawText(SUPPLIER.registrationNote.substring(0, 80), { x: 50, y: 40, size: 7, font, color: rgb(0.55, 0.55, 0.55) })
+  page.drawText(`${SUPPLIER.name} | ${SUPPLIER.phone} | ${SUPPLIER.email}`, { x: 50, y: 30, size: 7, font, color: rgb(0.55, 0.55, 0.55) })
+  
+  const pdfBytes = await pdfDoc.save()
+  return Buffer.from(pdfBytes)
 }
