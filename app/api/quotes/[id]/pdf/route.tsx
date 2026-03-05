@@ -153,23 +153,14 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
   const logoPath = path.join(process.cwd(), 'public/logo-vitalspace.png')
   const logoBytes = await fs.readFile(logoPath)
   const logoImage = await pdfDoc.embedPng(logoBytes)
-  const logoDims = logoImage.scale(0.15)
+  const logoDims = logoImage.scale(0.08)
   
   const { width, height } = page.getSize()
   let y = height - 50
   
-  page.drawImage(logoImage, {
-    x: 50,
-    y: height - 45,
-    width: logoDims.width,
-    height: logoDims.height,
-  })
-  
-  y = height - 50
-  
-  page.drawText('CENOVÁ NABÍDKA', { x: 50 + logoDims.width + 15, y, size: 24, font: fontBold })
+  page.drawText('CENOVÁ NABÍDKA', { x: 50, y, size: 24, font: fontBold })
   y -= 15
-  page.drawText(SUPPLIER.name, { x: 50 + logoDims.width + 15, y, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
+  page.drawText(SUPPLIER.name, { x: 50, y, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
   page.drawText(data.quote_number, { x: 470, y: height - 50, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
   
   y -= 30
@@ -180,7 +171,15 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
   
   page.drawText('DODAVATEL', { x: 50, y, size: 9, font: fontBold, color: rgb(0.15, 0.39, 0.92) })
   y -= 15
-  page.drawText(SUPPLIER.name, { x: 50, y, size: 11, font: fontBold })
+  
+  page.drawImage(logoImage, {
+    x: 50,
+    y: y - logoDims.height + 8,
+    width: logoDims.width,
+    height: logoDims.height,
+  })
+  
+  page.drawText(SUPPLIER.name, { x: 50 + logoDims.width + 8, y, size: 11, font: fontBold })
   y -= 12
   page.drawText(SUPPLIER.address, { x: 50, y, size: 9, font })
   y -= 12
