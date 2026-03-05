@@ -150,13 +150,27 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
   const font = await pdfDoc.embedFont(fontBytes)
   const fontBold = await pdfDoc.embedFont(fontBoldBytes)
   
+  const logoPath = path.join(process.cwd(), 'public/logo-vitalspace.png')
+  const logoBytes = await fs.readFile(logoPath)
+  const logoImage = await pdfDoc.embedPng(logoBytes)
+  const logoDims = logoImage.scale(0.15)
+  
   const { width, height } = page.getSize()
   let y = height - 50
   
-  page.drawText('CENOVÁ NABÍDKA', { x: 50, y, size: 24, font: fontBold })
+  page.drawImage(logoImage, {
+    x: 50,
+    y: height - 45,
+    width: logoDims.width,
+    height: logoDims.height,
+  })
+  
+  y = height - 50
+  
+  page.drawText('CENOVÁ NABÍDKA', { x: 50 + logoDims.width + 15, y, size: 24, font: fontBold })
   y -= 15
-  page.drawText(SUPPLIER.name, { x: 50, y, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
-  page.drawText(data.quote_number, { x: 500, y: height - 50, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
+  page.drawText(SUPPLIER.name, { x: 50 + logoDims.width + 15, y, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
+  page.drawText(data.quote_number, { x: 470, y: height - 50, size: 10, font, color: rgb(0.4, 0.4, 0.4) })
   
   y -= 30
   page.drawLine({ start: { x: 50, y }, end: { x: 550, y }, thickness: 2, color: rgb(0.15, 0.39, 0.92) })
@@ -260,13 +274,13 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
   y -= 15
   page.drawText('Platební podmínky: 14 dnů od vystavení faktury', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
   y -= 12
-  page.drawText('Dodací podmínky: Dle dohody, obvykle 2-4 týdny od potvrzení objednávky', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  page.drawText('Dodací podmínky: Dle dohody, obvykle 2-4 týdny', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
   y -= 12
   page.drawText('Platnost nabídky: 30 dnů od data vystavení', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
   y -= 12
   page.drawText('Ceny jsou uvedeny bez DPH, není-li uvedeno jinak.', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
   y -= 12
-  page.drawText('Součástí nabídky je doprava a instalace, pokud není uvedeno jinak.', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
+  page.drawText('Součástí nabídky je doprava a instalace.', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
   y -= 12
   page.drawText('Záruční doba: dle specifikace jednotlivých produktů.', { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
   
@@ -277,7 +291,10 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
     page.drawText(data.notes.substring(0, 100), { x: 50, y, size: 9, font, color: rgb(0.24, 0.24, 0.24) })
   }
   
-  page.drawText(SUPPLIER.registrationNote.substring(0, 80), { x: 50, y: 40, size: 7, font, color: rgb(0.55, 0.55, 0.55) })
+  const regNote1 = 'Zapsána v obchodním rejstříku vedeném Krajským soudem'
+  const regNote2 = 'v Plzni, oddíl C, vložka 12345'
+  page.drawText(regNote1, { x: 50, y: 45, size: 7, font, color: rgb(0.55, 0.55, 0.55) })
+  page.drawText(regNote2, { x: 50, y: 37, size: 7, font, color: rgb(0.55, 0.55, 0.55) })
   page.drawText(`${SUPPLIER.name} | ${SUPPLIER.phone} | ${SUPPLIER.email}`, { x: 50, y: 30, size: 7, font, color: rgb(0.55, 0.55, 0.55) })
   
   const pdfBytes = await pdfDoc.save()
