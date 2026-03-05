@@ -238,18 +238,18 @@ async function generatePDF(data: QuoteData): Promise<Buffer> {
   
   y -= 20
   page.drawText('#', { x: 50, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
-  page.drawText('Název položky', { x: 80, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
-  page.drawText('Počet', { x: 380, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
-  page.drawText('Cena/ks', { x: 430, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
+  page.drawText('Název položky', { x: 75, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
+  page.drawText('Počet', { x: 350, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
+  page.drawText('Cena/ks', { x: 400, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
   page.drawText('Celkem', { x: 480, y, size: 8, font: fontBold, color: rgb(0.31, 0.31, 0.31) })
   
   y -= 15
   
   data.items.forEach((item, index) => {
     page.drawText(String(index + 1), { x: 50, y, size: 9, font })
-    page.drawText(item.product_name.substring(0, 40), { x: 80, y, size: 9, font })
-    page.drawText(String(item.quantity), { x: 380, y, size: 9, font })
-    page.drawText(`${item.unit_price.toLocaleString('cs-CZ')} Kč`, { x: 430, y, size: 9, font })
+    page.drawText(item.product_name.substring(0, 35), { x: 75, y, size: 9, font })
+    page.drawText(String(item.quantity), { x: 350, y, size: 9, font })
+    page.drawText(`${item.unit_price.toLocaleString('cs-CZ')} Kč`, { x: 400, y, size: 9, font })
     page.drawText(`${item.line_total.toLocaleString('cs-CZ')} Kč`, { x: 480, y, size: 9, font })
     y -= 15
   })
