@@ -138,8 +138,14 @@ export async function GET(
 async function generatePDF(data: QuoteData): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([595, 842])
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  
+  const fontPath = path.join(process.cwd(), 'public/fonts/Roboto-Regular.ttf')
+  const fontBoldPath = path.join(process.cwd(), 'public/fonts/Roboto-Bold.ttf')
+  const fontBytes = await fs.readFile(fontPath)
+  const fontBoldBytes = await fs.readFile(fontBoldPath)
+  
+  const font = await pdfDoc.embedFont(fontBytes)
+  const fontBold = await pdfDoc.embedFont(fontBoldBytes)
   
   const { width, height } = page.getSize()
   let y = height - 50
