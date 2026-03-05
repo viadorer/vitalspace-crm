@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, rgb } from 'pdf-lib'
+import fontkit from '@pdf-lib/fontkit'
 import fs from 'fs/promises'
 import path from 'path'
 
@@ -137,6 +138,8 @@ export async function GET(
 
 async function generatePDF(data: QuoteData): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create()
+  pdfDoc.registerFontkit(fontkit)
+  
   const page = pdfDoc.addPage([595, 842])
   
   const fontPath = path.join(process.cwd(), 'public/fonts/Roboto-Regular.ttf')
