@@ -58,11 +58,18 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    request.nextUrl.pathname.startsWith('/crm')
-  ) {
+  const pathname = request.nextUrl.pathname
+  const isProtectedRoute =
+    pathname.startsWith('/crm') ||
+    (pathname.startsWith('/api') &&
+      !pathname.startsWith('/api/leads') &&
+      !pathname.startsWith('/api/auth') &&
+      !pathname.startsWith('/api/callcenter'))
+
+  if (!user && !pathname.startsWith('/auth') && isProtectedRoute) {
+    if (pathname.startsWith('/api')) {
+      return NextResponse.json({ error: 'Přístup odepřen' }, { status: 401 })
+    }
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 

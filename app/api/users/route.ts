@@ -1,28 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireRole, safeErrorResponse, isValidEmail, truncate } from '@/lib/supabase/auth-guard'
 
-async function requireSuperAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: appUser } = await supabase
-    .from('app_users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (appUser?.role !== 'superadmin') return null
-  return user
-}
+const VALID_ROLES = ['superadmin', 'admin', 'consultant', 'technician', 'viewer']
 
 export async function POST(request: NextRequest) {
   try {
-    const currentUser = await requireSuperAdmin()
-    if (!currentUser) {
-      return NextResponse.json({ error: 'Přístup odepřen' }, { status: 403 })
-    }
+    const auth = await requireRole('superadmin')
+    if (auth instanceof NextResponse) return auth
 
     const { email, password, full_name, role, phone } = await request.json()
 
@@ -33,17 +18,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: 'Neplatný email' }, { status: 400 })
+    }
+
+    if (typeof password !== 'string' || password.length < 8) {
+      return NextResponse.json({ error: 'Heslo musí mít alespoň 8 znaků' }, { status: 400 })
+    }
+
+    if (!VALID_ROLES.includes(role)) {
+      return NextResponse.json({ error: 'Neplatná role' }, { status: 400 })
+    }
+
     const admin = createAdminClient()
 
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
-      user_metadata: { full_name },
+      user_metadata: { full_name: truncate(full_name, 100) },
     })
 
     if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 })
+      return NextResponse.json({ error: 'Chyba při vytváření uživatele' }, { status: 400 })
     }
 
     if (!authData.user) {
@@ -52,16 +49,15 @@ export async function POST(request: NextRequest) {
 
     const { error: updateError } = await admin
       .from('app_users')
-      .update({ full_name, role, phone: phone || null })
+      .update({ full_name: truncate(full_name, 100), role, phone: truncate(phone, 30) || null })
       .eq('id', authData.user.id)
 
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      return safeErrorResponse(updateError)
     }
 
     return NextResponse.json({ id: authData.user.id })
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+  } catch (error) {
+    return safeErrorResponse(error)
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { requireAuth, safeErrorResponse, isValidUUID } from '@/lib/supabase/auth-guard'
 import { PDFDocument, rgb } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
 import fs from 'fs/promises'
@@ -53,9 +54,17 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+
     const { id } = await params
+
+    if (!isValidUUID(id)) {
+      return NextResponse.json({ error: 'Neplatné ID' }, { status: 400 });
+    }
+
     const supabase = await createClient()
-    
+
     // Načti data nabídky z databáze
     const { data: deal, error } = await supabase
       .from('deals')
@@ -70,7 +79,7 @@ export async function GET(
 
     if (error || !deal) {
       console.error('Error loading deal:', error)
-      return NextResponse.json({ error: 'Nabídka nenalezena', details: error?.message }, { status: 404 })
+      return NextResponse.json({ error: 'Nabídka nenalezena' }, { status: 404 })
     }
 
     // Připrav data pro PDF
@@ -107,14 +116,7 @@ export async function GET(
       pdfBuffer = await generatePDF(quoteData)
     } catch (pdfError) {
       console.error('Error in generatePDF:', pdfError)
-      return NextResponse.json(
-        { 
-          error: 'Chyba při generování PDF', 
-          details: pdfError instanceof Error ? pdfError.message : String(pdfError),
-          stack: pdfError instanceof Error ? pdfError.stack : undefined
-        },
-        { status: 500 }
-      )
+      return safeErrorResponse(pdfError);
     }
 
     // Vrať PDF jako response
@@ -126,13 +128,7 @@ export async function GET(
     })
   } catch (error) {
     console.error('Error generating PDF:', error)
-    return NextResponse.json(
-      { 
-        error: 'Chyba při generování PDF',
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    )
+    return safeErrorResponse(error);
   }
 }
 

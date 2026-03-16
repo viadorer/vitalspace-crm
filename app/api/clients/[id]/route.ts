@@ -1,39 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireAuth, safeErrorResponse, escapeIlike, isValidUUID, truncate } from '@/lib/supabase/auth-guard';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = await createClient();
     const body = await request.json();
     const { id: clientId } = await params;
 
-    const updates: any = {};
-    
-    if (body.company_name !== undefined) updates.company_name = body.company_name;
-    if (body.ico !== undefined) updates.ico = body.ico;
-    if (body.dic !== undefined) updates.dic = body.dic;
-    if (body.region !== undefined) updates.region = body.region;
-    if (body.city !== undefined) updates.city = body.city;
-    if (body.address !== undefined) updates.address = body.address;
-    if (body.postal_code !== undefined) updates.postal_code = body.postal_code;
-    if (body.website !== undefined) updates.website = body.website;
-    if (body.phone !== undefined) updates.phone = body.phone;
-    if (body.email !== undefined) updates.email = body.email;
-    if (body.type !== undefined) updates.type = body.type;
-    if (body.notes !== undefined) updates.notes = body.notes;
+    if (!isValidUUID(clientId)) {
+      return NextResponse.json({ error: 'Neplatné ID' }, { status: 400 });
+    }
 
-    // Automatické přiřazení segmentu podle názvu
+    const updates: Record<string, any> = {};
+
+    if (body.company_name !== undefined) updates.company_name = truncate(body.company_name, 255);
+    if (body.ico !== undefined) updates.ico = truncate(body.ico, 20);
+    if (body.dic !== undefined) updates.dic = truncate(body.dic, 20);
+    if (body.region !== undefined) updates.region = truncate(body.region, 100);
+    if (body.city !== undefined) updates.city = truncate(body.city, 100);
+    if (body.address !== undefined) updates.address = truncate(body.address, 255);
+    if (body.postal_code !== undefined) updates.postal_code = truncate(body.postal_code, 10);
+    if (body.website !== undefined) updates.website = truncate(body.website, 255);
+    if (body.phone !== undefined) updates.phone = truncate(body.phone, 30);
+    if (body.email !== undefined) updates.email = truncate(body.email, 255);
+    if (body.type !== undefined) updates.type = body.type;
+    if (body.notes !== undefined) updates.notes = truncate(body.notes, 5000);
+
     if (body.segment_name) {
       const { data: segment } = await supabase
         .from('company_segments')
         .select('id')
-        .ilike('name', `%${body.segment_name}%`)
+        .ilike('name', `%${escapeIlike(String(body.segment_name))}%`)
         .limit(1)
         .single();
-      
       if (segment) updates.segment_id = segment.id;
     }
 
@@ -44,19 +50,10 @@ export async function PATCH(
       .select()
       .single();
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
-    }
-
+    if (error) return safeErrorResponse(error);
     return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return safeErrorResponse(error);
   }
 }
 
@@ -65,8 +62,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = await createClient();
     const { id: clientId } = await params;
+
+    if (!isValidUUID(clientId)) {
+      return NextResponse.json({ error: 'Neplatné ID' }, { status: 400 });
+    }
 
     const { data, error } = await supabase
       .from('clients')
@@ -74,18 +78,9 @@ export async function GET(
       .eq('id', clientId)
       .single();
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
-    }
-
+    if (error) return safeErrorResponse(error);
     return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return safeErrorResponse(error);
   }
 }

@@ -1,40 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireAuth, safeErrorResponse, escapeIlike } from '@/lib/supabase/auth-guard';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth();
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
-    
+
     const query = searchParams.get('q');
 
-    if (!query) {
+    if (!query || query.trim().length === 0) {
       return NextResponse.json(
         { error: 'Query parameter "q" is required' },
         { status: 400 }
       );
     }
 
-    const searchTerm = `%${query}%`;
-    
+    const searchTerm = `%${escapeIlike(query.slice(0, 100))}%`;
+
     const { data, error } = await supabase
       .from('prospects')
       .select('*, company_segments(name)')
       .ilike('company_name', searchTerm)
       .limit(20);
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
-    }
-
+    if (error) return safeErrorResponse(error);
     return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return safeErrorResponse(error);
   }
 }

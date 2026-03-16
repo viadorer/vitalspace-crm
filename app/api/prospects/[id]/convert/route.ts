@@ -1,29 +1,32 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireRole, safeErrorResponse, isValidUUID } from '@/lib/supabase/auth-guard'
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient()
-    const { id: prospectId } = await params
+    const auth = await requireRole('superadmin', 'admin', 'consultant');
+    if (auth instanceof NextResponse) return auth;
+
+    const { id: prospectId } = await params;
+
+    if (!isValidUUID(prospectId)) {
+      return NextResponse.json({ error: 'Neplatné ID' }, { status: 400 });
+    }
+
+    const supabase = await createClient();
 
     // Načíst prospect s kontakty
     const { data: prospect, error: prospectError } = await supabase
       .from('prospects')
-      .select(`
-        *,
-        prospect_contacts(*)
-      `)
+      .select(`*, prospect_contacts(*)`)
       .eq('id', prospectId)
       .single()
 
     if (prospectError || !prospect) {
-      return NextResponse.json(
-        { error: 'Prospect nenalezen' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Prospect nenalezen' }, { status: 404 })
     }
 
     // Zkontrolovat, zda už není klient
@@ -40,7 +43,7 @@ export async function POST(
       )
     }
 
-    // Vytvořit klienta - převést všechna data z prospectu
+    // Vytvořit klienta
     const { data: client, error: clientError } = await supabase
       .from('clients')
       .insert({
@@ -73,20 +76,23 @@ export async function POST(
       .single()
 
     if (clientError) {
-      return NextResponse.json(
-        { error: 'Chyba při vytváření klienta', details: clientError.message },
-        { status: 500 }
-      )
+      return safeErrorResponse(clientError);
     }
 
-    // Aktualizovat prospect - uložit vazbu na klienta
-    await supabase
+    // Aktualizovat prospect
+    const { error: updateError } = await supabase
       .from('prospects')
-      .update({ 
+      .update({
         status: 'converted',
         converted_to_client_id: client.id
       })
       .eq('id', prospectId)
+
+    if (updateError) {
+      // Rollback: smazat vytvořeného klienta
+      await supabase.from('clients').delete().eq('id', client.id);
+      return safeErrorResponse(updateError);
+    }
 
     // Převést prospect_contacts na client_contacts
     if (prospect.prospect_contacts && prospect.prospect_contacts.length > 0) {
@@ -114,12 +120,8 @@ export async function POST(
       client,
       message: 'Prospect úspěšně převeden na klienta'
     })
-
   } catch (error) {
     console.error('Chyba při konverzi:', error)
-    return NextResponse.json(
-      { error: 'Interní chyba serveru' },
-      { status: 500 }
-    )
+    return safeErrorResponse(error);
   }
 }
