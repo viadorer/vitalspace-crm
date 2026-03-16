@@ -366,8 +366,12 @@ export interface DealDocument {
 
 export type AssignStrategy = 'round_robin' | 'keep_current' | 'return_original'
 
+export type WorkflowTriggerType = 'stage_change' | 'inactivity'
+export type EmailTemplate = 'stage_notification' | 'activity_reminder' | 'quote_followup' | 'custom'
+
 export interface WorkflowRule {
   id: string
+  trigger_type: WorkflowTriggerType
   trigger_stage: string
   assign_to_role: 'consultant' | 'technician' | null
   assign_strategy: AssignStrategy
@@ -375,6 +379,11 @@ export interface WorkflowRule {
   activity_type: 'task' | 'note' | 'call' | 'email' | 'meeting' | null
   activity_subject: string | null
   activity_due_days: number | null
+  send_email: boolean
+  email_template: EmailTemplate | null
+  email_subject: string | null
+  email_body_html: string | null
+  inactivity_days: number | null
   is_active: boolean
   sort_order: number
   created_at: string

@@ -145,7 +145,7 @@ export default function DocumentsPage() {
         ) : (
           <div className="grid gap-3">
             {filteredDocuments.map((doc) => {
-              const catConfig = CATEGORY_CONFIG[doc.category]
+              const catConfig = CATEGORY_CONFIG[doc.category] || { label: doc.category, icon: FileText, color: 'bg-gray-100 text-gray-600' }
               const CatIcon = catConfig.icon
               const publicUrl = getPublicUrl(doc.file_path)
 

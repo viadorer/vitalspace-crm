@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { logAuditEvent, logAssignment } from '@/lib/hooks/useAuditLog'
-import type { WorkflowRule, AppUser, DealStage } from '@/lib/supabase/types'
+import type { WorkflowRule, DealStage } from '@/lib/supabase/types'
 
 interface WorkflowContext {
   dealId: string
@@ -17,6 +17,7 @@ export async function executeWorkflowRules(ctx: WorkflowContext): Promise<void> 
     .from('workflow_rules')
     .select('*')
     .eq('trigger_stage', ctx.newStage)
+    .eq('trigger_type', 'stage_change')
     .eq('is_active', true)
     .order('sort_order')
 
@@ -29,6 +30,10 @@ export async function executeWorkflowRules(ctx: WorkflowContext): Promise<void> 
 
     if (rule.create_activity && rule.activity_subject) {
       await handleCreateActivity(supabase, rule, ctx)
+    }
+
+    if (rule.send_email && rule.email_subject) {
+      await handleSendEmail(rule, ctx)
     }
   }
 }
@@ -147,4 +152,78 @@ async function handleCreateActivity(
       },
     })
   }
+}
+
+async function handleSendEmail(
+  rule: WorkflowRule,
+  ctx: WorkflowContext
+): Promise<void> {
+  try {
+    const supabase = createClient()
+    const { data: deal } = await supabase
+      .from('deals')
+      .select(`
+        id, title, deal_number, stage, assigned_user_id,
+        clients:client_id (company_name, email),
+        prospects:prospect_id (company_name, email)
+      `)
+      .eq('id', ctx.dealId)
+      .single()
+
+    if (!deal) return
+
+    let recipientEmail: string | null = null
+    let recipientName = ''
+
+    if (deal.assigned_user_id) {
+      const { data: user } = await supabase
+        .from('app_users')
+        .select('email, full_name')
+        .eq('id', deal.assigned_user_id)
+        .single()
+
+      if (user) {
+        recipientEmail = user.email
+        recipientName = user.full_name || ''
+      }
+    }
+
+    if (!recipientEmail) return
+
+    const companyName = (deal.clients as { company_name: string } | null)?.company_name
+      || (deal.prospects as { company_name: string } | null)?.company_name
+      || 'Neznámá firma'
+
+    await fetch('/api/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'custom',
+        to_email: recipientEmail,
+        to_name: recipientName,
+        subject: rule.email_subject || `Workflow: ${rule.activity_subject}`,
+        html_body: rule.email_body_html || buildDefaultEmailBody(rule, deal, companyName),
+      }),
+    })
+  } catch (err) {
+    console.error('Workflow email error:', err)
+  }
+}
+
+function buildDefaultEmailBody(
+  rule: WorkflowRule,
+  deal: { title: string; deal_number: string | null },
+  companyName: string
+): string {
+  return `
+    <p>Dobrý den,</p>
+    <p>automatický workflow vytvořil novou úlohu:</p>
+    <table style="border-collapse: collapse; margin: 16px 0;">
+      <tr><td style="padding: 4px 12px 4px 0; color: #6b7280;">Deal:</td><td style="padding: 4px 0; font-weight: 600;">${deal.deal_number || deal.title}</td></tr>
+      <tr><td style="padding: 4px 12px 4px 0; color: #6b7280;">Firma:</td><td style="padding: 4px 0;">${companyName}</td></tr>
+      <tr><td style="padding: 4px 12px 4px 0; color: #6b7280;">Úloha:</td><td style="padding: 4px 0;">${rule.activity_subject || '—'}</td></tr>
+      <tr><td style="padding: 4px 12px 4px 0; color: #6b7280;">Termín:</td><td style="padding: 4px 0;">${rule.activity_due_days ? `${rule.activity_due_days} dní` : 'Ihned'}</td></tr>
+    </table>
+    <p><a href="https://vitalspace-crm.vercel.app/crm/pipeline" style="color: #059669;">Otevřít v CRM →</a></p>
+  `
 }
