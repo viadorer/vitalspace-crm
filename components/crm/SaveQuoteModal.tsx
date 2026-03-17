@@ -100,6 +100,8 @@ export function SaveQuoteModal({
             email: exportData.email || null,
             phone: exportData.phone || null,
             contact_person: exportData.contactPerson || null,
+            type: 'B2B',
+            region: 'Plzeňský kraj',
           })
           .select()
           .single()
