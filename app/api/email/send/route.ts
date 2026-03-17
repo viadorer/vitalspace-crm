@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth, requireRole, safeErrorResponse } from '@/lib/supabase/auth-guard'
+import { requireRole, safeErrorResponse } from '@/lib/supabase/auth-guard'
 import { sendEmail, sendQuoteEmail } from '@/lib/email/brevo'
 
 export const dynamic = 'force-dynamic'
@@ -17,13 +17,10 @@ export const dynamic = 'force-dynamic'
  *   For type='quote':
  *     to_email, to_name, company_name, quote_number, message?
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const authResult = await requireAuth(request)
+    const authResult = await requireRole('superadmin', 'admin', 'consultant')
     if (authResult instanceof NextResponse) return authResult
-
-    const roleResult = requireRole(authResult, 'superadmin', 'admin', 'consultant')
-    if (roleResult instanceof NextResponse) return roleResult
 
     if (!process.env.BREVO_API_KEY) {
       return NextResponse.json(
@@ -32,7 +29,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const { type } = body
 
     if (type === 'quote') {
@@ -78,6 +75,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Neznámý typ emailu' }, { status: 400 })
   } catch (error) {
-    return safeErrorResponse(error, 'Chyba při odesílání emailu')
+    return safeErrorResponse(error, 500)
   }
 }
