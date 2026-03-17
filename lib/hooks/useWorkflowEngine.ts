@@ -190,8 +190,10 @@ async function handleSendEmail(
 
     if (!recipientEmail) return
 
-    const companyName = (deal.clients as { company_name: string } | null)?.company_name
-      || (deal.prospects as { company_name: string } | null)?.company_name
+    const clients = deal.clients as unknown as { company_name: string }[] | null
+    const prospects = deal.prospects as unknown as { company_name: string }[] | null
+    const companyName = clients?.[0]?.company_name
+      || prospects?.[0]?.company_name
       || 'Neznámá firma'
 
     await fetch('/api/email/send', {
