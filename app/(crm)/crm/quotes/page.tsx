@@ -23,8 +23,8 @@ interface QuoteDeal {
   final_price_czk: number | null
   total_value_czk: number | null
   created_at: string
-  clients: { id: string; company_name: string } | null
-  prospects: { id: string; company_name: string } | null
+  clients: { id: string; company_name: string }[] | null
+  prospects: { id: string; company_name: string }[] | null
 }
 
 interface QuoteDocument {
@@ -123,7 +123,7 @@ export default function QuotesPage() {
           d.title.includes(deal.id) ||
           d.file_name.includes(deal.id)
       ) || null
-      return { deal: deal as QuoteDeal, document: doc || null }
+      return { deal: deal as unknown as QuoteDeal, document: doc || null }
     })
 
     setQuotes(rows)
@@ -137,7 +137,7 @@ export default function QuotesPage() {
   const filteredQuotes = quotes.filter((q) => {
     if (!search) return true
     const s = search.toLowerCase()
-    const companyName = q.deal.clients?.company_name || q.deal.prospects?.company_name || ''
+    const companyName = q.deal.clients?.[0]?.company_name || q.deal.prospects?.[0]?.company_name || ''
     return (
       companyName.toLowerCase().includes(s) ||
       q.deal.title.toLowerCase().includes(s) ||
@@ -152,7 +152,7 @@ export default function QuotesPage() {
   }
 
   async function handleSendEmail(quote: QuoteRow) {
-    const companyName = quote.deal.clients?.company_name || quote.deal.prospects?.company_name || ''
+    const companyName = quote.deal.clients?.[0]?.company_name || quote.deal.prospects?.[0]?.company_name || ''
     const email = prompt(`Zadejte email pro odeslání nabídky ${quote.deal.deal_number || ''}:`)
     if (!email) return
 
@@ -269,7 +269,7 @@ export default function QuotesPage() {
           <div className="space-y-3">
             {filteredQuotes.map(({ deal, document }) => {
               const companyName =
-                deal.clients?.company_name || deal.prospects?.company_name || '—'
+                deal.clients?.[0]?.company_name || deal.prospects?.[0]?.company_name || '—'
 
               return (
                 <div
