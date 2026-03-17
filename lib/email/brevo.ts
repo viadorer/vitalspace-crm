@@ -31,7 +31,7 @@ interface BrevoResponse {
 
 export async function sendEmail(options: SendEmailOptions): Promise<BrevoResponse> {
   const apiKey = process.env.BREVO_API_KEY
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'info@vitalspace.cz'
+  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'pavel.fogl@vitalspace.cz'
   const senderName = process.env.BREVO_SENDER_NAME || 'VitalSpace CRM'
 
   if (!apiKey) {
@@ -125,7 +125,7 @@ function wrapInTemplate(title: string, body: string): string {
   </div>
   ${body}
   <div style="border-top: 1px solid #e5e7eb; margin-top: 32px; padding-top: 16px; font-size: 12px; color: #9ca3af;">
-    VitalSpace s.r.o. · Klatovská 123, 301 00 Plzeň · info@vitalspace.cz
+    VitalSpace s.r.o. · IČO: 24614068 · Radyňská 463/33, 326 00 Plzeň · pavel.fogl@vitalspace.cz · +420 775 930 816
   </div>
 </body>
 </html>`

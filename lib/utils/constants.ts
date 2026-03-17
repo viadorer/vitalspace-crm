@@ -52,8 +52,11 @@ export const APP_ROLES = [
 ] as const
 
 export const COMPANY_INFO = {
-  name: 'Vitalspace',
-  phone: '+420 734 451 278',
-  email: 'info@vitalspace.cz',
+  name: 'VitalSpace s.r.o.',
+  phone: '+420 775 930 816',
+  email: 'pavel.fogl@vitalspace.cz',
+  ico: '24614068',
+  address: 'Radyňská 463/33, 326 00 Plzeň',
+  registration: 'Spisová značka: C 48188 vedená u Krajského soudu v Plzni',
   cities: ['Plzeň', 'Praha'],
 } as const

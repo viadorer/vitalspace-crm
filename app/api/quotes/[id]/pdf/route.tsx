@@ -36,17 +36,17 @@ interface QuoteData {
 
 const SUPPLIER = {
   name: 'VitalSpace s.r.o.',
-  address: 'Klatovská 123',
+  address: 'Radyňská 463/33',
   city: 'Plzeň',
-  postalCode: '301 00',
-  ico: '12345678',
-  dic: 'CZ12345678',
-  phone: '+420 777 888 999',
-  email: 'info@vitalspace.cz',
+  postalCode: '326 00',
+  ico: '24614068',
+  dic: 'CZ24614068',
+  phone: '+420 775 930 816',
+  email: 'pavel.fogl@vitalspace.cz',
   website: 'www.vitalspace.cz',
-  registrationNote: 'Zapsána v obchodním rejstříku vedeném Krajským soudem v Plzni, oddíl C, vložka 12345',
-  bankAccount: '123456789/0100',
-  bankName: 'Komerční banka',
+  registrationNote: 'Spisová značka: C 48188 vedená u Krajského soudu v Plzni',
+  bankAccount: '',
+  bankName: '',
 }
 
 export async function GET(
