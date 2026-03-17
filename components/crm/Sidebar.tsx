@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
-import { LayoutDashboard, Kanban, Users, Building2, Package, Target, Shield, Zap, FileText, LogOut, Phone, Key, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, Kanban, Users, Building2, Package, Target, Shield, Zap, LogOut, Phone, Key, ClipboardList } from 'lucide-react'
 
 const menuItems = [
   { label: 'Dashboard', href: '/crm/dashboard', icon: LayoutDashboard },
@@ -12,7 +12,6 @@ const menuItems = [
   { label: 'Prospekty', href: '/crm/prospects', icon: Target },
   { label: 'Klienti', href: '/crm/clients', icon: Building2 },
   { label: 'Produkty', href: '/crm/products', icon: Package },
-  { label: 'Dokumenty', href: '/crm/documents', icon: FileText },
   { label: 'Nabídky', href: '/crm/quotes', icon: ClipboardList },
   { label: 'Segmenty', href: '/crm/segments', icon: Users },
 ]
