@@ -146,13 +146,16 @@ function wrapInTemplate(title: string, body: string): string {
 <html lang="cs">
 <head><meta charset="utf-8"><title>${escapeHtml(title)}</title></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="border-bottom: 3px solid #059669; padding-bottom: 16px; margin-bottom: 24px;">
-    <img src="${LOGO_URL}" alt="VitalSpace" width="48" height="48" style="vertical-align: middle; margin-right: 12px;" />
-    <span style="font-size: 22px; font-weight: 600; color: #059669; vertical-align: middle;">VitalSpace s.r.o.</span>
+  <div style="padding-bottom: 16px; margin-bottom: 24px;">
+    <img src="${LOGO_URL}" alt="VitalSpace" width="44" height="44" style="vertical-align: middle; margin-right: 10px;" />
+    <span style="font-size: 22px; font-weight: 700; color: #1e3a5f; vertical-align: middle;">VitalSpace</span>
   </div>
   ${body}
-  <div style="border-top: 1px solid #e5e7eb; margin-top: 32px; padding-top: 16px; font-size: 12px; color: #9ca3af;">
-    VitalSpace s.r.o. · IČO: 24614068 · Radyňská 463/33, 326 00 Plzeň · pavel.fogl@vitalspace.cz · +420 775 930 816
+  <div style="border-top: 1px solid #e5e7eb; margin-top: 32px; padding-top: 16px; font-size: 12px; color: #6b7280;">
+    <img src="${LOGO_URL}" alt="VitalSpace" width="20" height="20" style="vertical-align: middle; margin-right: 6px;" />
+    <strong style="color: #1e3a5f;">VitalSpace s.r.o.</strong><br/>
+    <span style="color: #9ca3af;">Mgr. Pavel Fogl · +420 775 930 816 · pavel.fogl@vitalspace.cz</span><br/>
+    <span style="color: #9ca3af;">Radyňská 463/33, 326 00 Plzeň · IČO: 24614068</span>
   </div>
 </body>
 </html>`

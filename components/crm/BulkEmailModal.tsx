@@ -37,6 +37,8 @@ interface SendResult {
 export function BulkEmailModal({ isOpen, onClose, recipients, entityType, onSendComplete }: BulkEmailModalProps) {
   const [templates, setTemplates] = useState<Template[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState('')
+  const [salutation, setSalutation] = useState('Vážená paní ředitelko / Vážený pane řediteli')
+  const [customSalutation, setCustomSalutation] = useState('')
   const [sending, setSending] = useState(false)
   const [results, setResults] = useState<SendResult[] | null>(null)
   const [dailyInfo, setDailyInfo] = useState<{ sent_today: number; limit: number; remaining: number } | null>(null)
@@ -49,6 +51,8 @@ export function BulkEmailModal({ isOpen, onClose, recipients, entityType, onSend
       setResults(null)
       setError('')
       setSelectedTemplate('')
+      setSalutation('Vážená paní ředitelko / Vážený pane řediteli')
+      setCustomSalutation('')
     }
   }, [isOpen])
 
@@ -88,7 +92,7 @@ export function BulkEmailModal({ isOpen, onClose, recipients, entityType, onSend
           email: r.email,
           name: r.name,
           variables: {
-            salutation: 'Vážená paní ředitelko / Vážený pane řediteli',
+            salutation: salutation === 'custom' ? customSalutation : salutation,
             company_name: r.company_name,
             contact_name: r.name || '',
           },
@@ -191,6 +195,32 @@ export function BulkEmailModal({ isOpen, onClose, recipients, entityType, onSend
             <p className="text-xs text-gray-500 mt-1">
               {templates.find(t => t.name === selectedTemplate)?.description}
             </p>
+          )}
+        </div>
+
+        {/* Salutation selection */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-900 mb-1">Oslovení</label>
+          <Select
+            value={salutation}
+            onChange={(e) => setSalutation(e.target.value)}
+            options={[
+              { value: 'Vážená paní ředitelko / Vážený pane řediteli', label: 'Vážená paní ředitelko / Vážený pane řediteli' },
+              { value: 'Vážená paní ředitelko', label: 'Vážená paní ředitelko' },
+              { value: 'Vážený pane řediteli', label: 'Vážený pane řediteli' },
+              { value: 'Vážená paní doktorko / Vážený pane doktore', label: 'Vážená paní doktorko / Vážený pane doktore' },
+              { value: 'Dobrý den', label: 'Dobrý den' },
+              { value: 'custom', label: 'Vlastní oslovení...' },
+            ]}
+          />
+          {salutation === 'custom' && (
+            <input
+              type="text"
+              value={customSalutation}
+              onChange={(e) => setCustomSalutation(e.target.value)}
+              placeholder="Zadejte vlastní oslovení..."
+              className="mt-2 w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           )}
         </div>
 
