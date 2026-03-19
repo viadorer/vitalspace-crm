@@ -67,8 +67,8 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId, prosp
     }
   }, [contact, isOpen])
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(e?: FormEvent) {
+    e?.preventDefault()
     setLoading(true)
     setSaveError(null)
     try {
@@ -102,7 +102,7 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId, prosp
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={contact ? 'Upravit kontakt' : 'Přidat kontakt'}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="Jméno"
@@ -201,11 +201,11 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId, prosp
           <Button type="button" variant="secondary" onClick={onClose}>
             Zrušit
           </Button>
-          <Button type="submit" disabled={loading}>
+          <Button type="button" disabled={loading} onClick={handleSubmit}>
             {loading ? 'Ukládání...' : contact ? 'Uložit změny' : 'Přidat kontakt'}
           </Button>
         </div>
-      </form>
+      </div>
     </Modal>
   )
 }
