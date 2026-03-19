@@ -45,9 +45,13 @@ export function useProspects() {
 
   async function createProspect(prospect: Partial<Prospect>) {
     try {
+      // Convert empty strings to null for UUID/nullable fields
+      const cleaned = { ...prospect } as any
+      if (cleaned.segment_id === '') cleaned.segment_id = null
+      if (cleaned.assigned_user_id === '') cleaned.assigned_user_id = null
       const { data, error } = await supabase
         .from('prospects')
-        .insert([prospect])
+        .insert([cleaned])
         .select()
         .single()
 
@@ -61,9 +65,12 @@ export function useProspects() {
 
   async function updateProspect(id: string, updates: Partial<Prospect>) {
     try {
+      const cleaned = { ...updates } as any
+      if (cleaned.segment_id === '') cleaned.segment_id = null
+      if (cleaned.assigned_user_id === '') cleaned.assigned_user_id = null
       const { data, error } = await supabase
         .from('prospects')
-        .update(updates)
+        .update(cleaned)
         .eq('id', id)
         .select()
         .single()

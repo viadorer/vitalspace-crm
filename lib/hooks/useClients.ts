@@ -53,9 +53,15 @@ export function useClients() {
   async function addClient(client: Partial<Client>) {
     const supabase = createClient()
     try {
+      // Convert empty strings to null for UUID/nullable fields
+      const cleaned = { ...client } as any
+      if (cleaned.segment_id === '') cleaned.segment_id = null
+      if (cleaned.assigned_user_id === '') cleaned.assigned_user_id = null
+      if (cleaned.prospect_id === '') cleaned.prospect_id = null
+      if (cleaned.original_prospect_id === '') cleaned.original_prospect_id = null
       const { data, error } = await supabase
         .from('clients')
-        .insert([client])
+        .insert([cleaned])
         .select()
         .single()
 
@@ -73,9 +79,14 @@ export function useClients() {
   async function updateClient(id: string, updates: Partial<Client>) {
     const supabase = createClient()
     try {
+      const cleaned = { ...updates } as any
+      if (cleaned.segment_id === '') cleaned.segment_id = null
+      if (cleaned.assigned_user_id === '') cleaned.assigned_user_id = null
+      if (cleaned.prospect_id === '') cleaned.prospect_id = null
+      if (cleaned.original_prospect_id === '') cleaned.original_prospect_id = null
       const { data, error } = await supabase
         .from('clients')
-        .update(updates)
+        .update(cleaned)
         .eq('id', id)
         .select()
         .single()
