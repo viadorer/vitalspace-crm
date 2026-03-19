@@ -26,6 +26,7 @@ export interface TemplateResult {
 
 export type TemplateName =
   | 'obecna-nabidka'
+  | 'prodej-pristroju'
   | 'follow-up'
   | 'pozvanka-audit'
   | 'skoly-skolky'
@@ -42,6 +43,11 @@ export const EMAIL_TEMPLATES: Record<TemplateName, {
     label: 'Obecná nabídka – dezinfekce a sanitace',
     description: 'Úvodní email s představením VitalSpace, fotkami produktů a nabídkou nezávazné konzultace.',
     build: buildObecnaNabidka,
+  },
+  'prodej-pristroju': {
+    label: 'Prodej přístrojů – katalog OZON',
+    description: 'Prodejní email se všemi 3 přístroji: OZON Breeze Up, OZON Oasis Box DRY, OZON Storm Pro I PLUS.',
+    build: buildProdejPristroju,
   },
   'follow-up': {
     label: 'Follow-up po nabídce',
@@ -124,9 +130,9 @@ function buildObecnaNabidka(vars: TemplateVariables): TemplateResult {
 
     <!-- Breeze Up – stropní/podhledový -->
     <div style="margin: 28px 0;">
-      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Stropní instalace – Breeze Up</p>
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Stropní instalace – OZON Breeze Up</p>
       <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Vestavba do podhledu nebo montáž na strop. Plně automatický provoz – osvěžování za přítomnosti lidí + totální dezinfekce mimo provoz. Žádná obsluha.</p>
-      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="VitalSpace Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON OZON Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
     </div>
 
     <div style="margin: 28px 0;">
@@ -139,9 +145,9 @@ function buildObecnaNabidka(vars: TemplateVariables): TemplateResult {
 
     <!-- Mobilní zařízení -->
     <div style="margin: 28px 0;">
-      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Mobilní zařízení – OZON Storm PRO I PLUS</p>
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Mobilní zařízení – OZON Storm Pro I PLUS</p>
       <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Průmyslový ozonový generátor pro dezinfekci větších prostor (200–800 m³). Mikropočítačem řízený cyklus s&nbsp;automatickým chlazením.</p>
-      <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="VitalSpace PRO I PLUS – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+      <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
     </div>
 
     <p>Naše společnost nabízí i&nbsp;poskytování služby spočívající v&nbsp;pravidelné dezinfekci našimi zaškolenými pracovníky.</p>
@@ -157,7 +163,88 @@ function buildObecnaNabidka(vars: TemplateVariables): TemplateResult {
   return { subject, html }
 }
 
-// ── 2. Follow-up ──
+// ── 2. Prodej přístrojů – katalogový prodejní email ──
+
+function buildProdejPristroju(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Vážená paní ředitelko / Vážený pane řediteli'
+  const subject = 'Profesionální ozonové přístroje pro Vaše zařízení | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>dovoluji si Vám představit naši řadu <strong>profesionálních ozonových přístrojů OZON</strong>,
+    které jsou navrženy pro spolehlivou dezinfekci a&nbsp;sanitaci prostor bez použití chemie.</p>
+
+    <p>Všechny přístroje jsou <strong>registrované Ministerstvem zdravotnictví ČR</strong>,
+    validované dle normy <strong>EN&nbsp;17272:2020</strong> a&nbsp;vyvinuté ve spolupráci
+    se <strong>Západočeskou univerzitou v&nbsp;Plzni</strong>.</p>
+
+    <!-- OZON Breeze Up -->
+    <div style="margin: 32px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <p style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin: 0 0 4px;">OZON Breeze Up</p>
+      <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px;">Stropní / podhledová instalace</p>
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON Breeze Up" style="max-width: 100%; border-radius: 8px; margin-bottom: 16px;" />
+      <ul style="color: #374151; line-height: 1.9; margin: 0; padding-left: 20px;">
+        <li>Montáž do kazetového podhledu (595&times;595 mm) nebo přímo na strop</li>
+        <li><strong>Plně automatický provoz</strong> – žádná obsluha, žádné ruční spouštění</li>
+        <li>Dvojitý režim: jemné osvěžování za přítomnosti lidí + totální dezinfekce mimo provoz</li>
+        <li>Ideální pro: nemocniční pokoje, ordinace, kanceláře, třídy, hotelové lobby</li>
+        <li>Nenápadný design – splyne s&nbsp;podhledem</li>
+      </ul>
+    </div>
+
+    <div style="margin: 28px 0;">
+      <p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">Reálné instalace v&nbsp;praxi:</p>
+      <div style="display: flex; gap: 8px;">
+        <img src="${IMG_BASE}/instalace-nemocnice.png" alt="Instalace v nemocnici" style="max-width: 48%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+        <img src="${IMG_BASE}/instalace-podhled.png" alt="Instalace v podhledu" style="max-width: 48%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+      </div>
+    </div>
+
+    <!-- OZON Oasis Box DRY -->
+    <div style="margin: 32px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <p style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin: 0 0 4px;">OZON Oasis Box DRY</p>
+      <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px;">Kompaktní sanitační jednotka</p>
+      <img src="${IMG_BASE}/clean-box-dry.png" alt="OZON Oasis Box DRY" style="max-width: 100%; border-radius: 8px; margin-bottom: 16px;" />
+      <ul style="color: #374151; line-height: 1.9; margin: 0; padding-left: 20px;">
+        <li>Kompaktní rozměry – vhodný i&nbsp;pro menší prostory</li>
+        <li>Sanitace předmětů, osobních pomůcek, textilií</li>
+        <li>Suchý provoz – bez vlhkosti, šetrný k&nbsp;materiálům</li>
+        <li>Ideální pro: ambulance, zubní ordinace, kosmetické salony, menší pokoje</li>
+      </ul>
+    </div>
+
+    <!-- OZON Storm Pro I PLUS -->
+    <div style="margin: 32px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <p style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin: 0 0 4px;">OZON Storm Pro I PLUS</p>
+      <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px;">Mobilní průmyslový generátor</p>
+      <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS" style="max-width: 100%; border-radius: 8px; margin-bottom: 16px;" />
+      <ul style="color: #374151; line-height: 1.9; margin: 0; padding-left: 20px;">
+        <li>Pokrytí prostor <strong>200–800 m³</strong></li>
+        <li>Mikropočítačem řízený cyklus s&nbsp;automatickým chlazením a&nbsp;bezpečnostními protokoly</li>
+        <li>Mobilní – snadno přemístitelný mezi místnostmi</li>
+        <li>Ideální pro: společné prostory, jídelny, tělocvičny, sklady, velkoplošné dezinfekce</li>
+      </ul>
+    </div>
+
+    <!-- CTA -->
+    <div style="margin: 32px 0; padding: 20px; background: #1e3a5f; border-radius: 12px; text-align: center;">
+      <p style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 8px;">Zajímá Vás cenová nabídka?</p>
+      <p style="color: #94a3b8; font-size: 14px; margin: 0;">Odpovězte na tento email nebo zavolejte na <strong style="color: white;">+420&nbsp;775&nbsp;930&nbsp;816</strong>.<br/>
+      Připravíme Vám nabídku na míru včetně možnosti pronájmu.</p>
+    </div>
+
+    <p>Všechny přístroje dodáváme <strong>včetně zaškolení obsluhy, servisu a&nbsp;technické podpory</strong>.
+    Nabízíme také <strong>pronájem</strong> a&nbsp;<strong>poskytování dezinfekce jako služby</strong>
+    našimi zaškolenými pracovníky.</p>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 3. Follow-up ──
 
 function buildFollowUp(vars: TemplateVariables): TemplateResult {
   const salutation = vars.salutation || 'Dobrý den'
@@ -235,18 +322,18 @@ function buildSkolySkolky(vars: TemplateVariables): TemplateResult {
 
     <p style="font-weight: 600; color: #1e3a5f; margin-top: 20px;">Jak to funguje?</p>
 
-    <p>Zařízení <strong>Breeze Up</strong> se instaluje do podhledu nebo na strop a&nbsp;pracuje plně automaticky:</p>
+    <p>Zařízení <strong>OZON Breeze Up</strong> se instaluje do podhledu nebo na strop a&nbsp;pracuje plně automaticky:</p>
     <ul style="color: #374151; line-height: 1.8;">
       <li>Během dne: jemné osvěžování vzduchu za přítomnosti dětí</li>
       <li>Po odchodu dětí: automatický cyklus totální dezinfekce</li>
       <li>Ráno: třída připravena s&nbsp;čistým vzduchem bez virů</li>
     </ul>
 
-    <img src="${IMG_BASE}/cleanup-nastropni.png" alt="VitalSpace Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
+    <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON OZON Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
 
-    <p>Pro větší prostory (tělocvičny, jídelny) nabízíme mobilní zařízení <strong>OZON Storm PRO I PLUS</strong>.</p>
+    <p>Pro větší prostory (tělocvičny, jídelny) nabízíme mobilní zařízení <strong>OZON Storm Pro I PLUS</strong>.</p>
 
-    <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="VitalSpace PRO I PLUS" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
+    <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
 
     <p>Technologie je <strong>registrovaná MZ ČR</strong> jako dezinfekční prostředek a&nbsp;validovaná dle normy EN&nbsp;17272:2020.</p>
 
@@ -283,12 +370,12 @@ function buildHotelyUbytovani(vars: TemplateVariables): TemplateResult {
 
     <p style="font-weight: 600; color: #1e3a5f; margin-top: 20px;">Naše řešení pro hotely</p>
 
-    <p><strong>Breeze Up</strong> – stropní instalace do podhledu, automatický provoz 24/7.
+    <p><strong>OZON Breeze Up</strong> – stropní instalace do podhledu, automatický provoz 24/7.
     Ideální pro lobby, wellness, restauraci, konferenční sály.</p>
 
-    <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
+    <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
 
-    <p><strong>OZON Storm PRO I PLUS</strong> – mobilní generátor pro rychlou dezinfekci pokojů.
+    <p><strong>OZON Storm Pro I PLUS</strong> – mobilní generátor pro rychlou dezinfekci pokojů.
     Housekeeping jej přiveze na pokoj, spustí cyklus a&nbsp;za hodinu je pokoj připraven.</p>
 
     <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="PRO I PLUS – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
