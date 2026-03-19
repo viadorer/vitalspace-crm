@@ -8,15 +8,42 @@ import type { Client } from '@/lib/supabase/types'
 interface ClientTableProps {
   clients: Client[]
   onClientClick: (client: Client) => void
+  selectedIds?: Set<string>
+  onSelectionChange?: (ids: Set<string>) => void
 }
 
-export function ClientTable({ clients, onClientClick }: ClientTableProps) {
+export function ClientTable({ clients, onClientClick, selectedIds, onSelectionChange }: ClientTableProps) {
   const [search, setSearch] = useState('')
 
   const filteredClients = clients.filter(c =>
     c.company_name.toLowerCase().includes(search.toLowerCase()) ||
     c.city?.toLowerCase().includes(search.toLowerCase())
   )
+
+  const selectable = !!onSelectionChange
+  const allSelected = selectable && filteredClients.length > 0 && filteredClients.every(c => selectedIds?.has(c.id))
+  const someSelected = selectable && filteredClients.some(c => selectedIds?.has(c.id))
+
+  function toggleAll() {
+    if (!onSelectionChange) return
+    if (allSelected) {
+      const next = new Set(selectedIds)
+      filteredClients.forEach(c => next.delete(c.id))
+      onSelectionChange(next)
+    } else {
+      const next = new Set(selectedIds)
+      filteredClients.forEach(c => next.add(c.id))
+      onSelectionChange(next)
+    }
+  }
+
+  function toggleOne(id: string) {
+    if (!onSelectionChange) return
+    const next = new Set(selectedIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    onSelectionChange(next)
+  }
 
   return (
     <div className="space-y-4">
@@ -34,6 +61,17 @@ export function ClientTable({ clients, onClientClick }: ClientTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              {selectable && (
+                <TableHead className="w-10">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={el => { if (el) el.indeterminate = someSelected && !allSelected }}
+                    onChange={toggleAll}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </TableHead>
+              )}
               <TableHead>Firma</TableHead>
               <TableHead>Segment</TableHead>
               <TableHead>IČO</TableHead>
@@ -55,6 +93,18 @@ export function ClientTable({ clients, onClientClick }: ClientTableProps) {
               
               return (
                 <TableRow key={client.id} onClick={() => onClientClick(client)}>
+                  {selectable && (
+                    <TableCell>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds?.has(client.id) || false}
+                          onChange={() => toggleOne(client.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell className="font-medium">{client.company_name}</TableCell>
                   <TableCell className="text-sm text-gray-600">{segmentName}</TableCell>
                   <TableCell className="text-sm">{client.ico || '-'}</TableCell>

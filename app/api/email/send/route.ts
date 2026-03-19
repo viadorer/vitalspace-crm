@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, safeErrorResponse } from '@/lib/supabase/auth-guard'
-import { sendEmail, sendQuoteEmail } from '@/lib/email/brevo'
+import { sendEmail, sendQuoteEmail, sendTemplateEmail } from '@/lib/email/brevo'
 
 export const dynamic = 'force-dynamic'
 
@@ -69,6 +69,26 @@ export async function POST(_request: NextRequest) {
         htmlContent: html_body,
         tags: ['crm-manual'],
       })
+
+      return NextResponse.json({ success: true, messageId: result.messageId })
+    }
+
+    if (type === 'template') {
+      const { to_email, to_name, template_name, variables } = body
+
+      if (!to_email || !template_name) {
+        return NextResponse.json(
+          { error: 'Chybí povinná pole: to_email, template_name' },
+          { status: 400 }
+        )
+      }
+
+      const result = await sendTemplateEmail(
+        to_email,
+        to_name || '',
+        template_name,
+        variables || {}
+      )
 
       return NextResponse.json({ success: true, messageId: result.messageId })
     }

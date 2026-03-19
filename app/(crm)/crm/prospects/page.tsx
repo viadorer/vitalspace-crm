@@ -9,6 +9,7 @@ import { ProspectTable } from '@/components/crm/ProspectTable'
 import { ProspectForm } from '@/components/crm/ProspectForm'
 import { ActivityPanel } from '@/components/crm/ActivityPanel'
 import { DealForm } from '@/components/crm/DealForm'
+import { BulkEmailModal } from '@/components/crm/BulkEmailModal'
 import { useProspects } from '@/lib/hooks/useProspects'
 import { useDeals } from '@/lib/hooks/useDeals'
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
@@ -24,6 +25,8 @@ export default function ProspectsPage() {
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null)
   const [showNewProspectModal, setShowNewProspectModal] = useState(false)
   const [showNewDealModal, setShowNewDealModal] = useState(false)
+  const [showBulkEmailModal, setShowBulkEmailModal] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [converting, setConverting] = useState(false)
   useEffect(() => {
     async function fetchData() {
@@ -143,10 +146,29 @@ export default function ProspectsPage() {
         }
       />
 
+      {/* Bulk action toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="mx-8 mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+          <span className="text-sm text-blue-800 font-medium">
+            Vybráno: {selectedIds.size} prospektů
+          </span>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setSelectedIds(new Set())}>
+              Zrušit výběr
+            </Button>
+            <Button variant="primary" onClick={() => setShowBulkEmailModal(true)}>
+              Hromadný email
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="p-8">
         <ProspectTable
           prospects={prospects}
           onProspectClick={setSelectedProspect}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
         />
       </div>
 
@@ -216,6 +238,30 @@ export default function ProspectsPage() {
           />
         </Modal>
       )}
+
+      <BulkEmailModal
+        isOpen={showBulkEmailModal}
+        onClose={() => {
+          setShowBulkEmailModal(false)
+          setSelectedIds(new Set())
+        }}
+        entityType="prospect"
+        recipients={prospects
+          .filter(p => selectedIds.has(p.id))
+          .map(p => {
+            const contact = (p as any).prospect_contacts?.find((c: any) => c.is_decision_maker) ||
+                            (p as any).prospect_contacts?.[0]
+            return {
+              email: contact?.email || '',
+              name: contact ? `${contact.first_name || ''} ${contact.last_name}`.trim() : '',
+              company_name: p.company_name,
+              prospect_id: p.id,
+            }
+          })}
+        onSendComplete={() => {
+          setSelectedIds(new Set())
+        }}
+      />
     </div>
   )
 }

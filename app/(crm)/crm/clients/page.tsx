@@ -9,6 +9,7 @@ import { ClientTable } from '@/components/crm/ClientTable'
 import { ClientForm } from '@/components/crm/ClientForm'
 import { ActivityPanel } from '@/components/crm/ActivityPanel'
 import { DealForm } from '@/components/crm/DealForm'
+import { BulkEmailModal } from '@/components/crm/BulkEmailModal'
 import { useClients } from '@/lib/hooks/useClients'
 import { useDeals } from '@/lib/hooks/useDeals'
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
@@ -23,6 +24,8 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [showNewClientModal, setShowNewClientModal] = useState(false)
   const [showNewDealModal, setShowNewDealModal] = useState(false)
+  const [showBulkEmailModal, setShowBulkEmailModal] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [segments, setSegments] = useState<CompanySegment[]>([])
   useEffect(() => {
     async function fetchSegments() {
@@ -93,6 +96,23 @@ export default function ClientsPage() {
         }
       />
 
+      {/* Bulk action toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="mx-8 mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+          <span className="text-sm text-blue-800 font-medium">
+            Vybráno: {selectedIds.size} klientů
+          </span>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setSelectedIds(new Set())}>
+              Zrušit výběr
+            </Button>
+            <Button variant="primary" onClick={() => setShowBulkEmailModal(true)}>
+              Hromadný email
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="p-8">
         <ClientTable
           clients={clients}
@@ -100,6 +120,8 @@ export default function ClientsPage() {
             setSelectedClient(client)
             setEditingClient(client)
           }}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
         />
       </div>
 
@@ -195,6 +217,30 @@ export default function ClientsPage() {
           />
         </Modal>
       )}
+
+      <BulkEmailModal
+        isOpen={showBulkEmailModal}
+        onClose={() => {
+          setShowBulkEmailModal(false)
+          setSelectedIds(new Set())
+        }}
+        entityType="client"
+        recipients={clients
+          .filter(c => selectedIds.has(c.id))
+          .map(c => {
+            const contact = (c as any).client_contacts?.find((cc: any) => cc.is_primary) ||
+                            (c as any).client_contacts?.[0]
+            return {
+              email: contact?.email || '',
+              name: contact ? `${contact.first_name || ''} ${contact.last_name}`.trim() : '',
+              company_name: c.company_name,
+              client_id: c.id,
+            }
+          })}
+        onSendComplete={() => {
+          setSelectedIds(new Set())
+        }}
+      />
     </div>
   )
 }

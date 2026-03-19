@@ -12,9 +12,11 @@ import type { Prospect } from '@/lib/supabase/types'
 interface ProspectTableProps {
   prospects: Prospect[]
   onProspectClick: (prospect: Prospect) => void
+  selectedIds?: Set<string>
+  onSelectionChange?: (ids: Set<string>) => void
 }
 
-export function ProspectTable({ prospects, onProspectClick }: ProspectTableProps) {
+export function ProspectTable({ prospects, onProspectClick, selectedIds, onSelectionChange }: ProspectTableProps) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [regionFilter, setRegionFilter] = useState('')
@@ -70,6 +72,34 @@ export function ProspectTable({ prospects, onProspectClick }: ProspectTableProps
     const start = (currentPage - 1) * pageSize
     return filteredProspects.slice(start, start + pageSize)
   }, [filteredProspects, currentPage, pageSize])
+
+  // Checkbox helpers
+  const selectable = !!onSelectionChange
+  const allFilteredSelected = selectable && filteredProspects.length > 0 && filteredProspects.every(p => selectedIds?.has(p.id))
+  const someFilteredSelected = selectable && filteredProspects.some(p => selectedIds?.has(p.id))
+
+  function toggleAll() {
+    if (!onSelectionChange) return
+    if (allFilteredSelected) {
+      // Deselect all filtered
+      const next = new Set(selectedIds)
+      filteredProspects.forEach(p => next.delete(p.id))
+      onSelectionChange(next)
+    } else {
+      // Select all filtered
+      const next = new Set(selectedIds)
+      filteredProspects.forEach(p => next.add(p.id))
+      onSelectionChange(next)
+    }
+  }
+
+  function toggleOne(id: string) {
+    if (!onSelectionChange) return
+    const next = new Set(selectedIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    onSelectionChange(next)
+  }
 
   // Reset na první stránku při změně filtrů
   const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
@@ -186,6 +216,17 @@ export function ProspectTable({ prospects, onProspectClick }: ProspectTableProps
         <Table>
           <TableHeader>
             <TableRow>
+              {selectable && (
+                <TableHead className="w-10">
+                  <input
+                    type="checkbox"
+                    checked={allFilteredSelected}
+                    ref={el => { if (el) el.indeterminate = someFilteredSelected && !allFilteredSelected }}
+                    onChange={toggleAll}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </TableHead>
+              )}
               <TableHead>Priorita</TableHead>
               <TableHead>Firma</TableHead>
               <TableHead>Segment</TableHead>
@@ -208,6 +249,18 @@ export function ProspectTable({ prospects, onProspectClick }: ProspectTableProps
               
               return (
                 <TableRow key={prospect.id} onClick={() => onProspectClick(prospect)}>
+                  {selectable && (
+                    <TableCell>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds?.has(prospect.id) || false}
+                          onChange={() => toggleOne(prospect.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div
                       className="w-3 h-3 rounded-full"

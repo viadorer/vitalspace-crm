@@ -115,13 +115,40 @@ export async function sendQuoteEmail(
   })
 }
 
+/**
+ * Send an email using a named template with variable substitution.
+ */
+export async function sendTemplateEmail(
+  recipientEmail: string,
+  recipientName: string,
+  templateName: string,
+  variables: Record<string, string>
+): Promise<BrevoResponse> {
+  const { EMAIL_TEMPLATES } = await import('./templates')
+  const tpl = EMAIL_TEMPLATES[templateName as keyof typeof EMAIL_TEMPLATES]
+  if (!tpl) throw new Error(`Neznámá šablona: ${templateName}`)
+
+  const { subject, html } = tpl.build(variables)
+
+  return sendEmail({
+    to: [{ email: recipientEmail, name: recipientName }],
+    subject,
+    htmlContent: wrapInTemplate(subject, html),
+    replyTo: { email: 'pavel.fogl@vitalspace.cz', name: 'Pavel Fogl' },
+    tags: ['crm-template', templateName],
+  })
+}
+
+const LOGO_URL = 'https://pyrtrlhesqqjjtemacbi.supabase.co/storage/v1/object/public/email-assets/logo-vitalspace.png'
+
 function wrapInTemplate(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="cs">
 <head><meta charset="utf-8"><title>${escapeHtml(title)}</title></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="border-bottom: 3px solid #059669; padding-bottom: 16px; margin-bottom: 24px;">
-    <h2 style="margin: 0; color: #059669; font-weight: 600;">VitalSpace</h2>
+    <img src="${LOGO_URL}" alt="VitalSpace" width="48" height="48" style="vertical-align: middle; margin-right: 12px;" />
+    <span style="font-size: 22px; font-weight: 600; color: #059669; vertical-align: middle;">VitalSpace s.r.o.</span>
   </div>
   ${body}
   <div style="border-top: 1px solid #e5e7eb; margin-top: 32px; padding-top: 16px; font-size: 12px; color: #9ca3af;">
