@@ -27,12 +27,15 @@ export interface TemplateResult {
 export type TemplateName =
   | 'obecna-nabidka'
   | 'prodej-pristroju'
+  | 'toxicita-prostredi'
   | 'follow-up'
   | 'pozvanka-audit'
   | 'skoly-skolky'
   | 'hotely-ubytovani'
   | 'pronajem-vs-koupe'
   | 'certifikace-duvera'
+  | 'administrativni-budovy'
+  | 'obchodni-centra'
 
 export const EMAIL_TEMPLATES: Record<TemplateName, {
   label: string
@@ -48,6 +51,11 @@ export const EMAIL_TEMPLATES: Record<TemplateName, {
     label: 'Prodej přístrojů – katalog OZON',
     description: 'Prodejní email se všemi 3 přístroji: OZON Breeze Up, OZON Oasis Box DRY, OZON Storm Pro I PLUS.',
     build: buildProdejPristroju,
+  },
+  'toxicita-prostredi': {
+    label: 'Toxicita vnitřního prostředí – skrytá hrozba',
+    description: 'Edukační email o VOC, formaldehydu, syndromu nemocné budovy a řešení pomocí ozonové sanitace.',
+    build: buildToxicitaProstredi,
   },
   'follow-up': {
     label: 'Follow-up po nabídce',
@@ -78,6 +86,16 @@ export const EMAIL_TEMPLATES: Record<TemplateName, {
     label: 'Certifikace a důvěra',
     description: 'MZ ČR, ZČU Plzeň, EN 17272:2020 – pro skeptické ředitele.',
     build: buildCertifikaceDuvera,
+  },
+  'administrativni-budovy': {
+    label: 'Nabídka pro administrativní budovy',
+    description: 'Sick building syndrome, produktivita zaměstnanců, HVAC kontaminace, ESG/BREEAM benefity.',
+    build: buildAdministrativniBudovy,
+  },
+  'obchodni-centra': {
+    label: 'Nabídka pro obchodní centra',
+    description: 'Vysoká návštěvnost, food courty, toalety, nákupní komfort, ROI a retenční výhody.',
+    build: buildObchodniCentra,
   },
 }
 
@@ -476,25 +494,25 @@ function buildCertifikaceDuvera(vars: TemplateVariables): TemplateResult {
     <p>Dovolte mi proto shrnout, proč si za kvalitou VitalSpace stojíme:</p>
 
     <!-- Certifikace -->
-    <div style="margin: 24px 0; padding: 20px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #1e3a5f;">
+    <div style="margin: 24px 0; padding: 20px; background: #f0f7ff; border-radius: 8px;">
       <p style="font-weight: 700; color: #1e3a5f; margin: 0 0 12px;">Registrace Ministerstvem zdravotnictví ČR</p>
       <p style="font-size: 14px; color: #374151; margin: 0;">Naše zařízení jsou registrována u&nbsp;MZ ČR jako dezinfekční prostředky / biocidy.
       To znamená, že prošla přísnými testy účinnosti a&nbsp;bezpečnosti pro profesionální použití.</p>
     </div>
 
-    <div style="margin: 24px 0; padding: 20px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #1e3a5f;">
+    <div style="margin: 24px 0; padding: 20px; background: #f0f7ff; border-radius: 8px;">
       <p style="font-weight: 700; color: #1e3a5f; margin: 0 0 12px;">Validace dle EN 17272:2020</p>
       <p style="font-size: 14px; color: #374151; margin: 0;">Evropská norma pro hodnocení účinnosti automatizovaných dezinfekčních procesů.
       Naše technologie splňuje požadavky na 99,9% redukci patogenů.</p>
     </div>
 
-    <div style="margin: 24px 0; padding: 20px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #1e3a5f;">
+    <div style="margin: 24px 0; padding: 20px; background: #f0f7ff; border-radius: 8px;">
       <p style="font-weight: 700; color: #1e3a5f; margin: 0 0 12px;">Spolupráce se Západočeskou univerzitou v&nbsp;Plzni</p>
       <p style="font-size: 14px; color: #374151; margin: 0;">Technologie byla vyvíjena ve spolupráci s&nbsp;akademickým prostředím.
       Výsledky jsou podloženy měřeními a&nbsp;laboratorními testy.</p>
     </div>
 
-    <div style="margin: 24px 0; padding: 20px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #1e3a5f;">
+    <div style="margin: 24px 0; padding: 20px; background: #f0f7ff; border-radius: 8px;">
       <p style="font-weight: 700; color: #1e3a5f; margin: 0 0 12px;">Zdravotní ústav Ostrava</p>
       <p style="font-size: 14px; color: #374151; margin: 0;">Spolupráce na ověření účinnosti v&nbsp;reálných podmínkách zdravotnických zařízení.</p>
     </div>
@@ -514,6 +532,327 @@ function buildCertifikaceDuvera(vars: TemplateVariables): TemplateResult {
 
     <p>Pokud byste uvítal/a <strong>bližší informace, referenční list</strong> nebo
     <strong>nezávaznou ukázku přímo ve Vašem zařízení</strong>, budu rád k&nbsp;dispozici.</p>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 8. Toxicita vnitřního prostředí ──
+
+function buildToxicitaProstredi(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Vážená paní ředitelko / Vážený pane řediteli'
+  const subject = 'Toxické prostředí ve Vašem zařízení? Skrytá hrozba, kterou nevnímáte | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>věděli jste, že <strong>vzduch uvnitř budov bývá až 5&times; znečištěnější než venkovní?</strong>
+    Tato skutečnost se týká i&nbsp;zdravotnických zařízení, domovů pro seniory, škol a&nbsp;kanceláří.</p>
+
+    <!-- Alarmující čísla -->
+    <div style="margin: 28px 0; padding: 20px; background: #fef2f2; border-radius: 12px;">
+      <p style="font-weight: 700; color: #dc2626; margin: 0 0 12px; font-size: 16px;">Co dýchají vaši klienti a&nbsp;zaměstnanci?</p>
+      <ul style="color: #374151; line-height: 2; margin: 0; padding-left: 20px;">
+        <li><strong>VOC (těkavé organické látky)</strong> – uvolňují se z&nbsp;nábytku, podlah, nátěrů, čisticích prostředků a&nbsp;dezinfekcí</li>
+        <li><strong>Formaldehyd</strong> – běžná součást lepidel, dřevotřísek a&nbsp;koberců, klasifikován jako karcinogen</li>
+        <li><strong>Bakterie a&nbsp;plísně</strong> – rozmnožují se ve vzduchotechnice, za obklady, v&nbsp;podhledech</li>
+        <li><strong>Pachy z&nbsp;inkontinence a&nbsp;léčiv</strong> – snižují komfort klientů i&nbsp;personálu</li>
+        <li><strong>Alergeny a&nbsp;prachové částice PM2.5</strong> – pronikají hluboko do plic</li>
+      </ul>
+    </div>
+
+    <!-- Syndrom nemocné budovy -->
+    <div style="margin: 28px 0; padding: 20px; background: #fffbeb; border-radius: 12px;">
+      <p style="font-weight: 700; color: #d97706; margin: 0 0 12px;">Syndrom nemocné budovy (Sick Building Syndrome)</p>
+      <p style="font-size: 14px; color: #374151; margin: 0 0 8px;">Světová zdravotnická organizace (WHO) odhaduje, že až <strong>30 % budov</strong>
+      trpí tímto syndromem. Projevuje se:</p>
+      <ul style="color: #374151; line-height: 1.8; margin: 0; padding-left: 20px; font-size: 14px;">
+        <li>bolestmi hlavy a&nbsp;únavou personálu</li>
+        <li>podrážděním sliznic a&nbsp;očí</li>
+        <li>zvýšenou nemocností a&nbsp;absencí</li>
+        <li>zhoršením stavu chronicky nemocných klientů</li>
+      </ul>
+    </div>
+
+    <!-- Řešení -->
+    <p style="font-weight: 600; color: #1e3a5f; font-size: 18px; margin-top: 32px;">Řešení existuje – a&nbsp;je bez chemie</p>
+
+    <p>Ozon (O₃) je <strong>nejsilnější přírodní oxidant</strong>, který:</p>
+
+    <ul style="color: #374151; line-height: 2;">
+      <li><strong>Rozloží VOC a&nbsp;formaldehyd</strong> – štěpí škodlivé molekuly na neškodný CO₂ a&nbsp;vodu</li>
+      <li><strong>Zlikviduje 99,9 % bakterií, virů a&nbsp;plísní</strong> – validováno dle EN&nbsp;17272:2020</li>
+      <li><strong>Eliminuje pachy</strong> – nemaskou, ale chemicky odstraňuje zdroj zápachu</li>
+      <li><strong>Po sanitaci se rozloží na čistý kyslík</strong> – žádné toxické zbytky, žádná chemie</li>
+    </ul>
+
+    <!-- Přístroje -->
+    <div style="margin: 32px 0; display: flex; gap: 16px; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 250px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <p style="font-weight: 700; color: #1e3a5f; margin: 0 0 8px;">OZON Breeze Up</p>
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 8px;">Stropní / podhledová instalace</p>
+        <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON Breeze Up" style="max-width: 100%; border-radius: 8px; margin-bottom: 12px;" />
+        <p style="font-size: 13px; color: #374151; margin: 0;">Plně automatický. Jemné čištění vzduchu za přítomnosti lidí + totální dekontaminace mimo provoz.</p>
+      </div>
+      <div style="flex: 1; min-width: 250px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <p style="font-weight: 700; color: #1e3a5f; margin: 0 0 8px;">OZON Storm Pro I PLUS</p>
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 8px;">Mobilní průmyslový generátor</p>
+        <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS" style="max-width: 100%; border-radius: 8px; margin-bottom: 12px;" />
+        <p style="font-size: 13px; color: #374151; margin: 0;">Pokrytí 200–800 m³. Ideální pro jídelny, společné prostory, sklady.</p>
+      </div>
+    </div>
+
+    <!-- Srovnání -->
+    <div style="margin: 28px 0; padding: 20px; background: #f0fdf4; border-radius: 12px;">
+      <p style="font-weight: 700; color: #16a34a; margin: 0 0 12px;">Ozon vs. chemická dezinfekce</p>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <tr style="border-bottom: 1px solid #dcfce7;">
+          <td style="padding: 8px 0; font-weight: 600; color: #374151;"></td>
+          <td style="padding: 8px; text-align: center; font-weight: 600; color: #16a34a;">Ozon</td>
+          <td style="padding: 8px; text-align: center; font-weight: 600; color: #dc2626;">Chemie</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #dcfce7;">
+          <td style="padding: 8px 0; color: #374151;">Toxické zbytky</td>
+          <td style="padding: 8px; text-align: center;">Žádné (→ O₂)</td>
+          <td style="padding: 8px; text-align: center;">Ano</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #dcfce7;">
+          <td style="padding: 8px 0; color: #374151;">Rozklad VOC</td>
+          <td style="padding: 8px; text-align: center;">Ano</td>
+          <td style="padding: 8px; text-align: center;">Ne</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #dcfce7;">
+          <td style="padding: 8px 0; color: #374151;">Eliminace pachů</td>
+          <td style="padding: 8px; text-align: center;">Chemicky odstraní</td>
+          <td style="padding: 8px; text-align: center;">Pouze maskuje</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #dcfce7;">
+          <td style="padding: 8px 0; color: #374151;">Účinnost na viry</td>
+          <td style="padding: 8px; text-align: center;">99,9 %</td>
+          <td style="padding: 8px; text-align: center;">Variabilní</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #374151;">Bezpečnost pro klienty</td>
+          <td style="padding: 8px; text-align: center;">Plně bezpečné</td>
+          <td style="padding: 8px; text-align: center;">Alergické reakce</td>
+        </tr>
+      </tbody></table>
+    </div>
+
+    <!-- Certifikace -->
+    <p style="font-size: 14px; color: #6b7280; margin-top: 24px;">
+      Naše technologie je <strong>registrovaná Ministerstvem zdravotnictví ČR</strong>,
+      validovaná dle <strong>EN&nbsp;17272:2020</strong> a&nbsp;vyvinutá ve spolupráci
+      se <strong>Západočeskou univerzitou v&nbsp;Plzni</strong> a&nbsp;<strong>Zdravotním ústavem v&nbsp;Ostravě</strong>.
+    </p>
+
+    <!-- CTA -->
+    <div style="margin: 32px 0; padding: 20px; background: #1e3a5f; border-radius: 12px; text-align: center;">
+      <p style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 8px;">Zjistěte, co dýchají vaši lidé</p>
+      <p style="color: #94a3b8; font-size: 14px; margin: 0;">Nabízíme <strong style="color: white;">bezplatné měření kvality vzduchu</strong> ve Vašich prostorách.<br/>
+      Odpovězte na tento email nebo zavolejte na <strong style="color: white;">+420&nbsp;775&nbsp;930&nbsp;816</strong>.</p>
+    </div>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 9. Administrativní budovy ──
+
+function buildAdministrativniBudovy(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Vážená paní / Vážený pane'
+  const subject = 'Čistý vzduch v kancelářích = vyšší produktivita zaměstnanců | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>dovoluji si Vás oslovit s&nbsp;nabídkou, která přímo ovlivňuje <strong>produktivitu, nemocnost
+    a&nbsp;spokojenost zaměstnanců</strong> ve Vaší administrativní budově.</p>
+
+    <!-- Problém -->
+    <div style="margin: 28px 0; padding: 20px; background: #fef2f2; border-radius: 12px;">
+      <p style="font-weight: 700; color: #dc2626; margin: 0 0 12px; font-size: 16px;">Problém: Syndrom nemocné budovy</p>
+      <p style="font-size: 14px; color: #374151; margin: 0 0 12px;">Podle WHO trpí až <strong>30 % kancelářských budov</strong>
+      syndromem nemocné budovy. Zaměstnanci si stěžují na:</p>
+      <ul style="color: #374151; line-height: 1.9; margin: 0; padding-left: 20px; font-size: 14px;">
+        <li>bolesti hlavy, únavu a&nbsp;sníženou koncentraci</li>
+        <li>podráždění očí, nosu a&nbsp;hrdla</li>
+        <li>časté respirační infekce šířící se open-space kancelářemi</li>
+        <li>nepříjemné pachy z&nbsp;klimatizace a&nbsp;koberců (VOC, formaldehyd)</li>
+      </ul>
+      <p style="font-size: 14px; color: #374151; margin: 12px 0 0; font-weight: 600;">Výsledek? Vyšší nemocnost, nižší produktivita, vyšší fluktuace.</p>
+    </div>
+
+    <!-- Řešení -->
+    <p style="font-weight: 600; color: #1e3a5f; font-size: 18px; margin-top: 32px;">Řešení: Profesionální ozonová sanitace</p>
+
+    <div style="margin: 24px 0; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <p style="font-weight: 700; color: #1e3a5f; margin: 0 0 12px;">OZON Breeze Up – stropní instalace</p>
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON Breeze Up" style="max-width: 100%; border-radius: 8px; margin-bottom: 12px;" />
+      <p style="font-size: 14px; color: #374151; margin: 0;">Instalace do kazetového podhledu (595&times;595 mm) – <strong>splyne s&nbsp;interiérem</strong>.
+      Plně automatický provoz:</p>
+      <ul style="color: #374151; line-height: 1.9; margin: 8px 0 0; padding-left: 20px; font-size: 14px;">
+        <li><strong>Během pracovní doby:</strong> jemné čištění vzduchu za přítomnosti lidí</li>
+        <li><strong>V&nbsp;noci/víkendy:</strong> automatická totální dezinfekce prostor</li>
+        <li><strong>Ráno:</strong> zaměstnanci přijdou do čistého, svěžího prostředí</li>
+      </ul>
+    </div>
+
+    <div style="margin: 24px 0; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <p style="font-weight: 700; color: #1e3a5f; margin: 0 0 12px;">OZON Storm Pro I PLUS – pro společné prostory</p>
+      <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS" style="max-width: 100%; border-radius: 8px; margin-bottom: 12px;" />
+      <p style="font-size: 14px; color: #374151; margin: 0;">Mobilní generátor pro zasedací místnosti, jídelny, recepce a&nbsp;další prostory s&nbsp;vysokou koncentrací lidí. Pokrytí 200–800 m³.</p>
+    </div>
+
+    <!-- Konkrétní benefity -->
+    <p style="font-weight: 600; color: #1e3a5f; font-size: 16px; margin-top: 28px;">Co získáte</p>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0;">
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 10px 0; font-weight: 600; color: #1e3a5f; width: 40%;">Nižší nemocnost</td>
+        <td style="padding: 10px; color: #374151;">Eliminace 99,9 % virů a&nbsp;bakterií ve vzduchu = méně šíření infekcí v&nbsp;open-space</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 10px 0; font-weight: 600; color: #1e3a5f;">Vyšší produktivita</td>
+        <td style="padding: 10px; color: #374151;">Čistý vzduch bez VOC zlepšuje koncentraci a&nbsp;kognitivní výkon zaměstnanců</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 10px 0; font-weight: 600; color: #1e3a5f;">HVAC dekontaminace</td>
+        <td style="padding: 10px; color: #374151;">Ozon proniká do vzduchotechniky a&nbsp;rozvodů, kde se hromadí plísně a&nbsp;bakterie</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 10px 0; font-weight: 600; color: #1e3a5f;">ESG / BREEAM / WELL</td>
+        <td style="padding: 10px; color: #374151;">Měřitelné zlepšení kvality vnitřního prostředí – body pro certifikace udržitelnosti</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 0; font-weight: 600; color: #1e3a5f;">Bez chemie</td>
+        <td style="padding: 10px; color: #374151;">Ozon se rozloží na čistý kyslík – žádné rezidua, žádné alergické reakce</td>
+      </tr>
+    </table>
+
+    <p style="font-size: 14px; color: #6b7280;">Technologie registrovaná <strong>MZ ČR</strong>, validovaná dle <strong>EN&nbsp;17272:2020</strong>,
+    vyvinutá ve spolupráci se <strong>ZČU v&nbsp;Plzni</strong>.</p>
+
+    <!-- CTA -->
+    <div style="margin: 32px 0; padding: 20px; background: #1e3a5f; border-radius: 12px; text-align: center;">
+      <p style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 8px;">Bezplatný audit kvality vzduchu</p>
+      <p style="color: #94a3b8; font-size: 14px; margin: 0;">Změříme VOC, CO₂ a&nbsp;PM2.5 ve Vašich prostorách a&nbsp;navrhneme řešení na míru.<br/>
+      Odpovězte na email nebo zavolejte na <strong style="color: white;">+420&nbsp;775&nbsp;930&nbsp;816</strong>.</p>
+    </div>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 10. Obchodní centra ──
+
+function buildObchodniCentra(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Vážená paní / Vážený pane'
+  const subject = 'Hygienický standard, který vaši zákazníci ocení | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>dovoluji si Vás oslovit s&nbsp;nabídkou řešení, které pomáhá obchodním centrům
+    <strong>zvýšit komfort návštěvníků, snížit provozní náklady</strong> a&nbsp;odlišit se od konkurence.</p>
+
+    <!-- Problém -->
+    <div style="margin: 28px 0; padding: 20px; background: #fef2f2; border-radius: 12px;">
+      <p style="font-weight: 700; color: #dc2626; margin: 0 0 12px; font-size: 16px;">Výzvy obchodních center</p>
+      <ul style="color: #374151; line-height: 2; margin: 0; padding-left: 20px;">
+        <li><strong>Tisíce návštěvníků denně</strong> – masivní šíření virů a&nbsp;bakterií vzduchem</li>
+        <li><strong>Food courty a&nbsp;gastro zóny</strong> – pachy z&nbsp;kuchyní pronikají do nákupních pasáží</li>
+        <li><strong>Veřejné toalety</strong> – trvalý zdroj zápachu a&nbsp;bakteriální kontaminace</li>
+        <li><strong>Vzduchotechnika</strong> – centrální HVAC rozváží znečištění po celém objektu</li>
+        <li><strong>Sezónní epidemie</strong> – zvýšená nemocnost personálu v&nbsp;chřipkové sezóně</li>
+      </ul>
+    </div>
+
+    <!-- Řešení pro různé zóny -->
+    <p style="font-weight: 600; color: #1e3a5f; font-size: 18px; margin-top: 32px;">Řešení pro každou zónu centra</p>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin: 20px 0;">
+      <thead>
+        <tr style="background: #1e3a5f; color: white;">
+          <th style="padding: 12px; text-align: left; border-radius: 8px 0 0 0;">Zóna</th>
+          <th style="padding: 12px; text-align: left;">Problém</th>
+          <th style="padding: 12px; text-align: left; border-radius: 0 8px 0 0;">Naše řešení</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+          <td style="padding: 10px; font-weight: 600;">Nákupní pasáže</td>
+          <td style="padding: 10px;">Šíření virů, zatuchlý vzduch</td>
+          <td style="padding: 10px;"><strong>OZON Breeze Up</strong> v&nbsp;podhledech – automatická sanitace 24/7</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+          <td style="padding: 10px; font-weight: 600;">Food court</td>
+          <td style="padding: 10px;">Pachy z&nbsp;kuchyní, mastnota ve vzduchu</td>
+          <td style="padding: 10px;"><strong>OZON Breeze Up</strong> – rozklad pachových molekul, ne maskování</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+          <td style="padding: 10px; font-weight: 600;">Toalety</td>
+          <td style="padding: 10px;">Trvalý zápach, bakterie</td>
+          <td style="padding: 10px;"><strong>OZON Oasis Box DRY</strong> – kompaktní, kontinuální sanitace</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+          <td style="padding: 10px; font-weight: 600;">Sklady / zázemí</td>
+          <td style="padding: 10px;">Plísně, vlhkost, zápach</td>
+          <td style="padding: 10px;"><strong>OZON Storm Pro I PLUS</strong> – mobilní dezinfekce 200–800 m³</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; font-weight: 600;">Kanceláře správy</td>
+          <td style="padding: 10px;">Nemocnost personálu</td>
+          <td style="padding: 10px;"><strong>OZON Breeze Up</strong> – automatický režim za přítomnosti lidí</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Produkty -->
+    <div style="margin: 28px 0;">
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+      <p style="font-size: 13px; color: #6b7280; margin: 8px 0 0;">OZON Breeze Up – instalace do kazetového podhledu, splyne s&nbsp;interiérem centra</p>
+    </div>
+
+    <!-- ROI -->
+    <div style="margin: 28px 0; padding: 20px; background: #f0fdf4; border-radius: 12px;">
+      <p style="font-weight: 700; color: #16a34a; margin: 0 0 12px; font-size: 16px;">ROI a&nbsp;obchodní přínosy</p>
+      <ul style="color: #374151; line-height: 2; margin: 0; padding-left: 20px;">
+        <li><strong>Úspora na chemických dezinfekčních prostředcích</strong> – ozon nahrazuje spreje, gely a&nbsp;čisticí přípravky</li>
+        <li><strong>Vyšší spokojenost nájemců</strong> – čistý vzduch = méně stížností, stabilnější obsazenost</li>
+        <li><strong>Konkurenční výhoda</strong> – certifikovaně čisté prostředí jako marketingový argument</li>
+        <li><strong>Snížení nemocnosti personálu</strong> – méně absencí ostrahy, údržby, správy</li>
+        <li><strong>Delší pobyt návštěvníků</strong> – příjemné prostředí bez pachů = vyšší tržby nájemců</li>
+        <li><strong>ESG reporting</strong> – měřitelné zlepšení kvality vnitřního prostředí pro udržitelnostní reporty</li>
+      </ul>
+    </div>
+
+    <!-- Prodejní technika: kalkulace -->
+    <div style="margin: 28px 0; padding: 20px; background: #fffbeb; border-radius: 12px;">
+      <p style="font-weight: 700; color: #d97706; margin: 0 0 12px;">Příklad: food court 500 m²</p>
+      <ul style="color: #374151; line-height: 1.9; margin: 0; padding-left: 20px; font-size: 14px;">
+        <li>8&times; OZON Breeze Up v&nbsp;podhledu – kompletní pokrytí</li>
+        <li>Automatický provoz – <strong>nulové nároky na obsluhu</strong></li>
+        <li>Varianta pronájmu od <strong>1&nbsp;490 Kč/den</strong> – bez vstupní investice</li>
+        <li>Servis a&nbsp;technická podpora v&nbsp;ceně</li>
+      </ul>
+    </div>
+
+    <p style="font-size: 14px; color: #6b7280;">Všechna zařízení jsou registrovaná <strong>MZ ČR</strong>,
+    validovaná dle <strong>EN&nbsp;17272:2020</strong> a&nbsp;vyvinutá ve spolupráci se <strong>ZČU v&nbsp;Plzni</strong>.</p>
+
+    <!-- CTA -->
+    <div style="margin: 32px 0; padding: 20px; background: #1e3a5f; border-radius: 12px; text-align: center;">
+      <p style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 8px;">Připravíme Vám návrh na míru</p>
+      <p style="color: #94a3b8; font-size: 14px; margin: 0;">Bezplatně zmapujeme Vaše prostory a&nbsp;navrhneme optimální řešení.<br/>
+      Odpovězte na email nebo zavolejte na <strong style="color: white;">+420&nbsp;775&nbsp;930&nbsp;816</strong>.</p>
+    </div>
 
     ${SIGNATURE}
   `
