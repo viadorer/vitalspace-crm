@@ -20,6 +20,7 @@ interface ContactModalProps {
 
 export function ContactModal({ isOpen, onClose, onSave, contact, clientId, prospectId }: ContactModalProps) {
   const [loading, setLoading] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -69,6 +70,7 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId, prosp
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setLoading(true)
+    setSaveError(null)
     try {
       const payload: Record<string, unknown> = {
         first_name: formData.first_name || null,
@@ -92,6 +94,7 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId, prosp
       onClose()
     } catch (error) {
       console.error('Chyba při ukládání kontaktu:', error)
+      setSaveError(error instanceof Error ? error.message : 'Chyba při ukládání kontaktu')
     } finally {
       setLoading(false)
     }
@@ -185,6 +188,12 @@ export function ContactModal({ isOpen, onClose, onSave, contact, clientId, prosp
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
             />
+          </div>
+        )}
+
+        {saveError && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+            {saveError}
           </div>
         )}
 
