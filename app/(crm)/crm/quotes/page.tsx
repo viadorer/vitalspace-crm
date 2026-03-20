@@ -92,7 +92,7 @@ export default function QuotesPage() {
     setLoading(true)
     const supabase = createClient()
 
-    // Fetch deals that have deal_items (quotes)
+    // Fetch active deals (exclude archived/closed)
     const { data: deals } = await supabase
       .from('deals')
       .select(`
@@ -100,6 +100,7 @@ export default function QuotesPage() {
         clients:client_id (id, company_name),
         prospects:prospect_id (id, company_name)
       `)
+      .not('stage', 'in', '("closed_won","closed_lost")')
       .order('created_at', { ascending: false })
 
     if (!deals) {
