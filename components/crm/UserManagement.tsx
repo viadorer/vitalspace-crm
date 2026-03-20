@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -44,9 +45,9 @@ export function UserManagement() {
   const [formData, setFormData] = useState<UserFormData>(EMPTY_FORM)
   const [formError, setFormError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [search, setSearch] = useState('')
-  const [filterRole, setFilterRole] = useState<string>('')
-  const [filterActive, setFilterActive] = useState<string>('')
+  const [search, setSearch] = usePersistedState('users_search', '')
+  const [filterRole, setFilterRole] = usePersistedState('users_role', '')
+  const [filterActive, setFilterActive] = usePersistedState('users_active', '')
 
   const filteredUsers = users.filter((u) => {
     const matchesSearch =

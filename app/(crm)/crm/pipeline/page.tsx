@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { Topbar } from '@/components/crm/Topbar'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -20,7 +21,7 @@ export default function PipelinePage() {
   const { clients } = useClients()
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null)
   const [showNewDealModal, setShowNewDealModal] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>('board')
+  const [viewMode, setViewMode] = usePersistedState<ViewMode>('pipeline_view', 'board')
 
   const selectedDeal = deals.find((d) => d.id === selectedDealId)
 

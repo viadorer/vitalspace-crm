@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { Input } from '@/components/ui/Input'
 import type { Client } from '@/lib/supabase/types'
@@ -13,7 +14,7 @@ interface ClientTableProps {
 }
 
 export function ClientTable({ clients, onClientClick, selectedIds, onSelectionChange }: ClientTableProps) {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = usePersistedState('clients_search', '')
 
   const filteredClients = clients.filter(c =>
     c.company_name.toLowerCase().includes(search.toLowerCase()) ||

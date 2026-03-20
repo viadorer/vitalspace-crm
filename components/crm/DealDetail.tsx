@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { createClient } from '@/lib/supabase/client'
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
 import { fetchAuditLog } from '@/lib/hooks/useAuditLog'
@@ -28,7 +29,7 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
   const { isSuperAdmin } = useCurrentUser()
   const [data, setData] = useState<DealDetailData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+  const [expandedSections, setExpandedSections] = usePersistedState<Record<string, boolean>>('deal_expanded_sections', {
     financials: true,
     items: true,
     audits: false,

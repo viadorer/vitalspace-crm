@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { DEAL_STAGES } from '@/lib/utils/constants'
 import { formatCurrency } from '@/lib/utils/format'
 import { Building2, User, Calendar, Clock, ArrowUpDown, ChevronDown } from 'lucide-react'
@@ -29,9 +30,9 @@ function getAgeBadge(days: number): { label: string; className: string } | null 
 }
 
 export function PipelineListView({ deals, onDealClick, onStageChange }: PipelineListViewProps) {
-  const [activeStage, setActiveStage] = useState<DealStage | 'all'>('all')
-  const [sortField, setSortField] = useState<SortField>('date')
-  const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [activeStage, setActiveStage] = usePersistedState<DealStage | 'all'>('pipeline_list_stage', 'all')
+  const [sortField, setSortField] = usePersistedState<SortField>('pipeline_list_sort', 'date')
+  const [sortDir, setSortDir] = usePersistedState<SortDir>('pipeline_list_dir', 'desc')
   const [changingStage, setChangingStage] = useState<string | null>(null)
 
   const dealsByStage = useMemo(() => {

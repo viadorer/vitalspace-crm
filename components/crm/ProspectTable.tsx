@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
@@ -17,13 +18,13 @@ interface ProspectTableProps {
 }
 
 export function ProspectTable({ prospects, onProspectClick, selectedIds, onSelectionChange }: ProspectTableProps) {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [regionFilter, setRegionFilter] = useState('')
-  const [priorityFilter, setPriorityFilter] = useState('')
-  const [segmentFilter, setSegmentFilter] = useState('')
+  const [search, setSearch] = usePersistedState('prospects_search', '')
+  const [statusFilter, setStatusFilter] = usePersistedState('prospects_status', '')
+  const [regionFilter, setRegionFilter] = usePersistedState('prospects_region', '')
+  const [priorityFilter, setPriorityFilter] = usePersistedState('prospects_priority', '')
+  const [segmentFilter, setSegmentFilter] = usePersistedState('prospects_segment', '')
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(25)
+  const [pageSize, setPageSize] = usePersistedState('prospects_pagesize', 25)
 
   // Extrakce unikátních segmentů
   const segments = useMemo(() => {

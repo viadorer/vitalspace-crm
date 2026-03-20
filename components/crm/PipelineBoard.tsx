@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { DEAL_STAGES } from '@/lib/utils/constants'
 import { DealCard } from './DealCard'
@@ -13,7 +14,7 @@ interface PipelineBoardProps {
 }
 
 export function PipelineBoard({ deals, onDealClick, onStageChange }: PipelineBoardProps) {
-  const [showClosed, setShowClosed] = useState(false)
+  const [showClosed, setShowClosed] = usePersistedState('pipeline_board_showclosed', false)
 
   const visibleStages = showClosed
     ? DEAL_STAGES
