@@ -10,14 +10,15 @@ import type { Deal, Client } from '@/lib/supabase/types'
 interface DealFormProps {
   deal?: Deal
   clients: Client[]
+  preselectedClientId?: string
   onSubmit: (data: Partial<Deal>) => Promise<void>
   onCancel: () => void
 }
 
-export function DealForm({ deal, clients, onSubmit, onCancel }: DealFormProps) {
+export function DealForm({ deal, clients, preselectedClientId, onSubmit, onCancel }: DealFormProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    client_id: deal?.client_id || '',
+    client_id: preselectedClientId || deal?.client_id || '',
     title: deal?.title || '',
     stage: deal?.stage || 'lead',
     total_value_czk: deal?.total_value_czk || 0,
@@ -41,16 +42,25 @@ export function DealForm({ deal, clients, onSubmit, onCancel }: DealFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Select
-        label="Klient"
-        value={formData.client_id}
-        onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-        options={[
-          { value: '', label: 'Vyberte klienta' },
-          ...clients.map(c => ({ value: c.id, label: c.company_name }))
-        ]}
-        required
-      />
+      {preselectedClientId ? (
+        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+          <span className="font-medium">Klient:</span>{' '}
+          {preselectedClientId === '__from_prospect__'
+            ? 'Bude vytvořen automaticky z prospectu'
+            : clients.find(c => c.id === preselectedClientId)?.company_name || 'Vybraný klient'}
+        </div>
+      ) : (
+        <Select
+          label="Klient"
+          value={formData.client_id}
+          onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
+          options={[
+            { value: '', label: 'Vyberte klienta' },
+            ...clients.map(c => ({ value: c.id, label: c.company_name }))
+          ]}
+          required
+        />
+      )}
 
       <Input
         label="Název dealu"

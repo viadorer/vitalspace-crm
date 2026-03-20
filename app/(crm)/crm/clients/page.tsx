@@ -212,6 +212,7 @@ export default function ClientsPage() {
         >
           <DealForm
             clients={clients}
+            preselectedClientId={editingClient.id}
             onSubmit={handleCreateDeal}
             onCancel={() => setShowNewDealModal(false)}
           />

@@ -233,6 +233,7 @@ export default function ProspectsPage() {
           </div>
           <DealForm
             clients={clients}
+            preselectedClientId="__from_prospect__"
             onSubmit={handleCreateDealFromProspect}
             onCancel={() => setShowNewDealModal(false)}
           />
