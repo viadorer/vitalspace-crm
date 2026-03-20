@@ -171,9 +171,12 @@ export function DealHeaderSection({ dealId, data, onRefresh, isSuperAdmin }: Dea
 
   async function handleSendEmail() {
     if (!emailTemplate) return
-    const recipientEmail = deal.client?.email
+    // Try: primary contact email → any contact email → client email → prospect email
+    const contacts = (deal.client as any)?.client_contacts || []
+    const primaryContact = contacts.find((c: any) => c.is_primary) || contacts[0]
+    const recipientEmail = primaryContact?.email || deal.client?.email || (deal.prospect as any)?.email
     if (!recipientEmail) {
-      setEmailResult('Klient/prospekt nemá vyplněný email')
+      setEmailResult('Klient/prospekt nemá vyplněný email. Přidejte kontakt s emailem.')
       return
     }
 
@@ -187,7 +190,7 @@ export function DealHeaderSection({ dealId, data, onRefresh, isSuperAdmin }: Dea
         body: JSON.stringify({
           type: 'template',
           to_email: recipientEmail,
-          to_name: deal.client?.contact_person || '',
+          to_name: primaryContact ? `${primaryContact.first_name || ''} ${primaryContact.last_name || ''}`.trim() : '',
           template_name: emailTemplate,
           variables: {
             salutation: emailSalutation,

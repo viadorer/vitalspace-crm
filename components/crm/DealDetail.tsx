@@ -55,7 +55,7 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
     ] = await Promise.all([
       supabase
         .from('deals')
-        .select('*, client:clients(*), prospect:prospects(id, company_name), assigned_user:app_users(*)')
+        .select('*, client:clients(*, client_contacts(*)), prospect:prospects(id, company_name, email), assigned_user:app_users(*)')
         .eq('id', dealId)
         .single(),
       supabase

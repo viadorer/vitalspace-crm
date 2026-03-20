@@ -164,26 +164,50 @@ export default function ClientsPage() {
                 Dealy ({editingClient.deals.length})
               </h3>
               <div className="space-y-2">
-                {editingClient.deals.map((deal: any) => (
-                  <div
-                    key={deal.id}
-                    onClick={() => window.location.href = `/crm/pipeline?deal=${deal.id}`}
-                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{deal.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Stage: <span className="capitalize">{deal.stage}</span>
-                        </p>
+                {editingClient.deals.map((deal: any) => {
+                  const stageLabels: Record<string, string> = {
+                    lead: 'Lead', technical_audit: 'Technický audit', proposal_sent: 'Nabídka odeslána',
+                    negotiation: 'Vyjednávání', contract_signed: 'Smlouva', installation: 'Instalace',
+                    handover: 'Předání', closed_won: 'Vyhráno', closed_lost: 'Prohráno',
+                  }
+                  const stageColors: Record<string, string> = {
+                    lead: 'bg-gray-100 text-gray-600', proposal_sent: 'bg-blue-100 text-blue-700',
+                    negotiation: 'bg-amber-100 text-amber-700', contract_signed: 'bg-purple-100 text-purple-700',
+                    technical_audit: 'bg-indigo-100 text-indigo-700', installation: 'bg-cyan-100 text-cyan-700',
+                    handover: 'bg-teal-100 text-teal-700', closed_won: 'bg-emerald-100 text-emerald-700',
+                    closed_lost: 'bg-red-100 text-red-700',
+                  }
+                  return (
+                    <div
+                      key={deal.id}
+                      onClick={() => {
+                        setEditingClient(null)
+                        setSelectedClient(null)
+                        window.location.href = `/crm/pipeline?deal=${deal.id}`
+                      }}
+                      className="p-3 bg-gray-50 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors border border-transparent hover:border-blue-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{deal.title}</p>
+                          <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full font-medium ${stageColors[deal.stage] || 'bg-gray-100 text-gray-600'}`}>
+                            {stageLabels[deal.stage] || deal.stage}
+                          </span>
+                        </div>
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
+            </div>
+          )}
+          {/* Žádné dealy */}
+          {(!editingClient.deals || editingClient.deals.length === 0) && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-400">Žádné dealy</p>
             </div>
           )}
 
