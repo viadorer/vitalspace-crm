@@ -55,7 +55,7 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
     ] = await Promise.all([
       supabase
         .from('deals')
-        .select('*, client:clients(*, client_contacts(*)), prospect:prospects(id, company_name, email), assigned_user:app_users(*)')
+        .select('*, client:clients(*), prospect:prospects(id, company_name), assigned_user:app_users(*)')
         .eq('id', dealId)
         .single(),
       supabase
@@ -98,8 +98,22 @@ export function DealDetail({ dealId, onClose }: DealDetailProps) {
 
     const auditLog = await fetchAuditLog('deal', dealId)
 
+    // Fetch client contacts separately if client exists
+    let clientContacts: any[] = []
+    if (deal?.client_id) {
+      const { data: contacts } = await supabase
+        .from('client_contacts')
+        .select('*')
+        .eq('client_id', deal.client_id)
+        .order('is_primary', { ascending: false })
+      clientContacts = contacts || []
+    }
+
     if (deal) {
-      const dealData = deal as Deal & { client?: Client; prospect?: Prospect; assigned_user?: AppUser }
+      const dealData = deal as Deal & { client?: Client & { client_contacts?: any[] }; prospect?: Prospect; assigned_user?: AppUser }
+      if (dealData.client) {
+        (dealData.client as any).client_contacts = clientContacts
+      }
       setData({
         deal: dealData,
         items: (items || []) as DealItem[],
