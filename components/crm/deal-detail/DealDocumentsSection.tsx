@@ -190,10 +190,10 @@ export function DealDocumentsSection({ dealId, data, onRefresh, expanded, onTogg
                   <span>{DOC_TYPE_LABELS[doc.doc_type] || doc.doc_type}</span>
                   <span>·</span>
                   <span>{formatDate(doc.created_at)}</span>
-                  {(doc.file_size_bytes || doc.file_size) && (
+                  {doc.file_size_bytes && (
                     <>
                       <span>·</span>
-                      <span>{((doc.file_size_bytes || doc.file_size) / 1024 / 1024).toFixed(1)} MB</span>
+                      <span>{(doc.file_size_bytes / 1024 / 1024).toFixed(1)} MB</span>
                     </>
                   )}
                 </div>
