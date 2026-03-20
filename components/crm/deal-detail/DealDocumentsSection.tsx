@@ -63,11 +63,14 @@ export function DealDocumentsSection({ dealId, data, onRefresh, expanded, onTogg
       return
     }
 
-    const { data: created } = await supabase.from('deal_documents').insert({
+    const { data: created } = await supabase.from('crm_documents').insert({
       deal_id: dealId,
       doc_type: docType,
+      category: docType,
       title: docTitle.trim(),
+      file_name: safeName,
       file_path: storagePath,
+      file_size: file.size,
       file_size_bytes: file.size,
       mime_type: file.type || 'application/octet-stream',
     }).select().single()
@@ -99,7 +102,7 @@ export function DealDocumentsSection({ dealId, data, onRefresh, expanded, onTogg
       await supabase.storage.from(BUCKET_NAME).remove([filePath])
     }
 
-    await supabase.from('deal_documents').delete().eq('id', docId)
+    await supabase.from('crm_documents').delete().eq('id', docId)
     await logAuditEvent({ action: 'delete', entityType: 'document', entityId: docId, metadata: { deal_id: dealId, title } })
     await onRefresh()
   }
@@ -187,10 +190,10 @@ export function DealDocumentsSection({ dealId, data, onRefresh, expanded, onTogg
                   <span>{DOC_TYPE_LABELS[doc.doc_type] || doc.doc_type}</span>
                   <span>·</span>
                   <span>{formatDate(doc.created_at)}</span>
-                  {doc.file_size_bytes && (
+                  {(doc.file_size_bytes || doc.file_size) && (
                     <>
                       <span>·</span>
-                      <span>{(doc.file_size_bytes / 1024 / 1024).toFixed(1)} MB</span>
+                      <span>{((doc.file_size_bytes || doc.file_size) / 1024 / 1024).toFixed(1)} MB</span>
                     </>
                   )}
                 </div>

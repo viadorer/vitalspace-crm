@@ -51,7 +51,6 @@ export function DealItemsSection({ dealId, data, onRefresh, expanded, onToggle }
       quantity: newItem.quantity,
       unit_price_czk: unitPrice,
       discount_percent: 0,
-      line_total_czk: lineTotal,
       target_room: newItem.target_room || null,
       sort_order: items.length,
     }).select().single()
@@ -90,7 +89,6 @@ export function DealItemsSection({ dealId, data, onRefresh, expanded, onToggle }
       quantity: editForm.quantity,
       unit_price_czk: editForm.unit_price_czk,
       discount_percent: editForm.discount_percent,
-      line_total_czk: lineTotal,
       target_room: editForm.target_room || null,
     }).eq('id', itemId)
 
