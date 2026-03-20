@@ -5,17 +5,22 @@ import { Topbar } from '@/components/crm/Topbar'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { PipelineBoard } from '@/components/crm/PipelineBoard'
+import { PipelineListView } from '@/components/crm/PipelineListView'
 import { DealForm } from '@/components/crm/DealForm'
 import { DealDetail } from '@/components/crm/DealDetail'
 import { useDeals } from '@/lib/hooks/useDeals'
 import { useClients } from '@/lib/hooks/useClients'
+import { LayoutGrid, List } from 'lucide-react'
 import type { Deal, DealStage } from '@/lib/supabase/types'
+
+type ViewMode = 'board' | 'list'
 
 export default function PipelinePage() {
   const { deals, loading, updateDealStage, createDeal } = useDeals()
   const { clients } = useClients()
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null)
   const [showNewDealModal, setShowNewDealModal] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('board')
 
   const selectedDeal = deals.find((d) => d.id === selectedDealId)
 
@@ -44,18 +49,52 @@ export default function PipelinePage() {
       <Topbar
         title="Pipeline"
         actions={
-          <Button onClick={() => setShowNewDealModal(true)}>
-            + Nový deal
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode('board')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === 'board'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+                Board
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <List className="w-4 h-4" />
+                Seznam
+              </button>
+            </div>
+            <Button onClick={() => setShowNewDealModal(true)}>
+              + Nový deal
+            </Button>
+          </div>
         }
       />
 
       <div className="p-8">
-        <PipelineBoard
-          deals={deals}
-          onDealClick={(deal) => setSelectedDealId(deal.id)}
-          onStageChange={handleStageChange}
-        />
+        {viewMode === 'board' ? (
+          <PipelineBoard
+            deals={deals}
+            onDealClick={(deal) => setSelectedDealId(deal.id)}
+            onStageChange={handleStageChange}
+          />
+        ) : (
+          <PipelineListView
+            deals={deals}
+            onDealClick={(deal) => setSelectedDealId(deal.id)}
+            onStageChange={handleStageChange}
+          />
+        )}
       </div>
 
       <Modal
