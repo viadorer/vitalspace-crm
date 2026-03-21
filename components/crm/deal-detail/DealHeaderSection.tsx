@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useToast } from '@/components/ui/ToastProvider'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
@@ -15,6 +16,7 @@ import type { DealStage } from '@/lib/supabase/types'
 import { EMAIL_TEMPLATES } from '@/lib/email/templates'
 
 export function DealHeaderSection({ dealId, data, onRefresh, isSuperAdmin }: DealSectionProps & { onClose: () => void }) {
+  const { toast } = useToast()
   const { deal, allUsers } = data
   const stageInfo = DEAL_STAGES.find((s) => s.value === deal.stage)
   const companyName = deal.client?.company_name || deal.prospect?.company_name
@@ -164,7 +166,7 @@ export function DealHeaderSection({ dealId, data, onRefresh, isSuperAdmin }: Dea
       await logAuditEvent({ action: 'delete', entityType: 'deal', entityId: dealId, metadata: { title: deal.title } })
       // onClose is handled by parent
     } else {
-      alert(`Chyba: ${error.message}`)
+      toast.error(`Chyba: ${error.message}`)
       setDeleting(false)
     }
   }

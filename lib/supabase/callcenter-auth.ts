@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -9,13 +10,14 @@ const ALLOWED_ORIGINS = [
 
 /**
  * Validates API key from X-API-Key header for callcenter integration.
- * Also validates Origin header against whitelist (server-to-server calls skip this).
- * Returns the key record if valid, or a 401 response.
+ * Origin is validated only as a CORS measure, not as a security control.
+ * The API key is the sole authentication mechanism.
+ * Returns the key record if valid, or a 401/403 response.
  */
 export async function requireCallcenterApiKey(
   request: NextRequest
 ): Promise<{ id: string; name: string; permissions: string[] } | NextResponse> {
-  // Origin check — pokud je Origin header přítomen, musí být povolený
+  // CORS origin check — informational only, not a security boundary
   const origin = request.headers.get('origin')
   if (origin && !ALLOWED_ORIGINS.includes(origin)) {
     return NextResponse.json({ error: 'Nepovolený origin' }, { status: 403 })
@@ -50,11 +52,15 @@ export async function requireCallcenterApiKey(
 }
 
 /**
- * Simple hash for API key storage (SHA-256).
- * In production, use a proper key derivation function.
+ * Hash API key using HMAC-SHA256 with a server-side pepper.
+ * Falls back to plain SHA-256 if pepper is not configured (for backwards compatibility).
  */
 function hashApiKey(key: string): string {
-  const crypto = require('crypto')
+  const pepper = process.env.API_KEY_PEPPER
+  if (pepper) {
+    return crypto.createHmac('sha256', pepper).update(key).digest('hex')
+  }
+  // Fallback for existing keys — migrate to peppered hashes over time
   return crypto.createHash('sha256').update(key).digest('hex')
 }
 
@@ -62,8 +68,7 @@ function hashApiKey(key: string): string {
  * Generates a new API key and returns both the raw key and its hash.
  */
 export function generateApiKey(): { key: string; hash: string } {
-  const crypto = require('crypto')
   const key = `vs_cc_${crypto.randomBytes(32).toString('hex')}`
-  const hash = crypto.createHash('sha256').update(key).digest('hex')
+  const hash = hashApiKey(key)
   return { key, hash }
 }

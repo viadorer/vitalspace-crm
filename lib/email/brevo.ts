@@ -31,8 +31,12 @@ interface BrevoResponse {
 
 export async function sendEmail(options: SendEmailOptions): Promise<BrevoResponse> {
   const apiKey = process.env.BREVO_API_KEY
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'pavel.fogl@vitalspace.cz'
+  const senderEmail = process.env.BREVO_SENDER_EMAIL
   const senderName = process.env.BREVO_SENDER_NAME || 'VitalSpace CRM'
+
+  if (!senderEmail) {
+    throw new Error('BREVO_SENDER_EMAIL is not configured')
+  }
 
   if (!apiKey) {
     throw new Error('BREVO_API_KEY is not configured')
@@ -134,7 +138,7 @@ export async function sendTemplateEmail(
     to: [{ email: recipientEmail, name: recipientName }],
     subject,
     htmlContent: wrapInTemplate(subject, html),
-    replyTo: { email: 'pavel.fogl@vitalspace.cz', name: 'Pavel Fogl' },
+    replyTo: { email: process.env.BREVO_SENDER_EMAIL!, name: process.env.BREVO_SENDER_NAME || 'VitalSpace CRM' },
     tags: ['crm-template', templateName],
   })
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useToast } from '@/components/ui/ToastProvider'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -39,6 +40,7 @@ export function SaveQuoteModal({
   const [selectedOption, setSelectedOption] = useState<SaveOption | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const { toast } = useToast()
   // Pro klienta
   const [selectedClientId, setSelectedClientId] = useState('')
   const [dealTitle, setDealTitle] = useState('')
@@ -70,7 +72,7 @@ export function SaveQuoteModal({
 
   async function handleExportPdf() {
     if (!exportData.companyName) {
-      alert('Vyplňte alespoň název firmy')
+      toast.warning('Vyplňte alespoň název firmy')
       return
     }
 
@@ -177,11 +179,11 @@ export function SaveQuoteModal({
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
 
-      alert('PDF vygenerováno a uloženo. Deal byl vytvořen.')
+      toast.success('PDF vygenerováno a uloženo. Deal byl vytvořen.')
       onClose()
     } catch (error) {
       console.error('Chyba při exportu PDF:', error)
-      alert('Chyba při generování PDF')
+      toast.error('Chyba při generování PDF')
     } finally {
       setLoading(false)
     }
@@ -209,13 +211,13 @@ export function SaveQuoteModal({
     try {
       if (selectedOption === 'client') {
         if (!selectedClientId || !dealTitle) {
-          alert('Vyplňte všechna pole')
+          toast.warning('Vyplňte všechna pole')
           return
         }
         await onSaveAsDeal(selectedClientId, dealTitle)
       } else if (selectedOption === 'prospect') {
         if (!prospectData.company_name || !prospectData.email) {
-          alert('Vyplňte alespoň název firmy a email')
+          toast.warning('Vyplňte alespoň název firmy a email')
           return
         }
         await onSaveAsProspect(prospectData)
@@ -223,7 +225,7 @@ export function SaveQuoteModal({
       onClose()
     } catch (error) {
       console.error('Chyba při ukládání:', error)
-      alert('Chyba při ukládání nabídky')
+      toast.error('Chyba při ukládání nabídky')
     } finally {
       setLoading(false)
     }

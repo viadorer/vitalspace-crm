@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { syncContactFromRealvisor, syncLeadFromRealvisor } from '@/lib/realvisor/sync'
+import crypto from 'crypto'
 
-const WEBHOOK_SECRET = process.env.REALVISOR_WEBHOOK_SECRET || ''
+const WEBHOOK_SECRET = process.env.REALVISOR_WEBHOOK_SECRET
 
 function getAdminClient() {
   return createClient(
@@ -10,6 +11,47 @@ function getAdminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false, autoRefreshToken: false } }
   )
+}
+
+/**
+ * Verifies webhook authenticity using HMAC-SHA256 or Bearer token.
+ * Supports:
+ *   - x-webhook-signature header (HMAC-SHA256 of raw body)
+ *   - x-webhook-secret / authorization header (direct secret comparison)
+ */
+function verifyWebhook(rawBody: string, request: Request): boolean {
+  if (!WEBHOOK_SECRET) return false
+
+  // Prefer HMAC signature verification
+  const signature = request.headers.get('x-webhook-signature')
+  if (signature) {
+    const expected = crypto
+      .createHmac('sha256', WEBHOOK_SECRET)
+      .update(rawBody)
+      .digest('hex')
+    try {
+      return crypto.timingSafeEqual(
+        Buffer.from(signature, 'hex'),
+        Buffer.from(expected, 'hex')
+      )
+    } catch {
+      return false
+    }
+  }
+
+  // Fallback: direct secret comparison (for simpler webhook providers)
+  const authHeader = request.headers.get('x-webhook-secret') || request.headers.get('authorization')
+  if (!authHeader) return false
+
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(token),
+      Buffer.from(WEBHOOK_SECRET)
+    )
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -28,15 +70,24 @@ function getAdminClient() {
  * }
  */
 export async function POST(request: Request) {
-  // Verify webhook secret
-  const authHeader = request.headers.get('x-webhook-secret') || request.headers.get('authorization')
-  if (WEBHOOK_SECRET && authHeader !== WEBHOOK_SECRET && authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
+  // Require webhook secret to be configured
+  if (!WEBHOOK_SECRET) {
+    return NextResponse.json(
+      { error: 'Webhook service not configured' },
+      { status: 503 }
+    )
+  }
+
+  const rawBody = await request.text()
+
+  // Verify webhook authenticity
+  if (!verifyWebhook(rawBody, request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const body = await request.json()
-    const { type, table, record, old_record } = body
+    const body = JSON.parse(rawBody)
+    const { type, table, record } = body
 
     if (!record || !table) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
@@ -81,9 +132,13 @@ export async function POST(request: Request) {
       synced: results.length,
       details: results,
     })
-  } catch (err: any) {
-    console.error('Realvisor webhook error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error('Realvisor webhook error:', message)
+    return NextResponse.json(
+      { error: process.env.NODE_ENV === 'development' ? message : 'Internal error' },
+      { status: 500 }
+    )
   }
 }
 
@@ -95,6 +150,7 @@ export async function GET() {
   return NextResponse.json({
     status: 'ok',
     service: 'realvisor-webhook',
+    configured: !!WEBHOOK_SECRET,
     timestamp: new Date().toISOString(),
   })
 }

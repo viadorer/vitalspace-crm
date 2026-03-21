@@ -1,136 +1,62 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useCrudResource } from './useCrudResource'
 import type { Client } from '@/lib/supabase/types'
 
+const CLIENT_SELECT = `
+  *,
+  company_segments(*),
+  client_contacts(
+    id,
+    first_name,
+    last_name,
+    position,
+    email,
+    phone,
+    mobile,
+    is_primary,
+    is_decision_maker
+  ),
+  original_prospect:prospects!clients_original_prospect_id_fkey(
+    id,
+    company_name
+  ),
+  deals(
+    id,
+    title,
+    stage
+  )
+`
+
+const NULLABLE_FIELDS: (keyof Client)[] = [
+  'segment_id',
+  'assigned_user_id',
+  'prospect_id',
+  'original_prospect_id',
+]
+
 export function useClients() {
-  const [clients, setClients] = useState<Client[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  async function fetchClients() {
-    const supabase = createClient()
-    try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('clients')
-        .select(`
-          *,
-          company_segments(*),
-          client_contacts(
-            id,
-            first_name,
-            last_name,
-            position,
-            email,
-            phone,
-            mobile,
-            is_primary,
-            is_decision_maker
-          ),
-          original_prospect:prospects!clients_original_prospect_id_fkey(
-            id,
-            company_name
-          ),
-          deals(
-            id,
-            title,
-            stage
-          )
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setClients(data || [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Chyba při načítání klientů')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function addClient(client: Partial<Client>) {
-    const supabase = createClient()
-    try {
-      // Convert empty strings to null for UUID/nullable fields
-      const cleaned = { ...client } as any
-      if (cleaned.segment_id === '') cleaned.segment_id = null
-      if (cleaned.assigned_user_id === '') cleaned.assigned_user_id = null
-      if (cleaned.prospect_id === '') cleaned.prospect_id = null
-      if (cleaned.original_prospect_id === '') cleaned.original_prospect_id = null
-      const { data, error } = await supabase
-        .from('clients')
-        .insert([cleaned])
-        .select()
-        .single()
-
-      if (error) throw error
-      await fetchClients()
-      return { data, error: null }
-    } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Chyba při vytváření klienta' 
-      }
-    }
-  }
-
-  async function updateClient(id: string, updates: Partial<Client>) {
-    const supabase = createClient()
-    try {
-      const cleaned = { ...updates } as any
-      if (cleaned.segment_id === '') cleaned.segment_id = null
-      if (cleaned.assigned_user_id === '') cleaned.assigned_user_id = null
-      if (cleaned.prospect_id === '') cleaned.prospect_id = null
-      if (cleaned.original_prospect_id === '') cleaned.original_prospect_id = null
-      const { data, error } = await supabase
-        .from('clients')
-        .update(cleaned)
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (error) throw error
-      await fetchClients()
-      return { data, error: null }
-    } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Chyba při aktualizaci klienta' 
-      }
-    }
-  }
-
-  async function deleteClient(id: string) {
-    const supabase = createClient()
-    try {
-      const { error } = await supabase
-        .from('clients')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-      setClients(clients.filter(c => c.id !== id))
-      return { error: null }
-    } catch (err) {
-      return { 
-        error: err instanceof Error ? err.message : 'Chyba při mazání klienta' 
-      }
-    }
-  }
-
-  useEffect(() => {
-    fetchClients()
-  }, [])
+  const crud = useCrudResource<Client>({
+    table: 'clients',
+    select: CLIENT_SELECT,
+    orderBy: 'created_at',
+    orderAscending: false,
+    nullableFields: NULLABLE_FIELDS,
+    errorMessages: {
+      fetch: 'Chyba při načítání klientů',
+      create: 'Chyba při vytváření klienta',
+      update: 'Chyba při aktualizaci klienta',
+      delete: 'Chyba při mazání klienta',
+    },
+  })
 
   return {
-    clients,
-    loading,
-    error,
-    refetch: fetchClients,
-    createClient: addClient,
-    updateClient,
-    deleteClient,
+    clients: crud.items,
+    loading: crud.loading,
+    error: crud.error,
+    refetch: crud.refetch,
+    createClient: crud.create,
+    updateClient: crud.update,
+    deleteClient: crud.remove,
   }
 }

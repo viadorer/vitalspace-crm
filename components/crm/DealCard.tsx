@@ -1,3 +1,4 @@
+import React from 'react'
 import { formatCurrency } from '@/lib/utils/format'
 import { Building2, User, Calendar, Clock } from 'lucide-react'
 import type { Deal } from '@/lib/supabase/types'
@@ -21,7 +22,7 @@ function getAgeBadge(days: number): { label: string; className: string } | null 
   return { label: `${days}d`, className: 'bg-red-100 text-red-700' }
 }
 
-export function DealCard({ deal, onClick, isDragging }: DealCardProps) {
+export const DealCard = React.memo(function DealCard({ deal, onClick, isDragging }: DealCardProps) {
   const companyName = deal.client?.company_name || deal.prospect?.company_name
   const consultantName = deal.assigned_user?.full_name || deal.assigned_consultant
   const daysInStage = getDaysInStage(deal.stage_entered_at)
@@ -79,4 +80,4 @@ export function DealCard({ deal, onClick, isDragging }: DealCardProps) {
       </div>
     </div>
   )
-}
+})

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, safeErrorResponse } from '@/lib/supabase/auth-guard'
 import { sendEmail, sendQuoteEmail, sendTemplateEmail } from '@/lib/email/brevo'
+import { sanitizeHtml, validateEmailContent } from '@/lib/utils/sanitize-html'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,10 +64,19 @@ export async function POST(_request: NextRequest) {
         )
       }
 
+      // Validate content size
+      const validationError = validateEmailContent(subject, html_body)
+      if (validationError) {
+        return NextResponse.json({ error: validationError }, { status: 400 })
+      }
+
+      // Sanitize HTML to prevent XSS/phishing
+      const sanitizedHtml = sanitizeHtml(html_body)
+
       const result = await sendEmail({
         to: [{ email: to_email, name: to_name || '' }],
-        subject,
-        htmlContent: html_body,
+        subject: subject.slice(0, 200),
+        htmlContent: sanitizedHtml,
         tags: ['crm-manual'],
       })
 

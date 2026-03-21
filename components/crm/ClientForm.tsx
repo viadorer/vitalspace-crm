@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
+import { useToast } from '@/components/ui/ToastProvider'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
@@ -20,6 +21,7 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ client, segments, onSubmit, onCancel }: ClientFormProps) {
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [editingContact, setEditingContact] = useState<ClientContact | null>(null)
@@ -244,7 +246,7 @@ export function ClientForm({ client, segments, onSubmit, onCancel }: ClientFormP
                   try {
                     await deleteContact(contactId)
                   } catch (error) {
-                    alert('Chyba při mazání kontaktu')
+                    toast.error('Chyba při mazání kontaktu')
                   }
                 }
               }}

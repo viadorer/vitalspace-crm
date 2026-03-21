@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
+import { useToast } from '@/components/ui/ToastProvider'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
@@ -19,6 +20,7 @@ interface ProspectFormProps {
 }
 
 export function ProspectForm({ prospect, segments, onSubmit, onCancel }: ProspectFormProps) {
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [editingContact, setEditingContact] = useState<ProspectContact | null>(null)
@@ -316,13 +318,13 @@ export function ProspectForm({ prospect, segments, onSubmit, onCancel }: Prospec
                   })
                   const data = await response.json()
                   if (data.success) {
-                    alert('Prospect úspěšně převeden na klienta!')
+                    toast.success('Prospect úspěšně převeden na klienta!')
                     window.location.href = `/crm/clients`
                   } else {
-                    alert(data.error || 'Chyba při konverzi')
+                    toast.error(data.error || 'Chyba při konverzi')
                   }
                 } catch (err) {
-                  alert('Chyba při konverzi prospectu')
+                  toast.error('Chyba při konverzi prospectu')
                 }
               }
             }}
