@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useRef } from 'react'
+import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { cleanNullableFields } from '@/lib/utils/clean-fields'
 
@@ -41,39 +42,39 @@ function extractError(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message : fallback
 }
 
+async function supabaseFetcher<T>(table: string, select: string, orderBy?: string, orderAscending?: boolean): Promise<T[]> {
+  const supabase = createClient()
+  let query = supabase.from(table).select(select)
+
+  if (orderBy) {
+    query = query.order(orderBy, { ascending: orderAscending ?? false })
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+  return (data as unknown as T[]) || []
+}
+
 export function useCrudResource<T extends { id: string }>(config: CrudConfig<T>): CrudResult<T> {
-  const [items, setItems] = useState<T[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const msgs = { ...DEFAULT_MESSAGES, ...config.errorMessages }
   const configRef = useRef(config)
   configRef.current = config
 
-  const fetchItems = useCallback(async () => {
-    const supabase = createClient()
-    try {
-      setLoading(true)
-      let query = supabase
-        .from(configRef.current.table)
-        .select(configRef.current.select)
+  const swrKey = `crud:${config.table}:${config.select}:${config.orderBy || ''}:${config.orderAscending ?? false}`
 
-      if (configRef.current.orderBy) {
-        query = query.order(configRef.current.orderBy, {
-          ascending: configRef.current.orderAscending ?? false,
-        })
-      }
-
-      const { data, error: fetchError } = await query
-
-      if (fetchError) throw fetchError
-      setItems((data as unknown as T[]) || [])
-      setError(null)
-    } catch (err) {
-      setError(extractError(err, msgs.fetch))
-    } finally {
-      setLoading(false)
+  const { data: items, error: swrError, isLoading, mutate } = useSWR<T[]>(
+    swrKey,
+    () => supabaseFetcher<T>(
+      configRef.current.table,
+      configRef.current.select,
+      configRef.current.orderBy,
+      configRef.current.orderAscending
+    ),
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
     }
-  }, [msgs.fetch])
+  )
 
   const create = useCallback(async (item: Partial<T>) => {
     const supabase = createClient()
@@ -89,13 +90,13 @@ export function useCrudResource<T extends { id: string }>(config: CrudConfig<T>)
         .single()
 
       if (createError) throw createError
-      // Refetch to get relations
-      await fetchItems()
+      // Revalidate to get relations
+      await mutate()
       return { data: data as T, error: null }
     } catch (err) {
       return { data: null, error: extractError(err, msgs.create) }
     }
-  }, [fetchItems, msgs.create])
+  }, [mutate, msgs.create])
 
   const update = useCallback(async (id: string, updates: Partial<T>) => {
     const supabase = createClient()
@@ -112,13 +113,13 @@ export function useCrudResource<T extends { id: string }>(config: CrudConfig<T>)
         .single()
 
       if (updateError) throw updateError
-      // Refetch to get relations
-      await fetchItems()
+      // Revalidate to get relations
+      await mutate()
       return { data: data as T, error: null }
     } catch (err) {
       return { data: null, error: extractError(err, msgs.update) }
     }
-  }, [fetchItems, msgs.update])
+  }, [mutate, msgs.update])
 
   const remove = useCallback(async (id: string) => {
     const supabase = createClient()
@@ -129,25 +130,42 @@ export function useCrudResource<T extends { id: string }>(config: CrudConfig<T>)
         .eq('id', id)
 
       if (deleteError) throw deleteError
-      setItems(prev => prev.filter(item => item.id !== id))
+      // Optimistic update: remove from local cache
+      await mutate(
+        (current) => current?.filter(item => item.id !== id),
+        { revalidate: false }
+      )
       return { error: null }
     } catch (err) {
       return { error: extractError(err, msgs.delete) }
     }
-  }, [msgs.delete])
+  }, [mutate, msgs.delete])
 
-  useEffect(() => {
-    fetchItems()
-  }, [fetchItems])
+  const refetch = useCallback(async () => {
+    await mutate()
+  }, [mutate])
+
+  // setItems compat — mutate local cache without revalidation
+  const setItems = useCallback(((updater: T[] | ((prev: T[]) => T[])) => {
+    mutate(
+      (current) => {
+        if (typeof updater === 'function') {
+          return (updater as (prev: T[]) => T[])(current || [])
+        }
+        return updater
+      },
+      { revalidate: false }
+    )
+  }) as React.Dispatch<React.SetStateAction<T[]>>, [mutate])
 
   return {
-    items,
-    loading,
-    error,
+    items: items || [],
+    loading: isLoading,
+    error: swrError ? extractError(swrError, msgs.fetch) : null,
     create,
     update,
     remove,
-    refetch: fetchItems,
+    refetch,
     setItems,
   }
 }

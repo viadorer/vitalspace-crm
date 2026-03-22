@@ -1,34 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback } from 'react'
+import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import type { Product } from '@/lib/supabase/types'
 
+async function fetchProducts(): Promise<Product[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('is_active', true)
+    .order('name', { ascending: true })
+
+  if (error) throw error
+  return (data || []) as Product[]
+}
+
 export function useProducts() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: products, error: swrError, isLoading, mutate } = useSWR<Product[]>(
+    'products:active',
+    fetchProducts,
+    { revalidateOnFocus: false, dedupingInterval: 10000 }
+  )
 
-  async function fetchProducts() {
-    const supabase = createClient()
-    try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true)
-        .order('name', { ascending: true })
-
-      if (error) throw error
-      setProducts(data || [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Chyba při načítání produktů')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function createProduct(product: Partial<Product>) {
+  const createProduct = useCallback(async (product: Partial<Product>) => {
     const supabase = createClient()
     try {
       const { data, error } = await supabase
@@ -38,17 +34,17 @@ export function useProducts() {
         .single()
 
       if (error) throw error
-      await fetchProducts()
+      await mutate()
       return { data, error: null }
     } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Chyba při vytváření produktu' 
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : 'Chyba při vytváření produktu',
       }
     }
-  }
+  }, [mutate])
 
-  async function updateProduct(id: string, updates: Partial<Product>) {
+  const updateProduct = useCallback(async (id: string, updates: Partial<Product>) => {
     const supabase = createClient()
     try {
       const { data, error } = await supabase
@@ -59,25 +55,21 @@ export function useProducts() {
         .single()
 
       if (error) throw error
-      await fetchProducts()
+      await mutate()
       return { data, error: null }
     } catch (err) {
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Chyba při aktualizaci produktu' 
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : 'Chyba při aktualizaci produktu',
       }
     }
-  }
-
-  useEffect(() => {
-    fetchProducts()
-  }, [])
+  }, [mutate])
 
   return {
-    products,
-    loading,
-    error,
-    refetch: fetchProducts,
+    products: products || [],
+    loading: isLoading,
+    error: swrError ? (swrError instanceof Error ? swrError.message : 'Chyba při načítání produktů') : null,
+    refetch: () => mutate(),
     createProduct,
     updateProduct,
   }
