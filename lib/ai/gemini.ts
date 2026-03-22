@@ -104,10 +104,10 @@ Odpověz POUZE JSON, nic jiného.`
 
     if (!parsed.subject || !parsed.intro) return baseResult
 
-    // Vlož personalizovaný intro za první <p> nebo za oslovení
+    // Vlož personalizovaný intro za první <p> (oslovení) — STEJNÝ styl jako zbytek šablony
     const personalizedHtml = baseResult.html.replace(
       /(<\/p>)/,
-      `</p><p style="margin: 0 0 16px 0; color: #374151; font-size: 15px; line-height: 1.6;">${escapeHtml(parsed.intro)}</p>`
+      `</p><p>${escapeHtml(parsed.intro)}</p>`
     )
 
     return {

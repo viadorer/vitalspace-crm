@@ -149,65 +149,55 @@ const SIGNATURE = `
 // ── 1. Obecná nabídka ──
 
 function buildObecnaNabidka(vars: TemplateVariables): TemplateResult {
-  const salutation = vars.salutation || 'Vážená paní ředitelko / Vážený pane řediteli'
+  const salutation = vars.salutation || 'Dobrý den'
+  const companyRef = vars.company_name ? ` ve společnosti ${esc(vars.company_name)}` : ''
 
-  const subject = 'Nabídka spolupráce – moderní dezinfekce a hygiena vzduchu | VitalSpace'
+  const subject = 'Čistý vzduch a dezinfekce bez chemie – VitalSpace'
 
   const html = `
     <p>${esc(salutation)},</p>
 
-    <p>dovoluji si Vás oslovit jménem společnosti <strong>VitalSpace / Health City</strong> s&nbsp;nabídkou spolupráce
-    v&nbsp;oblasti moderní dezinfekce a&nbsp;zajištění hygienického standardu Vašeho zařízení.</p>
+    <p>dovoluji si Vás oslovit jménem společnosti <strong>VitalSpace</strong> s&nbsp;nabídkou moderního řešení
+    dezinfekce a&nbsp;sanitace prostor${companyRef}.</p>
 
-    <p>Naše společnost se specializuje na dodávky profesionálních ozonových technologií, které umožňují:</p>
+    <p>Naše <strong>certifikované ozonové technologie</strong> (registrace MZ&nbsp;ČR, validace dle EN&nbsp;17272:2020,
+    vyvinuté ve spolupráci se Západočeskou univerzitou v&nbsp;Plzni) umožňují:</p>
 
     <ul style="color: #374151; line-height: 1.8;">
-      <li>efektivní likvidaci bakterií, virů a&nbsp;plísní</li>
-      <li>eliminaci pachů (inkontinence, infekční oddělení apod.)</li>
-      <li>snížení provozních nákladů na chemickou dezinfekci</li>
-      <li>zvýšení hygienického standardu a&nbsp;komfortu klientů i&nbsp;personálu</li>
+      <li><strong>likvidaci 99,9&nbsp;% bakterií, virů a&nbsp;plísní</strong> bez použití chemie</li>
+      <li>eliminaci nepříjemných pachů z&nbsp;provozu</li>
+      <li>snížení nákladů na chemickou dezinfekci</li>
+      <li>zvýšení komfortu a&nbsp;bezpečnosti pro zaměstnance i&nbsp;klienty</li>
     </ul>
 
-    <p>Technologie je vhodná zejména pro:</p>
-    <ul style="color: #374151; line-height: 1.8;">
-      <li>domovy pro seniory</li>
-      <li>LDN a&nbsp;zdravotnická zařízení</li>
-      <li>hospice a&nbsp;zařízení dlouhodobé péče</li>
-    </ul>
-
-    <p>Rádi bychom Vám nabídli:</p>
-    <ul style="color: #374151; line-height: 1.8;">
-      <li>nezávaznou konzultaci</li>
-      <li>ukázku technologie přímo ve Vašem zařízení</li>
-      <li>návrh konkrétního řešení na míru</li>
-    </ul>
+    <p>Technologie je využívána v&nbsp;široké škále provozů — od kanceláří, hotelů a&nbsp;restaurací,
+    přes školy a&nbsp;fitness centra, až po zdravotnická zařízení a&nbsp;výrobní podniky.</p>
 
     <!-- Breeze Up – stropní/podhledový -->
     <div style="margin: 28px 0;">
-      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Stropní instalace – OZON Breeze Up</p>
-      <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Vestavba do podhledu nebo montáž na strop. Plně automatický provoz – osvěžování za přítomnosti lidí + totální dezinfekce mimo provoz. Žádná obsluha.</p>
-      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON OZON Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
-    </div>
-
-    <div style="margin: 28px 0;">
-      <p style="font-size: 14px; color: #6b7280;">Příklad reálné instalace v&nbsp;nemocničním pokoji:</p>
-      <div style="display: flex; gap: 8px;">
-        <img src="${IMG_BASE}/instalace-nemocnice.png" alt="Instalace v nemocnici" style="max-width: 48%; border-radius: 8px; border: 1px solid #e5e7eb;" />
-        <img src="${IMG_BASE}/instalace-podhled.png" alt="Instalace v podhledu" style="max-width: 48%; border-radius: 8px; border: 1px solid #e5e7eb;" />
-      </div>
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Uo — stropní instalace</p>
+      <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Vestavba do podhledu nebo montáž na strop.
+      Plně automatický provoz — osvěžování za přítomnosti lidí + hloubková dezinfekce mimo provoz. Žádná obsluha.</p>
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Uo – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
     </div>
 
     <!-- Mobilní zařízení -->
     <div style="margin: 28px 0;">
-      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Mobilní zařízení – OZON Storm Pro I PLUS</p>
-      <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Průmyslový ozonový generátor pro dezinfekci větších prostor (200–800 m³). Mikropočítačem řízený cyklus s&nbsp;automatickým chlazením.</p>
-      <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Storm Pro I Plus — mobilní dezinfekce</p>
+      <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Průmyslový ozonový generátor pro dezinfekci větších prostor
+      (200–800&nbsp;m³). Mikropočítačem řízený cyklus s&nbsp;automatickým chlazením.</p>
+      <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="Vitalspace OZON Storm Pro I Plus – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
     </div>
 
-    <p>Naše společnost nabízí i&nbsp;poskytování služby spočívající v&nbsp;pravidelné dezinfekci našimi zaškolenými pracovníky.</p>
+    <p>Nabízíme také <strong>pravidelnou službu dezinfekce</strong> našimi zaškolenými pracovníky
+    a&nbsp;možnost <strong>pronájmu</strong> přístrojů.</p>
 
-    <p>V&nbsp;případě Vašeho zájmu Vám velmi rádi představíme konkrétní přínosy pro Vaše zařízení
-    a&nbsp;připravíme individuální nabídku.</p>
+    <p>Rádi bychom Vám nabídli:</p>
+    <ul style="color: #374151; line-height: 1.8;">
+      <li>bezplatný audit kvality vzduchu ve Vašich prostorách</li>
+      <li>nezávaznou konzultaci a&nbsp;ukázku technologie</li>
+      <li>návrh řešení na míru s&nbsp;kalkulací návratnosti</li>
+    </ul>
 
     <p>Děkuji za Váš čas a&nbsp;budu se těšit na případnou spolupráci.</p>
 
