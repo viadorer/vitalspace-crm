@@ -64,7 +64,9 @@ export async function updateSession(request: NextRequest) {
     (pathname.startsWith('/api') &&
       !pathname.startsWith('/api/leads') &&
       !pathname.startsWith('/api/auth') &&
-      !pathname.startsWith('/api/callcenter'))
+      !pathname.startsWith('/api/callcenter') &&
+      !pathname.startsWith('/api/cron') &&
+      !pathname.startsWith('/api/webhooks'))
 
   if (!user && !pathname.startsWith('/auth') && isProtectedRoute) {
     if (pathname.startsWith('/api')) {
