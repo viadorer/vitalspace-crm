@@ -44,33 +44,8 @@ export default function ProspectsPage() {
 
   async function handleCreateProspect(data: Partial<Prospect>) {
     const result = await createProspect(data)
-    if (!result.error && result.data) {
+    if (!result.error) {
       setShowNewProspectModal(false)
-      // Auto-enroll do výchozí sekvence (Obecný B2B outreach)
-      try {
-        // Najdi aktivní sekvenci pro segment, nebo fallback na obecnou
-        const seqRes = await fetch('/api/sequences')
-        const sequences = await seqRes.json()
-        if (Array.isArray(sequences) && sequences.length > 0) {
-          // Hledej sekvenci pro segment, jinak první aktivní
-          const segmentSeq = sequences.find((s: { segment_ids: string[]; is_active: boolean }) =>
-            s.is_active && s.segment_ids?.length > 0 && data.segment_id && s.segment_ids.includes(data.segment_id)
-          )
-          const defaultSeq = sequences.find((s: { is_active: boolean; segment_ids: string[] }) =>
-            s.is_active && (!s.segment_ids || s.segment_ids.length === 0)
-          )
-          const targetSeq = segmentSeq || defaultSeq
-          if (targetSeq) {
-            await fetch(`/api/sequences/${targetSeq.id}/enrollments`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ prospect_ids: [result.data.id] }),
-            })
-          }
-        }
-      } catch {
-        // Enrollment selhal — prospect je vytvořen, sekvence se přidá později
-      }
     }
   }
 

@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
+import { useToast } from '@/components/ui/ToastProvider'
+import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
 import { formatDateTime } from '@/lib/utils/format'
 import {
-  Mail,
-  Phone,
-  Brain,
-  Clock,
   Play,
   Pause,
   Square,
   CheckCircle2,
   AlertCircle,
+  Clock,
   Flame,
   ThermometerSun,
   Snowflake,
@@ -20,16 +20,21 @@ import {
   Eye,
   MousePointer,
   XCircle,
+  ListOrdered,
+  Plus,
 } from 'lucide-react'
 import type {
   ProspectSequenceEnrollment,
-  EmailEvent,
   LeadScore,
   LeadCategory,
   EnrollmentStatus,
+  EmailSequence,
 } from '@/lib/supabase/sequence-types'
 
-const fetcher = (url: string) => fetch(url).then(r => r.json())
+const fetcher = (url: string) => fetch(url).then(r => {
+  if (!r.ok) throw new Error('Fetch failed')
+  return r.json()
+})
 
 const STATUS_CONFIG: Record<EnrollmentStatus, { label: string; color: string; icon: React.ReactNode }> = {
   active: { label: 'Aktivní', color: 'bg-green-100 text-green-700', icon: <Play className="w-3 h-3" /> },
@@ -45,50 +50,46 @@ const CATEGORY_CONFIG: Record<LeadCategory, { label: string; color: string; icon
   cold: { label: 'Cold', color: 'text-blue-600 bg-blue-50 border-blue-200', icon: <Snowflake className="w-4 h-4" /> },
 }
 
-const EVENT_ICONS: Record<string, React.ReactNode> = {
-  delivered: <Mail className="w-3 h-3 text-gray-400" />,
-  opened: <Eye className="w-3 h-3 text-green-500" />,
-  clicked: <MousePointer className="w-3 h-3 text-blue-500" />,
-  bounced: <XCircle className="w-3 h-3 text-red-500" />,
-  unsubscribed: <XCircle className="w-3 h-3 text-red-500" />,
-}
-
 interface Props {
   prospectId: string
 }
 
-/**
- * Panel zobrazující stav prospekta v orchestrátoru:
- * - Lead score (hot/warm/cold)
- * - Aktivní sekvence (ve které je, na jakém kroku)
- * - Email engagement timeline (otevření, kliknutí)
- *
- * Zobrazuje se v detailu prospekta pod ActivityPanel.
- */
 export function ProspectSequencePanel({ prospectId }: Props) {
+  const { toast } = useToast()
+
   // Lead score
   const { data: score } = useSWR<LeadScore>(
     `/api/lead-scores/${prospectId}`,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, onError: () => {} }
   )
 
-  // Enrollments — hledáme přes všechny sekvence
+  // Sequences list (pro dropdown)
+  const { data: sequences } = useSWR<EmailSequence[]>(
+    '/api/sequences',
+    fetcher,
+    { revalidateOnFocus: false, onError: () => {} }
+  )
+
+  // Enrollmenty tohoto prospekta
   const [enrollments, setEnrollments] = useState<(ProspectSequenceEnrollment & { sequence_name?: string })[]>([])
-  const [events, setEvents] = useState<EmailEvent[]>([])
   const [loaded, setLoaded] = useState(false)
+  const [showEnroll, setShowEnroll] = useState(false)
+  const [selectedSequenceId, setSelectedSequenceId] = useState('')
+  const [enrolling, setEnrolling] = useState(false)
 
   useEffect(() => {
     async function load() {
       try {
-        // Načti enrollmenty pro tento prospect
-        const enrollRes = await fetch(`/api/sequences?_prospect=${prospectId}`)
-        const sequences = await enrollRes.json()
+        const seqRes = await fetch('/api/sequences')
+        if (!seqRes.ok) { setLoaded(true); return }
+        const seqs = await seqRes.json()
+        if (!Array.isArray(seqs)) { setLoaded(true); return }
 
-        // Pro každou sekvenci zkontroluj enrollmenty
         const allEnrollments: (ProspectSequenceEnrollment & { sequence_name?: string })[] = []
-        for (const seq of (Array.isArray(sequences) ? sequences : [])) {
+        for (const seq of seqs) {
           const res = await fetch(`/api/sequences/${seq.id}/enrollments`)
+          if (!res.ok) continue
           const enrolls = await res.json()
           if (Array.isArray(enrolls)) {
             for (const e of enrolls) {
@@ -99,18 +100,53 @@ export function ProspectSequencePanel({ prospectId }: Props) {
           }
         }
         setEnrollments(allEnrollments)
-
-        // Email events pro tento prospect (přes score endpoint side-load nebo přímo)
-        // Pro teď necháváme prázdné — events se zobrazí z enrollmentů
       } catch {
-        // Ignoruj chyby
+        // API ještě nemusí být ready
       }
       setLoaded(true)
     }
     load()
   }, [prospectId])
 
-  const hasData = score || enrollments.length > 0
+  async function handleEnroll() {
+    if (!selectedSequenceId) return
+    setEnrolling(true)
+    try {
+      const res = await fetch(`/api/sequences/${selectedSequenceId}/enrollments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prospect_ids: [prospectId] }),
+      })
+      const result = await res.json()
+      if (res.ok) {
+        toast.success(`Zařazeno do sekvence (${result.enrolled} prospect)`)
+        setShowEnroll(false)
+        setSelectedSequenceId('')
+        // Reload enrollments
+        const seqName = sequences?.find(s => s.id === selectedSequenceId)?.name || 'Sekvence'
+        setEnrollments(prev => [...prev, {
+          id: 'new',
+          prospect_id: prospectId,
+          sequence_id: selectedSequenceId,
+          current_step_order: 1,
+          status: 'active',
+          next_execution_at: new Date().toISOString(),
+          enrolled_at: new Date().toISOString(),
+          last_step_executed_at: null,
+          stop_reason: null,
+          completed_at: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          sequence_name: seqName,
+        }])
+      } else {
+        toast.error(result.error || 'Chyba při zařazování')
+      }
+    } catch {
+      toast.error('Chyba při zařazování do sekvence')
+    }
+    setEnrolling(false)
+  }
 
   if (!loaded) {
     return (
@@ -120,26 +156,50 @@ export function ProspectSequencePanel({ prospectId }: Props) {
     )
   }
 
-  if (!hasData) {
-    return (
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <TrendingUp className="w-4 h-4" />
-          <span>Orchestrátor: žádná sekvence, žádné skóre</span>
-        </div>
-      </div>
-    )
-  }
-
   const category = score?.category || 'cold'
   const catConfig = CATEGORY_CONFIG[category]
+  const activeSequences = sequences?.filter(s => s.is_active) || []
+  const enrolledSequenceIds = new Set(enrollments.map(e => e.sequence_id))
+  const availableSequences = activeSequences.filter(s => !enrolledSequenceIds.has(s.id))
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
-      <div className="flex items-center gap-2">
-        <TrendingUp className="w-4 h-4 text-blue-500" />
-        <h3 className="text-sm font-semibold text-gray-900">Orchestrátor</h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-blue-500" />
+          <h3 className="text-sm font-semibold text-gray-900">Orchestrátor</h3>
+        </div>
+        {availableSequences.length > 0 && (
+          <button
+            onClick={() => setShowEnroll(!showEnroll)}
+            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+          >
+            <Plus className="w-3 h-3" />
+            Zařadit do sekvence
+          </button>
+        )}
       </div>
+
+      {/* Enroll form */}
+      {showEnroll && (
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 space-y-3">
+          <Select
+            label="Vyberte sekvenci"
+            value={selectedSequenceId}
+            onChange={(e) => setSelectedSequenceId(e.target.value)}
+            options={[
+              { value: '', label: '— Vyberte sekvenci —' },
+              ...availableSequences.map(s => ({ value: s.id, label: s.name })),
+            ]}
+          />
+          <div className="flex gap-2">
+            <Button onClick={handleEnroll} disabled={enrolling || !selectedSequenceId}>
+              {enrolling ? 'Zařazuji...' : 'Zařadit'}
+            </Button>
+            <Button variant="secondary" onClick={() => setShowEnroll(false)}>Zrušit</Button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         {/* Lead Score */}
@@ -161,10 +221,11 @@ export function ProspectSequencePanel({ prospectId }: Props) {
           </div>
         )}
 
-        {/* Aktivní sekvence */}
+        {/* Sekvence */}
         <div className="space-y-2">
           {enrollments.length === 0 ? (
-            <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-sm text-gray-500">
+            <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-sm text-gray-500 flex items-center gap-2">
+              <ListOrdered className="w-4 h-4 text-gray-400" />
               Nezařazen v žádné sekvenci
             </div>
           ) : (

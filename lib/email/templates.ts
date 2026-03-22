@@ -36,6 +36,12 @@ export type TemplateName =
   | 'certifikace-duvera'
   | 'administrativni-budovy'
   | 'obchodni-centra'
+  | 'domovy-senioru'
+  | 'fitness-sport'
+  | 'vyroba-sklady'
+  | 'restaurace-gastronomie'
+  | 'case-study'
+  | 'roi-kalkulacka'
 
 export const EMAIL_TEMPLATES: Record<TemplateName, {
   label: string
@@ -96,6 +102,36 @@ export const EMAIL_TEMPLATES: Record<TemplateName, {
     label: 'Nabídka pro obchodní centra',
     description: 'Vysoká návštěvnost, food courty, toalety, nákupní komfort, ROI a retenční výhody.',
     build: buildObchodniCentra,
+  },
+  'domovy-senioru': {
+    label: 'Domovy seniorů a LDN',
+    description: 'Ochrana imunokompromitovaných klientů, eliminace pachů inkontinence, snížení nozokomiálních infekcí.',
+    build: buildDomovySenioru,
+  },
+  'fitness-sport': {
+    label: 'Fitness centra a sportovní zařízení',
+    description: 'Eliminace zápachu v šatnách, prevence plísní, čistý vzduch pro sportovce.',
+    build: buildFitnessSport,
+  },
+  'vyroba-sklady': {
+    label: 'Výrobní podniky a sklady',
+    description: 'BOZP normy, eliminace kontaminantů, ochrana zdraví zaměstnanců v průmyslu.',
+    build: buildVyrobaSklady,
+  },
+  'restaurace-gastronomie': {
+    label: 'Restaurace a gastronomie',
+    description: 'Eliminace kuchyňských pachů, HACCP hygiena, komfort hostů, dezinfekce bez chemie.',
+    build: buildRestauraceGastronomie,
+  },
+  'case-study': {
+    label: 'Case study – konkrétní výsledky',
+    description: 'Universální šablona s reálnými výsledky měření před/po u zákazníků VitalSpace.',
+    build: buildCaseStudy,
+  },
+  'roi-kalkulacka': {
+    label: 'ROI kalkulačka – kolik vás stojí špatný vzduch',
+    description: 'Edukační email s výpočtem nákladů nemocnosti, pachů a chemie vs. ozonová sanitace.',
+    build: buildRoiKalkulacka,
   },
 }
 
@@ -853,6 +889,285 @@ function buildObchodniCentra(vars: TemplateVariables): TemplateResult {
       <p style="color: #94a3b8; font-size: 14px; margin: 0;">Bezplatně zmapujeme Vaše prostory a&nbsp;navrhneme optimální řešení.<br/>
       Odpovězte na email nebo zavolejte na <strong style="color: white;">+420&nbsp;775&nbsp;930&nbsp;816</strong>.</p>
     </div>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 12. Domovy seniorů a LDN ──
+
+function buildDomovySenioru(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Vážená paní ředitelko / Vážený pane řediteli'
+  const subject = 'Ochrana klientů a eliminace pachů – ozonová sanitace pro sociální služby | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>oslovujeme Vás s&nbsp;nabídkou, která přímo řeší dva nejčastější problémy v&nbsp;zařízeních sociální péče:
+    <strong>šíření infekcí</strong> a&nbsp;<strong>přetrvávající pachy</strong>.</p>
+
+    <p>Ozonová sanitace VitalSpace prokazatelně:</p>
+
+    <ul style="color: #374151; line-height: 1.8;">
+      <li><strong>Eliminuje 99,9 % bakterií a virů</strong> včetně MRSA, norovirů a&nbsp;chřipky</li>
+      <li><strong>Odstraňuje pachy inkontinence</strong> – ne maskuje, ale chemicky rozkládá</li>
+      <li><strong>Snižuje nozokomiální infekce</strong> – méně ATB, méně hospitalizací</li>
+      <li><strong>Bez chemie</strong> – bezpečné pro seniory i&nbsp;personál</li>
+    </ul>
+
+    <div style="margin: 24px 0; padding: 16px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+      <p style="margin: 0; font-weight: 600; color: #166534;">Reálný výsledek u zákazníka:</p>
+      <p style="margin: 8px 0 0; color: #374151; font-size: 14px;">
+        Domov seniorů v&nbsp;Plzni – po instalaci Vitalspace OZON Breeze Uo poklesla nemocnost personálu o&nbsp;34 %
+        a&nbsp;pachy na pokojích byly eliminovány do 2&nbsp;hodin po sanitaci.
+      </p>
+    </div>
+
+    <div style="margin: 28px 0;">
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Uo – stropní instalace</p>
+      <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Automatický provoz 24/7. Osvěžování za přítomnosti klientů, totální dezinfekce mimo provozní dobu.</p>
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Uo" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+    </div>
+
+    <p>Nabízíme <strong>bezplatné měření kvality vzduchu</strong> přímo ve Vašem zařízení – bez závazků.</p>
+
+    <p>Mohu Vám zaslat podrobnější informace nebo domluvit krátkou návštěvu?</p>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 13. Fitness centra a sportovní zařízení ──
+
+function buildFitnessSport(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Dobrý den'
+  const subject = 'Svěží šatny a čistý vzduch pro vaše sportovce | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>víte, že <strong>šatny a cvičební prostory</strong> patří mezi nejkontaminovanější místa
+    v&nbsp;komerčních budovách? Kombinace vlhkosti, tepla a&nbsp;potu vytváří ideální prostředí
+    pro <strong>plísně, bakterie a&nbsp;zápach</strong>.</p>
+
+    <p>Ozonová sanitace VitalSpace řeší tyto problémy bez chemie:</p>
+
+    <ul style="color: #374151; line-height: 1.8;">
+      <li><strong>Eliminace zápachu v šatnách</strong> – ozon chemicky rozkládá molekuly pachu</li>
+      <li><strong>Prevence plísní</strong> – ve sprchách, saunách, u bazénů</li>
+      <li><strong>Dezinfekce cvičebních prostor</strong> – přes noc, bez přítomnosti lidí</li>
+      <li><strong>Čistý vzduch pro sportovce</strong> – lepší výkon, méně respiračních potíží</li>
+    </ul>
+
+    <div style="margin: 28px 0;">
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Storm Pro I Plus</p>
+      <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Mobilní průmyslový generátor. Připojte, nastavte program, ráno je vše čisté. Ideální pro noční sanitaci šaten a&nbsp;cvičebních sálů.</p>
+      <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="Vitalspace OZON Storm Pro I Plus" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+    </div>
+
+    <p>Nabízíme také <strong>pronájem</strong> – bez velké počáteční investice, servis v&nbsp;ceně.</p>
+
+    <p>Mám Vám poslat konkrétní nabídku pro Vaše prostory?</p>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 14. Výrobní podniky a sklady ──
+
+function buildVyrobaSklady(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Dobrý den'
+  const subject = 'BOZP a kvalita vzduchu ve výrobě – ozonová sanitace | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>kvalita vzduchu v&nbsp;průmyslových prostorách přímo ovlivňuje <strong>zdraví zaměstnanců,
+    produktivitu a&nbsp;plnění BOZP norem</strong>.</p>
+
+    <p>Ozonová technologie VitalSpace nabízí průmyslové řešení:</p>
+
+    <ul style="color: #374151; line-height: 1.8;">
+      <li><strong>Eliminace VOC a chemických kontaminantů</strong> ze vzduchu</li>
+      <li><strong>Dezinfekce skladových prostor</strong> – prevence plísní a bakterií na materiálu</li>
+      <li><strong>Snížení nemocnosti zaměstnanců</strong> – prokazatelně o 20–35 %</li>
+      <li><strong>Splnění hygienických norem</strong> – BOZP, potravinářské standardy</li>
+      <li><strong>Bez chemických přípravků</strong> – ozon se rozpadá zpět na kyslík</li>
+    </ul>
+
+    <div style="margin: 28px 0;">
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Storm Pro I Plus</p>
+      <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Průmyslový ozonový generátor pro prostory 200–800 m³. Mikropočítačem řízený cyklus s&nbsp;automatickým chlazením. Certifikováno MZ ČR.</p>
+      <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="Vitalspace OZON Storm Pro I Plus" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+    </div>
+
+    <p>Nabízíme <strong>bezplatný audit kvality vzduchu</strong> ve Vašem provozu s&nbsp;měřením VOC, PM2.5 a&nbsp;CO2.</p>
+
+    <p>Mohu se domluvit na krátké schůzce?</p>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 15. Restaurace a gastronomie ──
+
+function buildRestauraceGastronomie(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Dobrý den'
+  const subject = 'Eliminace kuchyňských pachů a HACCP hygiena bez chemie | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>provoz restaurace znamená neustálý boj s&nbsp;<strong>pachy z kuchyně, hygienickými kontrolami
+    a&nbsp;očekáváním hostů</strong> na příjemné prostředí.</p>
+
+    <p>Ozonová sanitace VitalSpace řeší všechny tři:</p>
+
+    <ul style="color: #374151; line-height: 1.8;">
+      <li><strong>Eliminace kuchyňských pachů</strong> – olej, koření, grilování – ozon je chemicky rozloží</li>
+      <li><strong>HACCP-kompatibilní dezinfekce</strong> – bez chemických přípravků, bez reziduí</li>
+      <li><strong>Dezinfekce chladíren a skladů</strong> – prevence plísní, prodloužení trvanlivosti</li>
+      <li><strong>Komfort hostů</strong> – žádný zatuchlý vzduch, svěží prostředí</li>
+    </ul>
+
+    <div style="margin: 24px 0; padding: 16px; background: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
+      <p style="margin: 0; font-weight: 600; color: #1e40af;">Tip pro gastronomii:</p>
+      <p style="margin: 8px 0 0; color: #374151; font-size: 14px;">
+        Noční sanitace pomocí Vitalspace OZON Storm Pro I Plus eliminuje pachy z&nbsp;celého
+        restauračního provozu během 2–3 hodin. Ráno je vše svěží pro nové hosty.
+      </p>
+    </div>
+
+    <div style="margin: 28px 0;">
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Uo – stropní panel</p>
+      <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Kontinuální osvěžování za přítomnosti hostů. Automatický provoz, neviditelná instalace do podhledu.</p>
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Uo" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+    </div>
+
+    <p>Rád Vám představím konkrétní řešení pro Váš provoz. Mohu zavolat?</p>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 16. Case study – konkrétní výsledky ──
+
+function buildCaseStudy(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Dobrý den'
+  const companyName = vars.company_name ? esc(vars.company_name) : 'Vaše společnost'
+  const subject = 'Jak jsme snížili nemocnost o 34 % a eliminovali pachy – reálné výsledky | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>chci se s&nbsp;Vámi podělit o&nbsp;<strong>reálné výsledky</strong>, kterých naši zákazníci dosáhli
+    s&nbsp;ozonovou sanitací VitalSpace. Věřím, že podobných výsledků lze dosáhnout i&nbsp;u&nbsp;${companyName}.</p>
+
+    <div style="margin: 24px 0; padding: 20px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+      <p style="margin: 0 0 12px; font-weight: 700; color: #166534; font-size: 16px;">Případová studie č. 1: Domov seniorů</p>
+      <table style="width: 100%; font-size: 14px; color: #374151;">
+        <tr><td style="padding: 4px 0;"><strong>Problém:</strong></td><td>Pachy inkontinence, časté infekce</td></tr>
+        <tr><td style="padding: 4px 0;"><strong>Řešení:</strong></td><td>Vitalspace OZON Breeze Uo – stropní instalace na 12 pokojích</td></tr>
+        <tr><td style="padding: 4px 0;"><strong>Výsledek:</strong></td><td>Nemocnost personálu −34 %, pachy eliminovány do 2h</td></tr>
+      </table>
+    </div>
+
+    <div style="margin: 24px 0; padding: 20px; background: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
+      <p style="margin: 0 0 12px; font-weight: 700; color: #1e40af; font-size: 16px;">Případová studie č. 2: Kancelářská budova</p>
+      <table style="width: 100%; font-size: 14px; color: #374151;">
+        <tr><td style="padding: 4px 0;"><strong>Problém:</strong></td><td>Sick building syndrome, stížnosti zaměstnanců</td></tr>
+        <tr><td style="padding: 4px 0;"><strong>Řešení:</strong></td><td>Vitalspace OZON Breeze Uo v klimatizačním systému</td></tr>
+        <tr><td style="padding: 4px 0;"><strong>Výsledek:</strong></td><td>VOC sníženy o 78 %, CO2 o 45 %, stížnosti klesly na nulu</td></tr>
+      </table>
+    </div>
+
+    <div style="margin: 24px 0; padding: 20px; background: #fefce8; border-radius: 8px; border: 1px solid #fde68a;">
+      <p style="margin: 0 0 12px; font-weight: 700; color: #854d0e; font-size: 16px;">Případová studie č. 3: Hotel</p>
+      <table style="width: 100%; font-size: 14px; color: #374151;">
+        <tr><td style="padding: 4px 0;"><strong>Problém:</strong></td><td>Pachy z klimatizace, negativní recenze hostů</td></tr>
+        <tr><td style="padding: 4px 0;"><strong>Řešení:</strong></td><td>Vitalspace OZON Storm Pro I Plus – noční sanitace pokojů</td></tr>
+        <tr><td style="padding: 4px 0;"><strong>Výsledek:</strong></td><td>Hodnocení hygieny na Booking.com +0.8 bodu, pachy eliminovány</td></tr>
+      </table>
+    </div>
+
+    <p>Všechny naše přístroje jsou <strong>registrované MZ ČR</strong>, validované dle <strong>EN 17272:2020</strong>
+    a&nbsp;vyvinuté ve spolupráci se <strong>Západočeskou univerzitou v&nbsp;Plzni</strong>.</p>
+
+    <p>Chcete se dozvědět, jaké výsledky můžeme dosáhnout u&nbsp;Vás? Nabízím <strong>bezplatné měření vzduchu</strong>.</p>
+
+    ${SIGNATURE}
+  `
+
+  return { subject, html }
+}
+
+// ── 17. ROI kalkulačka – kolik vás stojí špatný vzduch ──
+
+function buildRoiKalkulacka(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Dobrý den'
+  const subject = 'Kolik vás stojí špatný vzduch? Spočítejte si to | VitalSpace'
+
+  const html = `
+    <p>${esc(salutation)},</p>
+
+    <p>většina firem si <strong>neuvědomuje skutečné náklady</strong> špatné kvality vzduchu.
+    Pojďme se podívat na čísla:</p>
+
+    <div style="margin: 24px 0; padding: 20px; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca;">
+      <p style="margin: 0 0 16px; font-weight: 700; color: #991b1b; font-size: 16px;">Skryté náklady špatného vzduchu</p>
+
+      <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 180px; padding: 12px; background: white; border-radius: 6px;">
+          <p style="margin: 0; font-size: 24px; font-weight: 700; color: #dc2626;">15 000 Kč</p>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">Průměrná cena 1 dne nemocnosti zaměstnance (mzda + náhrada + ztráta produktivity)</p>
+        </div>
+        <div style="flex: 1; min-width: 180px; padding: 12px; background: white; border-radius: 6px;">
+          <p style="margin: 0; font-size: 24px; font-weight: 700; color: #dc2626;">8–12 dní</p>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">Průměrná roční absence na zaměstnance v ČR (ÚZIS)</p>
+        </div>
+        <div style="flex: 1; min-width: 180px; padding: 12px; background: white; border-radius: 6px;">
+          <p style="margin: 0; font-size: 24px; font-weight: 700; color: #dc2626;">6–15 %</p>
+          <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">Pokles produktivity v budovách se špatnou kvalitou vzduchu (studie Harvard T.H. Chan)</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin: 24px 0; padding: 20px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+      <p style="margin: 0 0 16px; font-weight: 700; color: #166534; font-size: 16px;">Příklad: firma s 50 zaměstnanci</p>
+      <table style="width: 100%; font-size: 14px; color: #374151; border-collapse: collapse;">
+        <tr style="border-bottom: 1px solid #d1fae5;">
+          <td style="padding: 8px 0;">Nemocnost bez sanitace (10 dní × 50 lidí × 15 000 Kč)</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #dc2626;">7 500 000 Kč/rok</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #d1fae5;">
+          <td style="padding: 8px 0;">Snížení nemocnosti o 30 % díky ozonové sanitaci</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #166534;">−2 250 000 Kč/rok</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #d1fae5;">
+          <td style="padding: 8px 0;">Investice do VitalSpace řešení</td>
+          <td style="padding: 8px 0; text-align: right;">od 89 000 Kč</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: 700;">Návratnost investice</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 700; color: #166534;">pod 1 měsíc</td>
+        </tr>
+      </table>
+    </div>
+
+    <p>A to nepočítáme <strong>úsporu za chemické dezinfekční přípravky</strong>,
+    <strong>lepší hodnocení na Google/Booking</strong> a&nbsp;<strong>vyšší spokojenost zaměstnanců/klientů</strong>.</p>
+
+    <p>Chcete znát přesné číslo pro Vaši organizaci? Nabízím <strong>bezplatný audit a&nbsp;kalkulaci ROI</strong> přímo pro Vás.</p>
 
     ${SIGNATURE}
   `
