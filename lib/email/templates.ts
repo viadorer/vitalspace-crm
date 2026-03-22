@@ -1104,59 +1104,39 @@ function buildCaseStudy(vars: TemplateVariables): TemplateResult {
 
 function buildRoiKalkulacka(vars: TemplateVariables): TemplateResult {
   const salutation = vars.salutation || 'Dobrý den'
-  const subject = 'Kolik vás stojí špatný vzduch? Spočítejte si to | VitalSpace'
+  const subject = 'Kolik vás stojí špatný vzduch? | VitalSpace'
 
   const html = `
     <p>${esc(salutation)},</p>
 
-    <p>většina firem si <strong>neuvědomuje skutečné náklady</strong> špatné kvality vzduchu.
-    Pojďme se podívat na čísla:</p>
+    <p>zamysleli jste se někdy, kolik vaši firmu <strong>skutečně stojí nekvalitní vzduch</strong> v&nbsp;prostorách?</p>
 
     <div style="margin: 24px 0; padding: 20px; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca;">
-      <p style="margin: 0 0 16px; font-weight: 700; color: #991b1b; font-size: 16px;">Skryté náklady špatného vzduchu</p>
+      <p style="margin: 0 0 16px; font-weight: 700; color: #991b1b; font-size: 16px;">Otázky, které stojí za zvážení</p>
 
-      <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 180px; padding: 12px; background: white; border-radius: 6px;">
-          <p style="margin: 0; font-size: 24px; font-weight: 700; color: #dc2626;">15 000 Kč</p>
-          <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">Průměrná cena 1 dne nemocnosti zaměstnance (mzda + náhrada + ztráta produktivity)</p>
-        </div>
-        <div style="flex: 1; min-width: 180px; padding: 12px; background: white; border-radius: 6px;">
-          <p style="margin: 0; font-size: 24px; font-weight: 700; color: #dc2626;">8–12 dní</p>
-          <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">Průměrná roční absence na zaměstnance v ČR (ÚZIS)</p>
-        </div>
-        <div style="flex: 1; min-width: 180px; padding: 12px; background: white; border-radius: 6px;">
-          <p style="margin: 0; font-size: 24px; font-weight: 700; color: #dc2626;">6–15 %</p>
-          <p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">Pokles produktivity v budovách se špatnou kvalitou vzduchu (studie Harvard T.H. Chan)</p>
-        </div>
-      </div>
+      <ul style="color: #374151; line-height: 2; margin: 0; padding-left: 20px;">
+        <li>Kolik dní ročně chybí vaši zaměstnanci kvůli respiračním onemocněním?</li>
+        <li>Kolik vás stojí každý den absence — mzda, náhrada, ztráta produktivity?</li>
+        <li>Kolik utrácíte za chemické dezinfekční prostředky?</li>
+        <li>Jaký dopad mají pachy nebo špatný vzduch na spokojenost klientů?</li>
+      </ul>
     </div>
 
     <div style="margin: 24px 0; padding: 20px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
-      <p style="margin: 0 0 16px; font-weight: 700; color: #166534; font-size: 16px;">Příklad: firma s 50 zaměstnanci</p>
-      <table style="width: 100%; font-size: 14px; color: #374151; border-collapse: collapse;">
-        <tr style="border-bottom: 1px solid #d1fae5;">
-          <td style="padding: 8px 0;">Nemocnost bez sanitace (10 dní × 50 lidí × 15 000 Kč)</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #dc2626;">7 500 000 Kč/rok</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #d1fae5;">
-          <td style="padding: 8px 0;">Snížení nemocnosti o 30 % díky ozonové sanitaci</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #166534;">−2 250 000 Kč/rok</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #d1fae5;">
-          <td style="padding: 8px 0;">Investice do VitalSpace řešení</td>
-          <td style="padding: 8px 0; text-align: right;">od 89 000 Kč</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: 700;">Návratnost investice</td>
-          <td style="padding: 8px 0; text-align: right; font-weight: 700; color: #166534;">pod 1 měsíc</td>
-        </tr>
-      </table>
+      <p style="margin: 0 0 16px; font-weight: 700; color: #166534; font-size: 16px;">Co přináší ozonová sanitace VitalSpace</p>
+
+      <ul style="color: #374151; line-height: 2; margin: 0; padding-left: 20px;">
+        <li><strong>Snížení nemocnosti</strong> — prokazatelná eliminace bakterií, virů a&nbsp;plísní</li>
+        <li><strong>Úspora za chemii</strong> — dezinfekce bez chemických přípravků</li>
+        <li><strong>Eliminace pachů</strong> — čistý vzduch pro zaměstnance i&nbsp;klienty</li>
+        <li><strong>Žádná obsluha</strong> — plně automatický provoz</li>
+      </ul>
     </div>
 
-    <p>A to nepočítáme <strong>úsporu za chemické dezinfekční přípravky</strong>,
-    <strong>lepší hodnocení na Google/Booking</strong> a&nbsp;<strong>vyšší spokojenost zaměstnanců/klientů</strong>.</p>
+    <p>Rádi vám <strong>bezplatně spočítáme konkrétní přínos</strong> pro vaši provozovnu —
+    na základě měření kvality vzduchu přímo u&nbsp;vás.</p>
 
-    <p>Chcete znát přesné číslo pro Vaši organizaci? Nabízím <strong>bezplatný audit a&nbsp;kalkulaci ROI</strong> přímo pro Vás.</p>
+    <p>Stačí odpovědět na tento email nebo zavolat — domluvíme nezávazný audit.</p>
 
     ${SIGNATURE}
   `
