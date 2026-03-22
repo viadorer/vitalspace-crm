@@ -38,7 +38,7 @@ async function fetchDashboardData(): Promise<DashboardData> {
       .limit(100),
     supabase
       .from('audit_log')
-      .select('*, user:app_users(id, full_name)')
+      .select('*, user:app_users!left(id, full_name)')
       .order('created_at', { ascending: false })
       .limit(15),
     supabase

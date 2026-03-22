@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser'
 import { LayoutDashboard, Kanban, Users, Building2, Package, Target, Shield, Zap, LogOut, Phone, Key, ClipboardList, Mail, ListOrdered } from 'lucide-react'
+import { CronStatusIndicator } from './CronStatusIndicator'
 
 const menuItems = [
   { label: 'Dashboard', href: '/crm/dashboard', icon: LayoutDashboard },
@@ -129,6 +130,7 @@ export function Sidebar() {
             <div className="text-xs text-gray-500 truncate">{user.email}</div>
           </div>
         )}
+        <CronStatusIndicator />
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

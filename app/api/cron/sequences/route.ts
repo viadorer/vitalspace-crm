@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const { data: enrollments } = await supabase
       .from('prospect_sequence_enrollments')
       .select(`
-        id, prospect_id, sequence_id, current_step_order, status,
+        id, prospect_id, client_id, entity_type, sequence_id, current_step_order, status,
         enrolled_at
       `)
       .eq('status', 'active')
@@ -76,63 +76,79 @@ export async function GET(request: NextRequest) {
       try {
         processed++
 
-        // Načti prospect
-        const { data: prospect } = await supabase
-          .from('prospects')
-          .select('id, company_name, status, segment_id, callcenter_status, city, region')
-          .eq('id', enrollment.prospect_id)
-          .single()
+        const isClient = enrollment.entity_type === 'client'
+        const entityId = isClient ? enrollment.client_id : enrollment.prospect_id
 
-        if (!prospect) {
-          await stopEnrollment(supabase, enrollment.id, 'Prospect nenalezen')
+        // Načti entitu (prospect nebo klient)
+        let entity: { id: string; company_name: string; status?: string; segment_id: string | null; city: string | null } | null = null
+
+        if (isClient && enrollment.client_id) {
+          const { data: client } = await supabase
+            .from('clients')
+            .select('id, company_name, segment_id, city')
+            .eq('id', enrollment.client_id)
+            .single()
+          if (client) entity = { ...client, status: 'active' }
+        } else if (enrollment.prospect_id) {
+          const { data: prospect } = await supabase
+            .from('prospects')
+            .select('id, company_name, status, segment_id, callcenter_status, city, region')
+            .eq('id', enrollment.prospect_id)
+            .single()
+          entity = prospect
+        }
+
+        if (!entity) {
+          await stopEnrollment(supabase, enrollment.id, `${isClient ? 'Klient' : 'Prospect'} nenalezen`, entityId)
           stopped++
           continue
         }
 
-        // ─── STOP podmínky ────────────────────────
-        // 1. Prospect má deal?
-        const { count: dealCount } = await supabase
-          .from('deals')
-          .select('id', { count: 'exact', head: true })
-          .eq('prospect_id', prospect.id)
+        // ─── STOP podmínky (jen pro prospekty) ──────
+        if (!isClient) {
+          // 1. Prospect má deal?
+          const { count: dealCount } = await supabase
+            .from('deals')
+            .select('id', { count: 'exact', head: true })
+            .eq('prospect_id', entity.id)
 
-        if (dealCount && dealCount > 0) {
-          await completeEnrollment(supabase, enrollment.id, 'Deal vytvořen — sekvence splnila účel')
-          stopped++
-          continue
+          if (dealCount && dealCount > 0) {
+            await completeEnrollment(supabase, enrollment.id, 'Deal vytvořen — sekvence splnila účel', entityId)
+            stopped++
+            continue
+          }
+
+          // 2. Prospect status = refused?
+          if (entity.status === 'refused') {
+            await stopEnrollment(supabase, enrollment.id, 'Prospect odmítl', entityId)
+            stopped++
+            continue
+          }
+
+          // 3. Callcentrum: not_interested?
+          const { data: lastCall } = await supabase
+            .from('callcenter_call_results')
+            .select('result_type')
+            .eq('prospect_id', entity.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+
+          if (lastCall?.result_type === 'not_interested') {
+            await stopEnrollment(supabase, enrollment.id, 'Callcentrum: nezájem', entityId)
+            stopped++
+            continue
+          }
         }
 
-        // 2. Prospect status = refused?
-        if (prospect.status === 'refused') {
-          await stopEnrollment(supabase, enrollment.id, 'Prospect odmítl')
-          stopped++
-          continue
-        }
-
-        // 3. Unsubscribed?
-        const { count: unsubCount } = await supabase
-          .from('email_events')
-          .select('id', { count: 'exact', head: true })
-          .eq('prospect_id', prospect.id)
-          .eq('event_type', 'unsubscribed')
+        // Unsubscribed? (platí pro prospect i klient)
+        const unsubFilter = isClient
+          ? supabase.from('email_events').select('id', { count: 'exact', head: true }).eq('client_id', entity.id).eq('event_type', 'unsubscribed')
+          : supabase.from('email_events').select('id', { count: 'exact', head: true }).eq('prospect_id', entity.id).eq('event_type', 'unsubscribed')
+        const { count: unsubCount } = await unsubFilter
 
         if (unsubCount && unsubCount > 0) {
-          await stopEnrollment(supabase, enrollment.id, 'Prospect se odhlásil z emailů')
-          stopped++
-          continue
-        }
-
-        // 4. Callcentrum: not_interested?
-        const { data: lastCall } = await supabase
-          .from('callcenter_call_results')
-          .select('result_type')
-          .eq('prospect_id', prospect.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single()
-
-        if (lastCall?.result_type === 'not_interested') {
-          await stopEnrollment(supabase, enrollment.id, 'Callcentrum: nezájem')
+          await stopEnrollment(supabase, enrollment.id, `${isClient ? 'Klient' : 'Prospect'} se odhlásil z emailů`, entityId)
           stopped++
           continue
         }
@@ -147,13 +163,13 @@ export async function GET(request: NextRequest) {
 
         if (!step) {
           // Žádný další krok → sekvence dokončena
-          await completeEnrollment(supabase, enrollment.id, 'Všechny kroky dokončeny')
+          await completeEnrollment(supabase, enrollment.id, 'Všechny kroky dokončeny', entityId)
           stopped++
           continue
         }
 
         // ─── Proveď krok ─────────────────────────
-        const result = await executeStep(supabase, enrollment, step, prospect)
+        const result = await executeStep(supabase, enrollment, step, entity, isClient)
         stepsExecuted++
 
         // Loguj výsledek
@@ -189,11 +205,13 @@ export async function GET(request: NextRequest) {
             })
             .eq('id', enrollment.id)
         } else {
-          await completeEnrollment(supabase, enrollment.id, 'Všechny kroky dokončeny')
+          await completeEnrollment(supabase, enrollment.id, 'Všechny kroky dokončeny', entityId)
         }
 
-        // Přepočítej lead score
-        await recomputeScoreForProspect(supabase, prospect.id)
+        // Přepočítej lead score (jen pro prospekty)
+        if (!isClient && entity.id) {
+          await recomputeScoreForProspect(supabase, entity.id)
+        }
 
       } catch (err) {
         errors++
@@ -235,19 +253,31 @@ interface StepResult {
 
 async function executeStep(
   supabase: ReturnType<typeof createAdminClient>,
-  enrollment: { id: string; prospect_id: string; sequence_id: string; current_step_order: number; enrolled_at: string },
+  enrollment: { id: string; prospect_id: string; client_id: string; entity_type: string; sequence_id: string; current_step_order: number; enrolled_at: string },
   step: SequenceStep,
-  prospect: { id: string; company_name: string; status: string; segment_id: string | null; city: string | null }
+  entity: { id: string; company_name: string; status?: string; segment_id: string | null; city: string | null },
+  isClient: boolean
 ): Promise<StepResult> {
   switch (step.action_type) {
     case 'email':
-      return executeEmailStep(supabase, enrollment, step, prospect)
+      return executeEmailStep(supabase, enrollment, step, entity, isClient)
     case 'callcenter':
-      return executeCallcenterStep(supabase, prospect)
+      if (isClient) {
+        // Klienti se nezařazují do callcentra — vytvoř task místo toho
+        await supabase.from('activities').insert({
+          entity_type: 'client',
+          entity_id: entity.id,
+          type: 'task',
+          subject: 'Zavolat klientovi (sekvence)',
+          body: `Automatický task z email sekvence — kontaktovat ${entity.company_name}.`,
+        })
+        return { success: true, details: { action: 'client_call_task_created' } }
+      }
+      return executeCallcenterStep(supabase, entity)
     case 'wait_for_event':
       return executeWaitStep(supabase, enrollment, step)
     case 'ai_decide':
-      return executeAiStep(supabase, enrollment, step, prospect)
+      return executeAiStep(supabase, enrollment, step, entity)
     default:
       return { success: false, details: { error: `Neznámý typ kroku: ${step.action_type}` } }
   }
@@ -255,45 +285,48 @@ async function executeStep(
 
 async function executeEmailStep(
   supabase: ReturnType<typeof createAdminClient>,
-  enrollment: { id: string; prospect_id: string },
+  enrollment: { id: string; prospect_id: string; client_id: string; entity_type: string },
   step: SequenceStep,
-  prospect: { id: string; company_name: string; segment_id: string | null; city: string | null }
+  entity: { id: string; company_name: string; segment_id: string | null; city: string | null },
+  isClient: boolean
 ): Promise<StepResult> {
   const templateName = step.email_template_name as TemplateName
   if (!templateName || !EMAIL_TEMPLATES[templateName]) {
     return { success: false, details: { error: `Šablona ${templateName} neexistuje` } }
   }
 
-  // Najdi kontakt s emailem
+  // Najdi kontakt s emailem (prospect_contacts nebo client_contacts)
+  const contactsTable = isClient ? 'client_contacts' : 'prospect_contacts'
+  const foreignKey = isClient ? 'client_id' : 'prospect_id'
   const { data: contacts } = await supabase
-    .from('prospect_contacts')
+    .from(contactsTable)
     .select('first_name, last_name, email, position, is_decision_maker')
-    .eq('prospect_id', prospect.id)
+    .eq(foreignKey, entity.id)
     .not('email', 'is', null)
     .order('is_decision_maker', { ascending: false })
     .limit(1)
 
   const contact = contacts?.[0]
   if (!contact?.email) {
-    return { success: false, details: { error: 'Prospect nemá kontakt s emailem' } }
+    return { success: false, details: { error: `${isClient ? 'Klient' : 'Prospect'} nemá kontakt s emailem` } }
   }
 
   // Připrav proměnné šablony
   const variables: TemplateVariables = {
     salutation: 'Dobrý den',
     contact_name: [contact.first_name, contact.last_name].filter(Boolean).join(' ') || undefined,
-    company_name: prospect.company_name,
-    city: prospect.city || undefined,
+    company_name: entity.company_name,
+    city: entity.city || undefined,
   }
 
   // Získej segment info pro personalizaci
   let segmentName = ''
   let segmentPainPoint: string | null = null
-  if (prospect.segment_id) {
+  if (entity.segment_id) {
     const { data: segment } = await supabase
       .from('company_segments')
       .select('name, target_pain_point')
-      .eq('id', prospect.segment_id)
+      .eq('id', entity.segment_id)
       .single()
     segmentName = segment?.name || ''
     segmentPainPoint = segment?.target_pain_point || null
@@ -303,11 +336,11 @@ async function executeEmailStep(
   let emailResult
   if (step.use_ai_personalization) {
     emailResult = await personalizeEmail(templateName, variables, {
-      companyName: prospect.company_name,
+      companyName: entity.company_name,
       segmentName,
       segmentPainPoint,
       decisionMakerRole: contact.position,
-      city: prospect.city,
+      city: entity.city,
       contactName: variables.contact_name || null,
     })
   } else {
@@ -328,14 +361,16 @@ async function executeEmailStep(
     recipient_email: contact.email,
     recipient_name: contactName,
     template_name: templateName,
-    prospect_id: prospect.id,
+    prospect_id: isClient ? null : entity.id,
+    client_id: isClient ? entity.id : null,
     message_id: brevoResult.messageId,
   })
 
   // Vytvoř aktivitu
+  const actEntityType = isClient ? 'client' : 'prospect'
   await supabase.from('activities').insert({
-    entity_type: 'prospect',
-    entity_id: prospect.id,
+    entity_type: actEntityType,
+    entity_id: entity.id,
     type: 'email',
     subject: `Sekvence: ${emailResult.subject}`,
     body: `Email odeslán na ${contact.email} (šablona: ${templateName})`,
@@ -416,6 +451,15 @@ async function executeWaitStep(
     // Pokud jsme tady, timeout vypršel → pokračuj dál
   }
 
+  // Vytvoř aktivitu
+  await supabase.from('activities').insert({
+    entity_type: 'prospect',
+    entity_id: enrollment.prospect_id,
+    type: 'note',
+    subject: `Sekvence: čekání na ${step.wait_event_type || 'událost'}`,
+    body: `Timeout vypršel — prospect nereagoval. Pokračuje se dalším krokem.`,
+  })
+
   return {
     success: true,
     details: { action: 'timeout_reached', wait_event: step.wait_event_type },
@@ -424,43 +468,47 @@ async function executeWaitStep(
 
 async function executeAiStep(
   supabase: ReturnType<typeof createAdminClient>,
-  enrollment: { id: string; prospect_id: string; sequence_id: string; current_step_order: number; enrolled_at: string },
+  enrollment: { id: string; prospect_id: string; client_id: string; entity_type: string; sequence_id: string; current_step_order: number; enrolled_at: string },
   step: SequenceStep,
-  prospect: { id: string; company_name: string; segment_id: string | null }
+  entity: { id: string; company_name: string; segment_id: string | null }
 ): Promise<StepResult> {
   // Získej segment
+  const isClientAi = enrollment.entity_type === 'client'
   let segmentName = 'neznámý'
-  if (prospect.segment_id) {
+  if (entity.segment_id) {
     const { data: segment } = await supabase
       .from('company_segments')
       .select('name')
-      .eq('id', prospect.segment_id)
+      .eq('id', entity.segment_id)
       .single()
     segmentName = segment?.name || 'neznámý'
   }
 
   // Spočítej statistiky
+  const emailFilterKey = isClientAi ? 'client_id' : 'prospect_id'
   const { count: emailsSent } = await supabase
     .from('email_send_log')
     .select('id', { count: 'exact', head: true })
-    .eq('prospect_id', prospect.id)
+    .eq(emailFilterKey, entity.id)
 
   const { count: emailsOpened } = await supabase
     .from('email_events')
     .select('id', { count: 'exact', head: true })
-    .eq('prospect_id', prospect.id)
+    .eq(isClientAi ? 'client_id' : 'prospect_id', entity.id)
     .eq('event_type', 'opened')
 
   const { count: emailsClicked } = await supabase
     .from('email_events')
     .select('id', { count: 'exact', head: true })
-    .eq('prospect_id', prospect.id)
+    .eq(isClientAi ? 'client_id' : 'prospect_id', entity.id)
     .eq('event_type', 'clicked')
 
-  const { data: callResults } = await supabase
-    .from('callcenter_call_results')
-    .select('result_type')
-    .eq('prospect_id', prospect.id)
+  const { data: callResults } = isClientAi
+    ? { data: [] as { result_type: string }[] }
+    : await supabase
+        .from('callcenter_call_results')
+        .select('result_type')
+        .eq('prospect_id', entity.id)
 
   const { count: totalSteps } = await supabase
     .from('sequence_steps')
@@ -473,7 +521,7 @@ async function executeAiStep(
 
   // Zavolej Gemini
   const decision = await decideNextAction({
-    companyName: prospect.company_name,
+    companyName: entity.company_name,
     segmentName,
     emailsSent: emailsSent || 0,
     emailsOpened: emailsOpened || 0,
@@ -487,10 +535,10 @@ async function executeAiStep(
   // Proveď AI rozhodnutí
   switch (decision.action) {
     case 'queue_callcenter':
-      await executeCallcenterStep(supabase, prospect)
+      await executeCallcenterStep(supabase, entity)
       break
     case 'stop_sequence':
-      await stopEnrollment(supabase, enrollment.id, `AI: ${decision.reasoning}`)
+      await stopEnrollment(supabase, enrollment.id, `AI: ${decision.reasoning}`, entity.id)
       break
     case 'wait':
       // Nastav next_execution_at na wait_days
@@ -507,6 +555,17 @@ async function executeAiStep(
     // send_email a skip_step → pokračují na další krok normálně
   }
 
+  // Vytvoř aktivitu
+  const aiEntityType = enrollment.entity_type || 'prospect'
+  const aiEntityId = aiEntityType === 'client' ? enrollment.client_id : enrollment.prospect_id
+  await supabase.from('activities').insert({
+    entity_type: aiEntityType,
+    entity_id: aiEntityId || entity.id,
+    type: 'note',
+    subject: `Sekvence: AI rozhodnutí — ${decision.action}`,
+    body: `Gemini doporučil: ${decision.action}. Důvod: ${decision.reasoning}`,
+  })
+
   return {
     success: true,
     details: {
@@ -522,8 +581,16 @@ async function executeAiStep(
 async function stopEnrollment(
   supabase: ReturnType<typeof createAdminClient>,
   enrollmentId: string,
-  reason: string
+  reason: string,
+  entityId?: string | null
 ) {
+  // Zjisti entity_type z enrollmentu
+  const { data: enr } = await supabase
+    .from('prospect_sequence_enrollments')
+    .select('entity_type')
+    .eq('id', enrollmentId)
+    .single()
+
   await supabase
     .from('prospect_sequence_enrollments')
     .update({
@@ -533,13 +600,30 @@ async function stopEnrollment(
       updated_at: new Date().toISOString(),
     })
     .eq('id', enrollmentId)
+
+  if (entityId) {
+    await supabase.from('activities').insert({
+      entity_type: enr?.entity_type || 'prospect',
+      entity_id: entityId,
+      type: 'note',
+      subject: 'Sekvence: zastavena',
+      body: `Důvod: ${reason}`,
+    })
+  }
 }
 
 async function completeEnrollment(
   supabase: ReturnType<typeof createAdminClient>,
   enrollmentId: string,
-  reason: string
+  reason: string,
+  entityId?: string | null
 ) {
+  const { data: enr } = await supabase
+    .from('prospect_sequence_enrollments')
+    .select('entity_type')
+    .eq('id', enrollmentId)
+    .single()
+
   await supabase
     .from('prospect_sequence_enrollments')
     .update({
@@ -549,4 +633,14 @@ async function completeEnrollment(
       updated_at: new Date().toISOString(),
     })
     .eq('id', enrollmentId)
+
+  if (entityId) {
+    await supabase.from('activities').insert({
+      entity_type: enr?.entity_type || 'prospect',
+      entity_id: entityId,
+      type: 'note',
+      subject: 'Sekvence: dokončena',
+      body: `Důvod: ${reason}`,
+    })
+  }
 }

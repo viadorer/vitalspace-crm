@@ -39,6 +39,13 @@ const DEFAULT_MESSAGES = {
 }
 
 function extractError(err: unknown, fallback: string): string {
+  if (err && typeof err === 'object') {
+    const e = err as { code?: string; message?: string; details?: string }
+    // Supabase unique constraint violation (409 Conflict)
+    if (e.code === '23505' || e.message?.includes('duplicate') || e.message?.includes('unique')) {
+      return 'Záznam s těmito údaji již existuje (duplicitní IČO nebo název)'
+    }
+  }
   return err instanceof Error ? err.message : fallback
 }
 

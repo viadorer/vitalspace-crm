@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Topbar } from '@/components/crm/Topbar'
 import { Button } from '@/components/ui/Button'
@@ -17,6 +18,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Client, CompanySegment, Deal } from '@/lib/supabase/types'
 
 export default function ClientsPage() {
+  const router = useRouter()
   const { clients, loading, createClient: addClient, updateClient, deleteClient } = useClients()
   const { createDeal } = useDeals()
   const { isSuperAdmin } = useCurrentUser()
@@ -183,7 +185,7 @@ export default function ClientsPage() {
                       onClick={() => {
                         setEditingClient(null)
                         setSelectedClient(null)
-                        window.location.href = `/crm/pipeline?deal=${deal.id}`
+                        router.push(`/crm/pipeline?deal=${deal.id}`)
                       }}
                       className="p-3 bg-gray-50 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors border border-transparent hover:border-blue-200"
                     >

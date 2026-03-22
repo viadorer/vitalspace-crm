@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Topbar } from '@/components/crm/Topbar'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { useToast } from '@/components/ui/ToastProvider'
 import { ProspectTable } from '@/components/crm/ProspectTable'
 import { ProspectForm } from '@/components/crm/ProspectForm'
 import { ActivityPanel } from '@/components/crm/ActivityPanel'
@@ -18,6 +19,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Prospect, CompanySegment, Deal, Client } from '@/lib/supabase/types'
 
 export default function ProspectsPage() {
+  const { toast } = useToast()
   const { prospects, loading, createProspect, updateProspect, deleteProspect } = useProspects()
   const { createDeal } = useDeals()
   const { isSuperAdmin } = useCurrentUser()
@@ -46,6 +48,9 @@ export default function ProspectsPage() {
     const result = await createProspect(data)
     if (!result.error) {
       setShowNewProspectModal(false)
+      toast.success('Prospect vytvořen')
+    } else {
+      toast.error(result.error)
     }
   }
 

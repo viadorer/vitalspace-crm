@@ -12,17 +12,21 @@ interface LogParams {
 }
 
 export async function logAuditEvent(params: LogParams): Promise<void> {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-  await supabase.from('audit_log').insert({
-    user_id: user?.id || null,
-    action: params.action,
-    entity_type: params.entityType,
-    entity_id: params.entityId,
-    changes: params.changes || {},
-    metadata: params.metadata || {},
-  })
+    await supabase.from('audit_log').insert({
+      user_id: user?.id || null,
+      action: params.action,
+      entity_type: params.entityType,
+      entity_id: params.entityId,
+      changes: params.changes || {},
+      metadata: params.metadata || {},
+    })
+  } catch (err) {
+    console.error('[audit_log] Failed to log event:', err)
+  }
 }
 
 export async function logAssignment(params: {
@@ -62,7 +66,7 @@ export async function fetchAuditLog(
   const supabase = createClient()
   const { data } = await supabase
     .from('audit_log')
-    .select('*, user:app_users(*)')
+    .select('*, user:app_users!left(*)')
     .eq('entity_type', entityType)
     .eq('entity_id', entityId)
     .order('created_at', { ascending: false })

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { Topbar } from '@/components/crm/Topbar'
 import { Button } from '@/components/ui/Button'
@@ -17,11 +18,31 @@ import type { Deal, DealStage } from '@/lib/supabase/types'
 type ViewMode = 'board' | 'list'
 
 export default function PipelinePage() {
+  return (
+    <Suspense>
+      <PipelineContent />
+    </Suspense>
+  )
+}
+
+function PipelineContent() {
   const { deals, loading, updateDealStage, createDeal } = useDeals()
   const { clients } = useClients()
+  const searchParams = useSearchParams()
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null)
   const [showNewDealModal, setShowNewDealModal] = useState(false)
   const [viewMode, setViewMode] = usePersistedState<ViewMode>('pipeline_view', 'board')
+
+  // Otevři deal z URL parametru (proklik z klienta)
+  useEffect(() => {
+    const dealParam = searchParams.get('deal')
+    if (dealParam && deals.length > 0) {
+      const exists = deals.find((d) => d.id === dealParam)
+      if (exists) {
+        setSelectedDealId(dealParam)
+      }
+    }
+  }, [searchParams, deals])
 
   const selectedDeal = deals.find((d) => d.id === selectedDealId)
 

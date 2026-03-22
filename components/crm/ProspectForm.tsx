@@ -51,8 +51,25 @@ export function ProspectForm({ prospect, segments, onSubmit, onCancel }: Prospec
     assigned_consultant: prospect?.assigned_consultant || '',
   })
 
+  const [validationError, setValidationError] = useState<string | null>(null)
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setValidationError(null)
+
+    if (!formData.company_name?.trim()) {
+      setValidationError('Název firmy je povinný')
+      return
+    }
+    if (!formData.city?.trim()) {
+      setValidationError('Město je povinné')
+      return
+    }
+    if (!formData.segment_id) {
+      setValidationError('Vyberte segment')
+      return
+    }
+
     setLoading(true)
     await onSubmit(formData)
     setLoading(false)
@@ -332,13 +349,20 @@ export function ProspectForm({ prospect, segments, onSubmit, onCancel }: Prospec
             → Převést na klienta
           </Button>
         )}
-        <div className="flex space-x-3">
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Zrušit
-          </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Ukládání...' : prospect ? 'Uložit změny' : 'Vytvořit prospect'}
-          </Button>
+        <div className="space-y-3">
+          {validationError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {validationError}
+            </div>
+          )}
+          <div className="flex space-x-3">
+            <Button type="button" variant="secondary" onClick={onCancel}>
+              Zrušit
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Ukládání...' : prospect ? 'Uložit změny' : 'Vytvořit prospect'}
+            </Button>
+          </div>
         </div>
       </div>
     </form>
