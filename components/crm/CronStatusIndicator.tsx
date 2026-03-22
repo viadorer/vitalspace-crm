@@ -10,7 +10,7 @@ export function CronStatusIndicator() {
 
   useEffect(() => {
     checkCronStatus()
-    const interval = setInterval(checkCronStatus, 60000) // každou minutu
+    const interval = setInterval(checkCronStatus, 900000) // každých 15 minut
     return () => clearInterval(interval)
   }, [])
 
