@@ -75,7 +75,7 @@ KONTEXT PŘÍJEMCE:
 - Kontaktní osoba: ${context.contactName || 'neuvedeno'}
 
 PRODUKTY VITALSPACE:
-- Vitalspace OZON Breeze Uo — jednorázová hloubková sanitace
+- Vitalspace OZON Breeze Up — jednorázová hloubková sanitace
 - Vitalspace OZON Storm Pro I Plus — pravidelná prevence
 - Vitalspace OZON Oasis Box — certifikované řešení pro zdravotnictví
 

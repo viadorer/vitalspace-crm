@@ -175,10 +175,10 @@ function buildObecnaNabidka(vars: TemplateVariables): TemplateResult {
 
     <!-- Breeze Up – stropní/podhledový -->
     <div style="margin: 28px 0;">
-      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Uo — stropní instalace</p>
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Up — stropní instalace</p>
       <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Vestavba do podhledu nebo montáž na strop.
       Plně automatický provoz — osvěžování za přítomnosti lidí + hloubková dezinfekce mimo provoz. Žádná obsluha.</p>
-      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Uo – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Up – stropní panel" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
     </div>
 
     <!-- Mobilní zařízení -->
@@ -910,15 +910,15 @@ function buildDomovySenioru(vars: TemplateVariables): TemplateResult {
     <div style="margin: 24px 0; padding: 16px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
       <p style="margin: 0; font-weight: 600; color: #166534;">Reálný výsledek u zákazníka:</p>
       <p style="margin: 8px 0 0; color: #374151; font-size: 14px;">
-        Domov seniorů v&nbsp;Plzni – po instalaci Vitalspace OZON Breeze Uo poklesla nemocnost personálu o&nbsp;34 %
+        Domov seniorů v&nbsp;Plzni – po instalaci Vitalspace OZON Breeze Up poklesla nemocnost personálu o&nbsp;34 %
         a&nbsp;pachy na pokojích byly eliminovány do 2&nbsp;hodin po sanitaci.
       </p>
     </div>
 
     <div style="margin: 28px 0;">
-      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Uo – stropní instalace</p>
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Up – stropní instalace</p>
       <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Automatický provoz 24/7. Osvěžování za přítomnosti klientů, totální dezinfekce mimo provozní dobu.</p>
-      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Uo" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Up" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
     </div>
 
     <p>Nabízíme <strong>bezplatné měření kvality vzduchu</strong> přímo ve Vašem zařízení – bez závazků.</p>
@@ -1037,9 +1037,9 @@ function buildRestauraceGastronomie(vars: TemplateVariables): TemplateResult {
     </div>
 
     <div style="margin: 28px 0;">
-      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Uo – stropní panel</p>
+      <p style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Vitalspace OZON Breeze Up – stropní panel</p>
       <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Kontinuální osvěžování za přítomnosti hostů. Automatický provoz, neviditelná instalace do podhledu.</p>
-      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Uo" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+      <img src="${IMG_BASE}/cleanup-nastropni.png" alt="Vitalspace OZON Breeze Up" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
     </div>
 
     <p>Rád Vám představím konkrétní řešení pro Váš provoz. Mohu zavolat?</p>
@@ -1067,7 +1067,7 @@ function buildCaseStudy(vars: TemplateVariables): TemplateResult {
       <p style="margin: 0 0 12px; font-weight: 700; color: #166534; font-size: 16px;">Případová studie č. 1: Domov seniorů</p>
       <table style="width: 100%; font-size: 14px; color: #374151;">
         <tr><td style="padding: 4px 0;"><strong>Problém:</strong></td><td>Pachy inkontinence, časté infekce</td></tr>
-        <tr><td style="padding: 4px 0;"><strong>Řešení:</strong></td><td>Vitalspace OZON Breeze Uo – stropní instalace na 12 pokojích</td></tr>
+        <tr><td style="padding: 4px 0;"><strong>Řešení:</strong></td><td>Vitalspace OZON Breeze Up – stropní instalace na 12 pokojích</td></tr>
         <tr><td style="padding: 4px 0;"><strong>Výsledek:</strong></td><td>Nemocnost personálu −34 %, pachy eliminovány do 2h</td></tr>
       </table>
     </div>
@@ -1076,7 +1076,7 @@ function buildCaseStudy(vars: TemplateVariables): TemplateResult {
       <p style="margin: 0 0 12px; font-weight: 700; color: #1e40af; font-size: 16px;">Případová studie č. 2: Kancelářská budova</p>
       <table style="width: 100%; font-size: 14px; color: #374151;">
         <tr><td style="padding: 4px 0;"><strong>Problém:</strong></td><td>Sick building syndrome, stížnosti zaměstnanců</td></tr>
-        <tr><td style="padding: 4px 0;"><strong>Řešení:</strong></td><td>Vitalspace OZON Breeze Uo v klimatizačním systému</td></tr>
+        <tr><td style="padding: 4px 0;"><strong>Řešení:</strong></td><td>Vitalspace OZON Breeze Up v klimatizačním systému</td></tr>
         <tr><td style="padding: 4px 0;"><strong>Výsledek:</strong></td><td>VOC sníženy o 78 %, CO2 o 45 %, stížnosti klesly na nulu</td></tr>
       </table>
     </div>
