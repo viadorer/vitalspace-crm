@@ -189,8 +189,7 @@ function buildObecnaNabidka(vars: TemplateVariables): TemplateResult {
       <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="Vitalspace OZON Storm Pro I Plus – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
     </div>
 
-    <p>Nabízíme také <strong>pravidelnou službu dezinfekce</strong> našimi zaškolenými pracovníky
-    a&nbsp;možnost <strong>pronájmu</strong> přístrojů.</p>
+    <p>Nabízíme také <strong>pravidelnou službu dezinfekce</strong> našimi zaškolenými pracovníky.</p>
 
     <p>Rádi bychom Vám nabídli:</p>
     <ul style="color: #374151; line-height: 1.8;">
