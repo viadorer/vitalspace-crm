@@ -19,12 +19,13 @@ export function CronStatusIndicator() {
       const supabase = createClient()
 
       // Najdi poslední execution log
-      const { data } = await supabase
+      const { data: rows } = await supabase
         .from('sequence_execution_log')
         .select('created_at')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single()
+
+      const data = rows?.[0]
 
       if (!data) {
         setStatus('warning')
