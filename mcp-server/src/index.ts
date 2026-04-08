@@ -18,8 +18,26 @@ const envPath = path.resolve(__dirname, '..', '.env');
 dotenv.config({ path: envPath, override: true });
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000/api';
+const VITALSPACE_API_KEY = process.env.VITALSPACE_API_KEY || '';
+
+if (!VITALSPACE_API_KEY) {
+  console.error(
+    '[vitalspace] WARNING: VITALSPACE_API_KEY not set — all requests will be rejected by the server with "Přístup odepřen". Set VITALSPACE_API_KEY in mcp-server/.env.'
+  );
+}
 
 console.error(`[vitalspace] API_BASE_URL: ${API_BASE_URL}`);
+
+// All CRM endpoints require authentication. The MCP server uses an API key
+// (see lib/supabase/mcp-auth.ts on the server side). Always send X-API-Key.
+const jsonHeaders: Record<string, string> = {
+  'Content-Type': 'application/json',
+  'X-API-Key': VITALSPACE_API_KEY,
+};
+
+const authHeaders: Record<string, string> = {
+  'X-API-Key': VITALSPACE_API_KEY,
+};
 
 const server = new Server(
   {
@@ -327,7 +345,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'create_prospect': {
         const response = await fetch(`${API_BASE_URL}/prospects`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           body: JSON.stringify({
             company_name: args.company_name,
             ico: args.ico,
@@ -356,7 +374,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (args.contacts && Array.isArray(args.contacts) && args.contacts.length > 0) {
           const contactsResponse = await fetch(`${API_BASE_URL}/prospects/${data.id}/contacts`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: jsonHeaders,
             body: JSON.stringify({ contacts: args.contacts }),
           });
 
@@ -381,7 +399,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (args.segment_name) params.append('segment_name', args.segment_name as string);
         if (args.limit) params.append('limit', String(args.limit));
 
-        const response = await fetch(`${API_BASE_URL}/prospects?${params}`);
+        const response = await fetch(`${API_BASE_URL}/prospects?${params}`, { headers: authHeaders });
         const data = await response.json();
 
         if (!response.ok) {
@@ -398,7 +416,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'search_prospects': {
         const params = new URLSearchParams({ q: args.query as string });
-        const response = await fetch(`${API_BASE_URL}/prospects/search?${params}`);
+        const response = await fetch(`${API_BASE_URL}/prospects/search?${params}`, { headers: authHeaders });
         const data = await response.json();
 
         if (!response.ok) {
@@ -419,7 +437,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const response = await fetch(`${API_BASE_URL}/prospects/${prospectId}/contacts`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           body: JSON.stringify({ contacts }),
         });
 
@@ -440,7 +458,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'create_client': {
         const response = await fetch(`${API_BASE_URL}/clients`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           body: JSON.stringify({
             company_name: args.company_name,
             ico: args.ico,
@@ -492,7 +510,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const response = await fetch(`${API_BASE_URL}/clients/${clientId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           body: JSON.stringify(updates),
         });
 
@@ -516,7 +534,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (args.segment_name) params.append('segment_name', args.segment_name as string);
         if (args.limit) params.append('limit', String(args.limit));
 
-        const response = await fetch(`${API_BASE_URL}/clients?${params}`);
+        const response = await fetch(`${API_BASE_URL}/clients?${params}`, { headers: authHeaders });
         const data = await response.json();
 
         if (!response.ok) {
@@ -537,7 +555,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const response = await fetch(`${API_BASE_URL}/clients/${clientId}/contacts`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           body: JSON.stringify({ contacts }),
         });
 
@@ -559,7 +577,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const params = new URLSearchParams();
         if (args.name) params.append('name', args.name as string);
 
-        const response = await fetch(`${API_BASE_URL}/segments?${params}`);
+        const response = await fetch(`${API_BASE_URL}/segments?${params}`, { headers: authHeaders });
         const data = await response.json();
 
         if (!response.ok) {
@@ -576,7 +594,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'get_segment': {
         const segmentId = args.segment_id as string;
-        const response = await fetch(`${API_BASE_URL}/segments/${segmentId}`);
+        const response = await fetch(`${API_BASE_URL}/segments/${segmentId}`, { headers: authHeaders });
         const data = await response.json();
 
         if (!response.ok) {
@@ -594,7 +612,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'create_segment': {
         const response = await fetch(`${API_BASE_URL}/segments`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           body: JSON.stringify({
             name: args.name,
             target_pain_point: args.target_pain_point,
@@ -640,7 +658,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const response = await fetch(`${API_BASE_URL}/segments/${segmentId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           body: JSON.stringify(updates),
         });
 
@@ -662,6 +680,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const segmentId = args.segment_id as string;
         const response = await fetch(`${API_BASE_URL}/segments/${segmentId}`, {
           method: 'DELETE',
+          headers: authHeaders,
         });
 
         const data = await response.json();

@@ -2,6 +2,19 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // API key-based auth bypasses session middleware entirely. The route
+  // handler itself validates the key via `requireAuthOrApiKey`; the only
+  // job here is to not reject the request for missing Supabase cookies.
+  // Checked BEFORE touching Supabase to avoid unnecessary auth lookups.
+  if (
+    request.nextUrl.pathname.startsWith('/api') &&
+    request.headers.get('x-api-key') !== null
+  ) {
+    return NextResponse.next({
+      request: { headers: request.headers },
+    })
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
