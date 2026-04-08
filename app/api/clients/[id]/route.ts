@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { requireAuth, safeErrorResponse, escapeIlike, isValidUUID, truncate } from '@/lib/supabase/auth-guard';
+import { requireAuthOrApiKey, createClientForAuth, safeErrorResponse, escapeIlike, isValidUUID, truncate } from '@/lib/supabase/auth-guard';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireAuth();
+    const auth = await requireAuthOrApiKey(request, 'crm:write');
     if (auth instanceof NextResponse) return auth;
 
-    const supabase = await createClient();
+    const supabase = await createClientForAuth(auth);
     const body = await request.json();
     const { id: clientId } = await params;
 
@@ -62,10 +61,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireAuth();
+    const auth = await requireAuthOrApiKey(request, 'crm:read');
     if (auth instanceof NextResponse) return auth;
 
-    const supabase = await createClient();
+    const supabase = await createClientForAuth(auth);
     const { id: clientId } = await params;
 
     if (!isValidUUID(clientId)) {
