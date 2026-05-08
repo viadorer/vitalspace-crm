@@ -1,24 +1,18 @@
 /**
  * Bidirectional sync between VitalSpace CRM and Realvisor.
- *
- * Realvisor Supabase: fswvswtihoaouimziuxg.supabase.co
- * Realvisor API: https://api-production-88cf.up.railway.app
- * Realvisor tenant: 11111111-1111-1111-1111-111111111111
- * Realvisor project "Vitalspace.cz": 6cb6883d-af50-4c3f-bae7-dfd4332d3e8a
- * Realvisor pipeline: 3bb184d9-0d57-415f-8a66-9dbfe222a06f
- * Realvisor "Kontaktován" stage: 897cc4b2-f802-4fd5-b824-9058e6d34622
+ * Configuration via env vars (REALVISOR_*) — see .env.local.example.
  */
 
 import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js'
 
 // ── Constants ──
 
-const REALVISOR_SUPABASE_URL = 'https://fswvswtihoaouimziuxg.supabase.co'
+const REALVISOR_SUPABASE_URL = process.env.REALVISOR_SUPABASE_URL || 'https://fswvswtihoaouimziuxg.supabase.co'
 const REALVISOR_SERVICE_KEY = process.env.REALVISOR_SERVICE_ROLE_KEY || ''
-const REALVISOR_TENANT_ID = '11111111-1111-1111-1111-111111111111'
-const REALVISOR_PROJECT_ID = '6cb6883d-af50-4c3f-bae7-dfd4332d3e8a'
-const REALVISOR_PIPELINE_ID = '3bb184d9-0d57-415f-8a66-9dbfe222a06f'
-const REALVISOR_STAGE_CONTACTED = '897cc4b2-f802-4fd5-b824-9058e6d34622'
+const REALVISOR_TENANT_ID = process.env.REALVISOR_TENANT_ID || '11111111-1111-1111-1111-111111111111'
+const REALVISOR_PROJECT_ID = process.env.REALVISOR_PROJECT_ID || '6cb6883d-af50-4c3f-bae7-dfd4332d3e8a'
+const REALVISOR_PIPELINE_ID = process.env.REALVISOR_PIPELINE_ID || '3bb184d9-0d57-415f-8a66-9dbfe222a06f'
+const REALVISOR_STAGE_CONTACTED = process.env.REALVISOR_STAGE_CONTACTED || '897cc4b2-f802-4fd5-b824-9058e6d34622'
 
 function getRealvisorClient(): SupabaseClient {
   return createSupabaseClient(REALVISOR_SUPABASE_URL, REALVISOR_SERVICE_KEY, {

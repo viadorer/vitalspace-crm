@@ -47,7 +47,7 @@ export function SaveAsClientForm({
         label="Název obchodu"
         value={dealTitle}
         onChange={(e) => onTitleChange(e.target.value)}
-        placeholder="např. Instalace Clean Up - Firma XYZ"
+        placeholder="např. Instalace OZON Breeze Up - Firma XYZ"
         required
       />
 

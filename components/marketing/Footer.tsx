@@ -33,10 +33,10 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Programy</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="/reset" className="hover:text-white">Reset prostoru</a></li>
-              <li><a href="/prevent" className="hover:text-white">Prevent</a></li>
-              <li><a href="/clinic" className="hover:text-white">Clinic Standard</a></li>
-              <li><a href="/pronajem" className="hover:text-white">Pronájem</a></li>
+              <li><a href="/#reseni" className="hover:text-white">Reset prostoru</a></li>
+              <li><a href="/#reseni" className="hover:text-white">Prevent</a></li>
+              <li><a href="/#reseni" className="hover:text-white">Clinic Standard</a></li>
+              <li><a href="/#kontakt" className="hover:text-white">Poptat řešení</a></li>
             </ul>
           </div>
         </div>

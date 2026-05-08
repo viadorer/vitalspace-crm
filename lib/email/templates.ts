@@ -421,7 +421,7 @@ function buildHotelyUbytovani(vars: TemplateVariables): TemplateResult {
     <p><strong>OZON Storm Pro I PLUS</strong> – mobilní generátor pro rychlou dezinfekci pokojů.
     Housekeeping jej přiveze na pokoj, spustí cyklus a&nbsp;za hodinu je pokoj připraven.</p>
 
-    <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="PRO I PLUS – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
+    <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
 
     <p>Rád Vám připravím <strong>individuální nabídku</strong> pro Vaše zařízení – včetně možnosti
     pronájmu nebo poskytování dezinfekce jako služby.</p>

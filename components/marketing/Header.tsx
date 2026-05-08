@@ -8,11 +8,9 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navigation = [
-    { name: 'Reset prostoru', href: '/reset' },
-    { name: 'Prevent', href: '/prevent' },
-    { name: 'Clinic Standard', href: '/clinic' },
-    { name: 'Pronájem', href: '/pronajem' },
-    { name: 'Kalkulačka', href: '/kalkulacka' },
+    { name: 'Řešení', href: '/#reseni' },
+    { name: 'Účinnost', href: '/#ucinnost' },
+    { name: 'Kontakt', href: '/#kontakt' },
   ]
 
   return (

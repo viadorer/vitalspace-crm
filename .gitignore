@@ -31,3 +31,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# PII / scraper state — must not be committed
+pending-prospects.json
+scrape-state.json
+scrape-hotely-state.json
