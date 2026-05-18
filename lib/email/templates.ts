@@ -417,28 +417,6 @@ const SIGNATURE_DAVID = `
           </td>
         </tr>
       </table>
-
-      <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
-          <tr>
-            <td style="width: 50%; vertical-align: top; padding-right: 12px;">
-              <p style="margin: 0 0 4px; font-size: 11px; color: #00A5CF; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Pobočka Praha</p>
-              <p style="margin: 0; font-size: 12px; color: #374151; line-height: 1.6;">
-                Pod turnovskou tratí 182/18<br/>
-                198 00 Praha – Hloubětín
-              </p>
-            </td>
-            <td style="width: 50%; vertical-align: top; padding-left: 12px;">
-              <p style="margin: 0 0 4px; font-size: 11px; color: #00A5CF; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Pobočka Plzeň</p>
-              <p style="margin: 0; font-size: 12px; color: #374151; line-height: 1.6;">
-                Radyňská 463/33<br/>
-                326 00 Plzeň
-              </p>
-            </td>
-          </tr>
-        </table>
-        <p style="margin: 14px 0 0; font-size: 11px; color: #9ca3af;">VitalSpace s.r.o. · IČO: 24614068 · www.vitalspace.cz</p>
-      </div>
     </div>
 `
 
