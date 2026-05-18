@@ -35,7 +35,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-16 bg-white">
+        <section id="reseni" className="py-16 bg-white scroll-mt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center mb-12">Naše řešení</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -63,7 +63,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-16 bg-gray-50">
+        <section id="ucinnost" className="py-16 bg-gray-50 scroll-mt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center mb-4">Vědecky ověřená účinnost</h2>
             <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">

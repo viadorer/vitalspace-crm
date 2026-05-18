@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface Segment {
   id: string;
@@ -24,6 +25,7 @@ export default function SegmentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSegment, setSelectedSegment] = useState<Segment | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadSegments();
@@ -53,12 +55,13 @@ export default function SegmentsPage() {
 
       if (response.ok) {
         loadSegments();
+        toast.success('Segment byl smazán');
       } else {
-        alert('Chyba při mazání segmentu');
+        toast.error('Chyba při mazání segmentu');
       }
     } catch (error) {
       console.error('Chyba:', error);
-      alert('Chyba při mazání segmentu');
+      toast.error('Chyba při mazání segmentu');
     }
   };
 
@@ -238,6 +241,7 @@ function SegmentForm({
   });
 
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -267,14 +271,15 @@ function SegmentForm({
       });
 
       if (response.ok) {
+        toast.success(segment ? 'Segment byl upraven' : 'Segment byl vytvořen');
         onSave();
       } else {
         const error = await response.json();
-        alert(`Chyba: ${error.error}`);
+        toast.error(`Chyba: ${error.error}`);
       }
     } catch (error) {
       console.error('Chyba:', error);
-      alert('Chyba při ukládání segmentu');
+      toast.error('Chyba při ukládání segmentu');
     } finally {
       setSaving(false);
     }
@@ -338,7 +343,7 @@ function SegmentForm({
               type="text"
               value={formData.recommended_products}
               onChange={(e) => setFormData({ ...formData, recommended_products: e.target.value })}
-              placeholder="Clean Up, PRO I PLUS, Clean Box"
+              placeholder="OZON Breeze Up, OZON Storm Pro I PLUS, OZON Oasis Box"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

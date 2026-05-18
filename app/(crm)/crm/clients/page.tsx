@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { ClientTable } from '@/components/crm/ClientTable'
 import { ClientForm } from '@/components/crm/ClientForm'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { useToast } from '@/components/ui/ToastProvider'
 import { ActivityPanel } from '@/components/crm/ActivityPanel'
 import { DealForm } from '@/components/crm/DealForm'
 import { BulkEmailModal } from '@/components/crm/BulkEmailModal'
@@ -19,6 +21,7 @@ import type { Client, CompanySegment, Deal } from '@/lib/supabase/types'
 
 export default function ClientsPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const { clients, loading, createClient: addClient, updateClient, deleteClient } = useClients()
   const { createDeal } = useDeals()
   const { isSuperAdmin } = useCurrentUser()
@@ -72,8 +75,9 @@ export default function ClientsPage() {
     if (!result.error) {
       setEditingClient(null)
       setSelectedClient(null)
+      toast.success('Klient byl smazán')
     } else {
-      alert(`Chyba: ${result.error}`)
+      toast.error(`Chyba: ${result.error}`)
     }
   }
 
@@ -116,15 +120,23 @@ export default function ClientsPage() {
       )}
 
       <div className="p-8">
-        <ClientTable
-          clients={clients}
-          onClientClick={(client) => {
-            setSelectedClient(client)
-            setEditingClient(client)
-          }}
-          selectedIds={selectedIds}
-          onSelectionChange={setSelectedIds}
-        />
+        {clients.length === 0 ? (
+          <EmptyState
+            title="Zatím žádní klienti"
+            description="Vytvořte prvního klienta nebo převeďte prospekta z pipeline."
+            action={{ label: '+ Nový klient', onClick: () => setShowNewClientModal(true) }}
+          />
+        ) : (
+          <ClientTable
+            clients={clients}
+            onClientClick={(client) => {
+              setSelectedClient(client)
+              setEditingClient(client)
+            }}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+          />
+        )}
       </div>
 
       <Modal

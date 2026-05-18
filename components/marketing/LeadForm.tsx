@@ -57,7 +57,7 @@ export function LeadForm() {
 
   if (success) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
+      <div role="status" aria-live="polite" className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">
           Děkujeme za vaši poptávku!
         </h3>
@@ -138,7 +138,7 @@ export function LeadForm() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div role="alert" aria-live="assertive" className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {error}
         </div>
       )}

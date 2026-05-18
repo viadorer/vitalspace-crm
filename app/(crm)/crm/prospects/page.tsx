@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/ToastProvider'
 import { ProspectTable } from '@/components/crm/ProspectTable'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { ProspectForm } from '@/components/crm/ProspectForm'
 import { ActivityPanel } from '@/components/crm/ActivityPanel'
 import { ProspectSequencePanel } from '@/components/crm/ProspectSequencePanel'
@@ -109,11 +110,11 @@ export default function ProspectsPage() {
       if (!result.error) {
         setShowNewDealModal(false)
         setSelectedProspect(null)
-        alert('Prospect úspěšně převeden na klienta a vytvořen deal!')
+        toast.success('Prospect úspěšně převeden na klienta a vytvořen deal!')
       }
     } catch (err) {
       console.error('Chyba při konverzi prospectu:', err)
-      alert('Chyba při konverzi prospectu na klienta')
+      toast.error('Chyba při konverzi prospectu na klienta')
     } finally {
       setConverting(false)
     }
@@ -126,8 +127,9 @@ export default function ProspectsPage() {
     const result = await deleteProspect(selectedProspect.id)
     if (!result.error) {
       setSelectedProspect(null)
+      toast.success('Prospect byl smazán')
     } else {
-      alert(`Chyba: ${result.error}`)
+      toast.error(`Chyba: ${result.error}`)
     }
   }
 
@@ -170,12 +172,20 @@ export default function ProspectsPage() {
       )}
 
       <div className="p-8">
-        <ProspectTable
-          prospects={prospects}
-          onProspectClick={setSelectedProspect}
-          selectedIds={selectedIds}
-          onSelectionChange={setSelectedIds}
-        />
+        {prospects.length === 0 ? (
+          <EmptyState
+            title="Zatím žádní prospekti"
+            description="Vytvořte prvního prospekta a začněte budovat pipeline."
+            action={{ label: '+ Nový prospect', onClick: () => setShowNewProspectModal(true) }}
+          />
+        ) : (
+          <ProspectTable
+            prospects={prospects}
+            onProspectClick={setSelectedProspect}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+          />
+        )}
       </div>
 
       <Modal

@@ -105,6 +105,7 @@ export async function POST(_request: NextRequest) {
 
     return NextResponse.json({ error: 'Neznámý typ emailu' }, { status: 400 })
   } catch (error) {
+    console.error('[api/email/send] error:', error)
     return safeErrorResponse(error, 500)
   }
 }

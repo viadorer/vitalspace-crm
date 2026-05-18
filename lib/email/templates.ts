@@ -31,6 +31,7 @@ export type TemplateName =
   | 'follow-up'
   | 'pozvanka-audit'
   | 'skoly-skolky'
+  | 'skolky-rozsirena'
   | 'hotely-ubytovani'
   | 'pronajem-vs-koupe'
   | 'certifikace-duvera'
@@ -77,6 +78,11 @@ export const EMAIL_TEMPLATES: Record<TemplateName, {
     label: 'Nabídka pro školy a školky',
     description: 'Ochrana dětí, eliminace virů, bez chemie – bezpečné pro děti.',
     build: buildSkolySkolky,
+  },
+  'skolky-rozsirena': {
+    label: 'Mateřské školy – rozšířená prodejní nabídka',
+    description: 'Obsáhlá prodejní nabídka pro ředitelky MŠ: produkty, ROI, instalace, FAQ a kontakt David Choc.',
+    build: buildSkolkyRozsirena,
   },
   'hotely-ubytovani': {
     label: 'Nabídka pro hotely a ubytování',
@@ -389,6 +395,321 @@ function buildSkolySkolky(vars: TemplateVariables): TemplateResult {
   return { subject, html }
 }
 
+// ── 4b. Mateřské školy – rozšířená prodejní nabídka (David Choc) ──
+
+const SIGNATURE_DAVID = `
+    <div style="margin-top: 32px; padding: 22px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
+        <tr>
+          <td style="vertical-align: top; padding-right: 16px; width: 64px;">
+            <img src="${LOGO_URL}" alt="VitalSpace" width="48" height="48" style="display: block; border-radius: 8px;" />
+          </td>
+          <td style="vertical-align: top;">
+            <p style="margin: 0 0 4px; font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">S úctou</p>
+            <p style="margin: 0; font-size: 16px; font-weight: 700; color: #1e3a5f;">Bc. David Choc</p>
+            <p style="margin: 2px 0 14px; font-size: 13px; color: #64748b;">jednatel · VitalSpace s.r.o.</p>
+            <p style="margin: 0 0 2px; font-size: 13px; color: #374151; line-height: 1.7;">
+              Tel.: <a href="tel:+420774052232" style="color: #1e3a5f; text-decoration: none; font-weight: 600;">+420 774 052 232</a>
+            </p>
+            <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.7;">
+              E‑mail: <a href="mailto:david.choc@vitalspace.cz" style="color: #1e3a5f; text-decoration: none; font-weight: 600;">david.choc@vitalspace.cz</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
+          <tr>
+            <td style="width: 50%; vertical-align: top; padding-right: 12px;">
+              <p style="margin: 0 0 4px; font-size: 11px; color: #00A5CF; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Pobočka Praha</p>
+              <p style="margin: 0; font-size: 12px; color: #374151; line-height: 1.6;">
+                Pod turnovskou tratí 182/18<br/>
+                198 00 Praha – Hloubětín
+              </p>
+            </td>
+            <td style="width: 50%; vertical-align: top; padding-left: 12px;">
+              <p style="margin: 0 0 4px; font-size: 11px; color: #00A5CF; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Pobočka Plzeň</p>
+              <p style="margin: 0; font-size: 12px; color: #374151; line-height: 1.6;">
+                Radyňská 463/33<br/>
+                326 00 Plzeň
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p style="margin: 14px 0 0; font-size: 11px; color: #9ca3af;">VitalSpace s.r.o. · IČO: 24614068 · www.vitalspace.cz</p>
+      </div>
+    </div>
+`
+
+function buildSkolkyRozsirena(vars: TemplateVariables): TemplateResult {
+  const salutation = vars.salutation || 'Vážená paní ředitelko'
+  const subject = 'Zdravé prostředí pro ty nejmenší — ozonová sanitace bez chemie | VitalSpace'
+
+  const html = `
+    <!-- Hero -->
+    <div style="background: linear-gradient(135deg, #0F4C5C 0%, #00A5CF 100%); padding: 32px 24px; border-radius: 12px; margin-bottom: 28px; text-align: center;">
+      <img src="${LOGO_URL}" alt="VitalSpace" width="56" height="56" style="display: inline-block; margin-bottom: 12px; border-radius: 8px;" />
+      <p style="margin: 0; font-size: 11px; color: #9FD356; text-transform: uppercase; letter-spacing: 3px; font-weight: 700;">Pro mateřské školy a jesle</p>
+      <h1 style="margin: 12px 0 8px; font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1.2;">Zdravé prostředí<br/>pro ty nejmenší</h1>
+      <p style="margin: 0; font-size: 14px; color: #CADCFC;">Stropní sanitace OZON Breeze Up — bez chemie, bez obsluhy, 99,99 % účinnost</p>
+    </div>
+
+    <p>${esc(salutation)},</p>
+
+    <p>obracím se na Vás s&nbsp;nabídkou, která pomáhá ředitelkám mateřských škol řešit dva
+    největší dlouhodobé problémy provozu: <strong>vysokou nemocnost dětí v&nbsp;chřipkové
+    sezóně</strong> a&nbsp;<strong>rostoucí počet alergiků</strong>.</p>
+
+    <!-- Quick wins / 4 hooks -->
+    <div style="margin: 24px 0; padding: 20px; background: #F4F8FA; border-radius: 12px;">
+      <p style="margin: 0 0 12px; font-weight: 700; color: #0F4C5C; font-size: 15px;">Co řeší ozonová sanitace v mateřské škole</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
+        <tr>
+          <td style="width: 50%; padding: 6px 12px 6px 0; vertical-align: top;">
+            <p style="margin: 0; font-size: 14px; color: #1A2332; line-height: 1.5;">
+              <strong style="color: #0F4C5C;">↓ 20–40 %</strong> méně absencí dětí v&nbsp;chřipkové sezóně
+            </p>
+          </td>
+          <td style="width: 50%; padding: 6px 0 6px 12px; vertical-align: top;">
+            <p style="margin: 0; font-size: 14px; color: #1A2332; line-height: 1.5;">
+              <strong style="color: #0F4C5C;">99,99 %</strong> likvidace virů, bakterií, plísní a&nbsp;roztočů
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="width: 50%; padding: 6px 12px 6px 0; vertical-align: top;">
+            <p style="margin: 0; font-size: 14px; color: #1A2332; line-height: 1.5;">
+              <strong style="color: #0F4C5C;">Bez chemie</strong> — bezpečné pro děti i&nbsp;alergiky
+            </p>
+          </td>
+          <td style="width: 50%; padding: 6px 0 6px 12px; vertical-align: top;">
+            <p style="margin: 0; font-size: 14px; color: #1A2332; line-height: 1.5;">
+              <strong style="color: #0F4C5C;">Bez obsluhy</strong> — plně automatický noční cyklus
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- HERO product — OZON Breeze Up -->
+    <h2 style="margin: 32px 0 8px; font-size: 22px; color: #0F4C5C;">OZON Breeze Up — stropní sanitační systém</h2>
+    <p style="margin: 0 0 16px; color: #5A6C7A; font-size: 14px;">
+      Skrytá instalace do podhledu 595×595 mm. Splyne s běžnou stropní kazetou.
+      Funguje automaticky podle týdenního harmonogramu — bez zásahu personálu školky.
+    </p>
+    <img src="${IMG_BASE}/cleanup-nastropni.png" alt="OZON Breeze Up — stropní sanitační panel" style="display: block; max-width: 100%; border-radius: 12px; border: 1px solid #e5e7eb; margin: 0 0 20px;" />
+
+    <!-- Two modes -->
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin: 24px 0; border-collapse: separate; border-spacing: 0;">
+      <tr>
+        <td style="width: 50%; padding-right: 8px; vertical-align: top;">
+          <div style="padding: 18px; background: #ECFDF5; border: 1px solid #9FD356; border-radius: 10px; height: 100%;">
+            <p style="margin: 0 0 6px; font-size: 11px; color: #166534; font-weight: 700; letter-spacing: 1.5px;">REŽIM 1 · DEN</p>
+            <p style="margin: 0 0 8px; font-size: 15px; font-weight: 700; color: #0F4C5C;">Bezpečný osvěžovač</p>
+            <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.6;">
+              Velmi nízká koncentrace ozonu (pod hygienickým limitem). Děti i&nbsp;personál mohou
+              být v&nbsp;prostoru, vzduch se průběžně čistí, mizí zápachy.
+            </p>
+          </div>
+        </td>
+        <td style="width: 50%; padding-left: 8px; vertical-align: top;">
+          <div style="padding: 18px; background: #0F4C5C; border-radius: 10px; height: 100%;">
+            <p style="margin: 0 0 6px; font-size: 11px; color: #9FD356; font-weight: 700; letter-spacing: 1.5px;">REŽIM 2 · NOC</p>
+            <p style="margin: 0 0 8px; font-size: 15px; font-weight: 700; color: #ffffff;">Plná sanitace 99,99 %</p>
+            <p style="margin: 0; font-size: 13px; color: #CADCFC; line-height: 1.6;">
+              Vysoká koncentrace mimo provozní dobu. Plně dezinfikuje hračky, koberce,
+              matrace. Do rána se ozon rozloží zpět na O₂.
+            </p>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Where to install -->
+    <h2 style="margin: 32px 0 8px; font-size: 22px; color: #0F4C5C;">Kam OZON Breeze Up ve školce umístit</h2>
+    <p style="margin: 0 0 16px; color: #5A6C7A; font-size: 14px;">Jedno zařízení na třídu — stropní rastr 600×600 nahradí běžnou kazetu.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
+      <tr>
+        <td style="width: 50%; padding-right: 8px; vertical-align: top;">
+          <div style="padding: 12px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0F4C5C;">Herny</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Hračky, koberce, polstrování — dezinfekce přes noc.</p>
+          </div>
+        </td>
+        <td style="width: 50%; padding-left: 8px; vertical-align: top;">
+          <div style="padding: 12px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0F4C5C;">Ložnice a lehárny</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Matrace, polštáře, lehátka. Žádná chemická rezidua.</p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="width: 50%; padding-right: 8px; vertical-align: top;">
+          <div style="padding: 12px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0F4C5C;">Sociální zařízení</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">WC a&nbsp;přebalovací pulty — automatická noční dezinfekce.</p>
+          </div>
+        </td>
+        <td style="width: 50%; padding-left: 8px; vertical-align: top;">
+          <div style="padding: 12px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0F4C5C;">Šatny</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Skříňky, lavičky, podlahy — eliminace bakterií i&nbsp;zápachu.</p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="width: 50%; padding-right: 8px; vertical-align: top;">
+          <div style="padding: 12px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0F4C5C;">Jídelna</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Bezpečné prostředí pro stravu nejcitlivější populace.</p>
+          </div>
+        </td>
+        <td style="width: 50%; padding-left: 8px; vertical-align: top;">
+          <div style="padding: 12px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 700; color: #0F4C5C;">Třída pro alergiky</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Pravidelná likvidace roztočů a&nbsp;plísňových alergenů.</p>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Real installation gallery -->
+    <h2 style="margin: 32px 0 8px; font-size: 22px; color: #0F4C5C;">Reálné instalace v praxi</h2>
+    <p style="margin: 0 0 16px; color: #5A6C7A; font-size: 14px;">Stejný princip jako v&nbsp;ordinacích, nemocnicích a&nbsp;klinikách — beze stopy v&nbsp;interiéru.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
+      <tr>
+        <td style="width: 50%; padding-right: 6px; vertical-align: top;">
+          <img src="${IMG_BASE}/instalace-podhled.png" alt="Stropní instalace v podhledu" style="display: block; max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+          <p style="margin: 8px 0 0; font-size: 12px; color: #64748b; text-align: center; font-style: italic;">Stropní instalace v&nbsp;podhledu</p>
+        </td>
+        <td style="width: 50%; padding-left: 6px; vertical-align: top;">
+          <img src="${IMG_BASE}/instalace-nemocnice.png" alt="Klinické prostředí — stejná technologie" style="display: block; max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb;" />
+          <p style="margin: 8px 0 0; font-size: 12px; color: #64748b; text-align: center; font-style: italic;">Klinické prostředí — stejná technologie</p>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Companion products -->
+    <h2 style="margin: 32px 0 8px; font-size: 22px; color: #0F4C5C;">Co k&nbsp;tomu nabízíme navíc</h2>
+    <p style="margin: 0 0 16px; color: #5A6C7A; font-size: 14px;">
+      Pro speciální situace — větší prostory (tělocvična, jídelna) a&nbsp;sanitace předmětů.
+    </p>
+
+    <!-- OZON Storm Pro I PLUS -->
+    <div style="margin: 16px 0; padding: 18px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
+        <tr>
+          <td style="width: 130px; vertical-align: top; padding-right: 16px;">
+            <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS" style="display: block; max-width: 130px; border-radius: 8px;" />
+          </td>
+          <td style="vertical-align: top;">
+            <p style="margin: 0 0 4px; font-size: 11px; color: #E5A823; font-weight: 700; letter-spacing: 1.5px;">MOBILNÍ PRŮMYSLOVÝ GENERÁTOR</p>
+            <p style="margin: 0 0 6px; font-size: 17px; font-weight: 700; color: #0F4C5C;">OZON Storm Pro I PLUS</p>
+            <p style="margin: 0 0 8px; font-size: 13px; color: #374151; line-height: 1.6;">
+              Pro tělocvičnu, velkou jídelnu, víceúčelovou halu nebo celou budovu při generálním úklidu.
+              Pokrytí 200–800 m³, mikropočítačem řízený cyklus.
+            </p>
+            <p style="margin: 0; font-size: 12px; color: #64748b;">
+              Mobilní mezi místnostmi &nbsp;·&nbsp; automatické chlazení &nbsp;·&nbsp; bezpečnostní protokoly
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- OZON Oasis Box DRY -->
+    <div style="margin: 16px 0; padding: 18px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
+        <tr>
+          <td style="width: 130px; vertical-align: top; padding-right: 16px;">
+            <img src="${IMG_BASE}/clean-box-dry.png" alt="OZON Oasis Box DRY" style="display: block; max-width: 130px; border-radius: 8px;" />
+          </td>
+          <td style="vertical-align: top;">
+            <p style="margin: 0 0 4px; font-size: 11px; color: #9FD356; font-weight: 700; letter-spacing: 1.5px;">KOMPAKTNÍ SANITAČNÍ BOX</p>
+            <p style="margin: 0 0 6px; font-size: 17px; font-weight: 700; color: #0F4C5C;">OZON Oasis Box DRY</p>
+            <p style="margin: 0 0 8px; font-size: 13px; color: #374151; line-height: 1.6;">
+              Pro plyšáky, oblečení, hračky a&nbsp;didaktické pomůcky. Suchý cyklus 15–45 minut,
+              bez vlhkosti, šetrný k&nbsp;materiálům.
+            </p>
+            <p style="margin: 0; font-size: 12px; color: #64748b;">
+              Plyšáci a&nbsp;textil &nbsp;·&nbsp; plastové hračky &nbsp;·&nbsp; pomůcky před a&nbsp;po pobytu
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Safety -->
+    <h2 style="margin: 32px 0 8px; font-size: 22px; color: #0F4C5C;">Bezpečnost pro děti — vícenásobné pojistky</h2>
+    <ul style="margin: 0; padding-left: 20px; color: #374151; line-height: 1.8; font-size: 14px;">
+      <li><strong>PIR detekce pohybu</strong> — sanitační cyklus se vypne při vstupu osoby do prostoru.</li>
+      <li><strong>Tepelná pojistka</strong> + ochrana proti chodu naprázdno — nikdy nehrozí zvýšená dávka.</li>
+      <li><strong>Hygienické limity</strong> — denní režim je pod limitem 0,1&nbsp;ppm (dlouhodobá expozice).</li>
+      <li><strong>Poločas rozkladu ~30 minut</strong> — sanitace končí 4–6&nbsp;hodin před otevřením školky.</li>
+    </ul>
+
+    <!-- ROI block -->
+    <div style="margin: 28px 0; padding: 24px; background: linear-gradient(135deg, #0F4C5C 0%, #1A2332 100%); border-radius: 12px; color: #ffffff;">
+      <p style="margin: 0 0 6px; font-size: 11px; color: #9FD356; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Návratnost investice</p>
+      <p style="margin: 0 0 12px; font-size: 22px; font-weight: 700;">Modelově ≈ 6 měsíců</p>
+      <p style="margin: 0; font-size: 14px; color: #CADCFC; line-height: 1.6;">
+        Pro typickou školku s&nbsp;60&nbsp;dětmi ve 3 třídách: úspora ze sníženého počtu absencí
+        + úspora na suplování + úspora chemie + vyšší retence vede modelově k&nbsp;úspoře
+        <strong style="color: #ffffff;">100&nbsp;000+&nbsp;Kč ročně</strong>. Konkrétní výpočet
+        Vám připravím podle Vaší kapacity.
+      </p>
+    </div>
+
+    <!-- FAQ -->
+    <h2 style="margin: 32px 0 8px; font-size: 22px; color: #0F4C5C;">Časté dotazy ředitelek</h2>
+
+    <p style="margin: 16px 0 6px; font-size: 14px; font-weight: 700; color: #0F4C5C;">Není ozon nebezpečný pro děti?</p>
+    <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.6;">
+      Bezpečnostní cyklus probíhá v&nbsp;noci, kdy nejsou děti přítomny. PIR čidlo detekuje pohyb
+      a&nbsp;okamžitě vypne sanitaci. Přes den jen osvěžovací režim pod hygienickým limitem.
+    </p>
+
+    <p style="margin: 16px 0 6px; font-size: 14px; font-weight: 700; color: #0F4C5C;">Co když děti přijdou ráno do třídy?</p>
+    <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.6;">
+      Ozon má poločas rozkladu ~30&nbsp;minut. Cyklus končí typicky 4–6&nbsp;hodin před otevřením školky —
+      ráno je v&nbsp;prostoru pouze čistý kyslík.
+    </p>
+
+    <p style="margin: 16px 0 6px; font-size: 14px; font-weight: 700; color: #0F4C5C;">Můžeme to vyzkoušet před koupí?</p>
+    <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.6;">
+      Ano — nabízíme <strong>pilotní instalaci na 1 zařízení do 1 třídy</strong> s&nbsp;vrácením peněz
+      do 30&nbsp;dnů, pokud nebudete spokojeni.
+    </p>
+
+    <!-- Certifications strip -->
+    <div style="margin: 28px 0; padding: 18px; background: #F4F8FA; border-radius: 12px; text-align: center;">
+      <p style="margin: 0 0 8px; font-size: 11px; color: #00A5CF; font-weight: 700; letter-spacing: 2px;">CERTIFIKACE A ZÁRUKY</p>
+      <p style="margin: 0; font-size: 13px; color: #1A2332; line-height: 1.8;">
+        Registrace <strong>MZ ČR</strong> · norma <strong>EN 17272:2020</strong> · prohlášení o&nbsp;shodě <strong>CE</strong> · biocidní <strong>BPR 528/2012</strong> · vývoj se Západočeskou univerzitou v&nbsp;Plzni · záruka <strong>24 měsíců</strong>
+      </p>
+    </div>
+
+    <!-- CTA -->
+    <div style="margin: 28px 0; padding: 24px; background: #ffffff; border: 2px solid #00A5CF; border-radius: 12px; text-align: center;">
+      <p style="margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #0F4C5C;">Připravím nabídku přesně podle velikosti Vaší školky</p>
+      <p style="margin: 0 0 16px; font-size: 13px; color: #5A6C7A;">
+        Bezplatná konzultace, návrh rozmístění a&nbsp;cenová nabídka do 24&nbsp;hodin.
+      </p>
+      <a href="tel:+420774052232" style="display: inline-block; padding: 12px 22px; margin: 4px; background: #0F4C5C; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px;">+420 774 052 232</a>
+      <a href="mailto:david.choc@vitalspace.cz?subject=Poptávka%20OZON%20Breeze%20Up%20pro%20MŠ" style="display: inline-block; padding: 12px 22px; margin: 4px; background: #00A5CF; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 8px;">Napsat e‑mail</a>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: 14px; color: #374151; line-height: 1.7;">
+      Budu se těšit na případnou spolupráci a&nbsp;jsem připraven Vám zodpovědět jakékoli otázky.
+    </p>
+
+    ${SIGNATURE_DAVID}
+  `
+
+  return { subject, html }
+}
+
 // ── 5. Hotely a ubytování ──
 
 function buildHotelyUbytovani(vars: TemplateVariables): TemplateResult {
@@ -421,7 +742,7 @@ function buildHotelyUbytovani(vars: TemplateVariables): TemplateResult {
     <p><strong>OZON Storm Pro I PLUS</strong> – mobilní generátor pro rychlou dezinfekci pokojů.
     Housekeeping jej přiveze na pokoj, spustí cyklus a&nbsp;za hodinu je pokoj připraven.</p>
 
-    <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="PRO I PLUS – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
+    <img src="${IMG_BASE}/pro-i-plus-mobilni.png" alt="OZON Storm Pro I PLUS – mobilní generátor" style="max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0;" />
 
     <p>Rád Vám připravím <strong>individuální nabídku</strong> pro Vaše zařízení – včetně možnosti
     pronájmu nebo poskytování dezinfekce jako služby.</p>

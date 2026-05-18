@@ -77,7 +77,7 @@ export function Dashboard() {
           color="bg-blue-50"
         />
         <KpiCard
-          title="Won tento měsíc"
+          title="Vyhráno tento měsíc"
           value={formatCurrency(wonThisMonthTotal)}
           subtitle={`${wonThisMonth.length} uzavřených`}
           icon={<DollarSign className="w-5 h-5 text-green-600" />}
