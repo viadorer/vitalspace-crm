@@ -141,6 +141,7 @@ export async function POST(request: NextRequest) {
       results,
     })
   } catch (error) {
+    console.error('[api/email/bulk-send POST] error:', error)
     return safeErrorResponse(error, 500)
   }
 }
@@ -171,6 +172,7 @@ export async function GET() {
       remaining: Math.max(0, DAILY_LIMIT - sentToday),
     })
   } catch (error) {
+    console.error('[api/email/bulk-send GET] error:', error)
     return safeErrorResponse(error, 500)
   }
 }
