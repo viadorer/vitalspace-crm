@@ -156,10 +156,23 @@ function wrapInTemplate(title: string, body: string): string {
   </div>
   ${body}
   <div style="border-top: 1px solid #e5e7eb; margin-top: 32px; padding-top: 16px; font-size: 12px; color: #6b7280;">
-    <img src="${LOGO_URL}" alt="VitalSpace" width="20" height="20" style="vertical-align: middle; margin-right: 6px;" />
-    <strong style="color: #1e3a5f;">VitalSpace s.r.o.</strong><br/>
-    <span style="color: #9ca3af;">Mgr. Pavel Fogl · +420 775 930 816 · pavel.fogl@vitalspace.cz</span><br/>
-    <span style="color: #9ca3af;">Radyňská 463/33, 326 00 Plzeň · IČO: 24614068</span>
+    <div style="margin-bottom: 12px;">
+      <img src="${LOGO_URL}" alt="VitalSpace" width="20" height="20" style="vertical-align: middle; margin-right: 6px;" />
+      <strong style="color: #1e3a5f;">VitalSpace s.r.o.</strong>
+      <span style="color: #9ca3af;"> &nbsp;·&nbsp; IČO: 24614068 &nbsp;·&nbsp; www.vitalspace.cz</span>
+    </div>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 480px;">
+      <tr>
+        <td style="vertical-align: top; padding-right: 14px;">
+          <span style="display: block; font-size: 10px; color: #1e3a5f; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2px;">Pobočka Praha</span>
+          <span style="color: #9ca3af;">Pod turnovskou tratí 182/18<br/>198 00 Praha – Hloubětín</span>
+        </td>
+        <td style="vertical-align: top; padding-left: 14px;">
+          <span style="display: block; font-size: 10px; color: #1e3a5f; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2px;">Pobočka Plzeň</span>
+          <span style="color: #9ca3af;">Radyňská 463/33<br/>326 00 Plzeň</span>
+        </td>
+      </tr>
+    </table>
   </div>
 </body>
 </html>`
