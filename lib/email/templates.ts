@@ -632,10 +632,9 @@ function buildSkolkyRozsirena(vars: TemplateVariables): TemplateResult {
       <p style="margin: 0 0 6px; font-size: 11px; color: #9FD356; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Návratnost investice</p>
       <p style="margin: 0 0 12px; font-size: 22px; font-weight: 700;">Modelově ≈ 6 měsíců</p>
       <p style="margin: 0; font-size: 14px; color: #CADCFC; line-height: 1.6;">
-        Pro typickou školku s&nbsp;60&nbsp;dětmi ve 3 třídách: úspora ze sníženého počtu absencí
-        + úspora na suplování + úspora chemie + vyšší retence vede modelově k&nbsp;úspoře
-        <strong style="color: #ffffff;">100&nbsp;000+&nbsp;Kč ročně</strong>. Konkrétní výpočet
-        Vám připravím podle Vaší kapacity.
+        Při běžné kapacitě 20–40 dětí se investice modelově vrací do 6 měsíců —
+        ze sníženého počtu absencí, úspory na suplování a úspory na chemii.
+        Konkrétní výpočet rád připravím podle Vaší kapacity a&nbsp;rozsahu pokrytí.
       </p>
     </div>
 
@@ -654,10 +653,10 @@ function buildSkolkyRozsirena(vars: TemplateVariables): TemplateResult {
       ráno je v&nbsp;prostoru pouze čistý kyslík.
     </p>
 
-    <p style="margin: 16px 0 6px; font-size: 14px; font-weight: 700; color: #0F4C5C;">Můžeme to vyzkoušet před koupí?</p>
+    <p style="margin: 16px 0 6px; font-size: 14px; font-weight: 700; color: #0F4C5C;">Můžeme si přístroj nejdřív prohlédnout?</p>
     <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.6;">
-      Ano — nabízíme <strong>pilotní instalaci na 1 zařízení do 1 třídy</strong> s&nbsp;vrácením peněz
-      do 30&nbsp;dnů, pokud nebudete spokojeni.
+      Ano — rád přijedu na <strong>bezplatnou konzultaci přímo do Vaší školky</strong>, posoudíme
+      prostory, doporučíme rozmístění a&nbsp;předvedeme funkce zařízení. Vše bez závazku k&nbsp;objednávce.
     </p>
 
     <!-- Certifications strip -->
