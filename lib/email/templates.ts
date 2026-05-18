@@ -81,7 +81,7 @@ export const EMAIL_TEMPLATES: Record<TemplateName, {
   },
   'skolky-rozsirena': {
     label: 'Mateřské školy – rozšířená prodejní nabídka',
-    description: 'Obsáhlá prodejní nabídka pro ředitelky MŠ: produkty, ROI, instalace, FAQ a kontakt David Choc.',
+    description: 'Obsáhlá prodejní nabídka pro mateřské školy: produkty, ROI, instalace, FAQ a kontakt David Choc.',
     build: buildSkolkyRozsirena,
   },
   'hotely-ubytovani': {
@@ -443,7 +443,7 @@ const SIGNATURE_DAVID = `
 `
 
 function buildSkolkyRozsirena(vars: TemplateVariables): TemplateResult {
-  const salutation = vars.salutation || 'Vážená paní ředitelko'
+  const salutation = vars.salutation || 'Dobrý den'
   const subject = 'Zdravé prostředí pro ty nejmenší — ozonová sanitace bez chemie | VitalSpace'
 
   const html = `
@@ -457,7 +457,7 @@ function buildSkolkyRozsirena(vars: TemplateVariables): TemplateResult {
 
     <p>${esc(salutation)},</p>
 
-    <p>obracím se na Vás s&nbsp;nabídkou, která pomáhá ředitelkám mateřských škol řešit dva
+    <p>obracím se na Vás s&nbsp;nabídkou, která pomáhá mateřským školám řešit dva
     největší dlouhodobé problémy provozu: <strong>vysokou nemocnost dětí v&nbsp;chřipkové
     sezóně</strong> a&nbsp;<strong>rostoucí počet alergiků</strong>.</p>
 
@@ -662,7 +662,7 @@ function buildSkolkyRozsirena(vars: TemplateVariables): TemplateResult {
     </div>
 
     <!-- FAQ -->
-    <h2 style="margin: 32px 0 8px; font-size: 22px; color: #0F4C5C;">Časté dotazy ředitelek</h2>
+    <h2 style="margin: 32px 0 8px; font-size: 22px; color: #0F4C5C;">Časté dotazy</h2>
 
     <p style="margin: 16px 0 6px; font-size: 14px; font-weight: 700; color: #0F4C5C;">Není ozon nebezpečný pro děti?</p>
     <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.6;">
